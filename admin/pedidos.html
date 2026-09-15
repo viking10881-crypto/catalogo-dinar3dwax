@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pedidos · Panel Dinar 3D Wax</title>
+<link rel="stylesheet" href="/css/estilos.css">
+</head>
+<body>
+
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <a href="/admin/index.html" class="admin-sidebar-marca">
+      <span class="logo">DINAR 3D WAX</span>
+      <span class="subtitulo">Panel de administración</span>
+    </a>
+    <nav id="admin-sidebar-nav" class="admin-sidebar-nav"></nav>
+    <div class="admin-sidebar-pie">
+      <a href="/index.html" target="_blank" rel="noopener">Ver catálogo ↗</a>
+      <button type="button" id="btn-cerrar-sesion">Salir</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <h1 class="titulo-seccion" style="margin-top:0;">Pedidos</h1>
+
+    <div style="overflow-x:auto;">
+      <table class="tabla-admin">
+        <thead>
+          <tr>
+            <th>Orden</th>
+            <th>Cliente</th>
+            <th>Fecha</th>
+            <th>Ítems</th>
+            <th>Total</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="cuerpo-tabla-pedidos"></tbody>
+      </table>
+    </div>
+    <p id="mensaje-tabla" class="mensaje-admin"></p>
+  </main>
+</div>
+
+<script src="/admin/js/admin.js"></script>
+<script src="/admin/js/layout.js"></script>
+<script>
+const ETIQUETAS_ESTADO_PEDIDO = {
+  aprobado: "Pago aprobado",
+  pendiente: "Verificando pago",
+  rechazado: "Pago rechazado",
+};
+
+function vistaComprobante(url) {
+  if (!url) return "Sin comprobante";
+  const esImagen = /\.(jpe?g|png)$/i.test(url);
+  if (esImagen) {
+    return `<a href="${url}" target="_blank" rel="noopener"><div class="miniatura-admin" style="width:90px;height:90px;"><img src="${url}" alt="Comprobante"></div></a>`;
+  }
+  return `<a href="${url}" target="_blank" rel="noopener">Ver comprobante (PDF)</a>`;
+}
+
+function formatearFechaPedido(iso) {
+  return new Date(iso).toLocaleString("es-CO", { dateStyle: "medium", timeStyle: "short" });
+}
+
+function filaItemHTML(item) {
+  const nombre = `${item.referencia && item.referencia !== "PERSONALIZADO" ? item.referencia + " · " : ""}${item.nombre}${item.talla ? ` (talla ${item.talla})` : ""}`;
+  const subtotal = item.precioUnitario * item.cantidad;
+  return `<li>${nombre} × ${item.cantidad} — ${formatearPrecioAdmin(subtotal)}</li>`;
+}
+
+function filaPedidoHTML(p) {
+  const cantidadItems = (p.items || []).reduce((t, i) => t + i.cantidad, 0);
+  const estado = ETIQUETAS_ESTADO_PEDIDO[p.estado] ? p.estado : "pendiente";
+  return `
+    <tr>
+      <td>${p.id}</td>
+      <td>${p.cliente.nombre}</td>
+      <td>${formatearFechaPedido(p.creadoEn)}</td>
+      <td>${cantidadItems}</td>
+      <td>${formatearPrecioAdmin(p.total)}</td>
+      <td><span class="estado-pago ${estado}" style="margin-bottom:0;">${ETIQUETAS_ESTADO_PEDIDO[estado]}</span></td>
+      <td><button type="button" class="btn-ver-pedido" data-id="${p.id}">Ver</button></td>
+    </tr>
+    <tr class="fila-detalle-pedido oculto" data-detalle="${p.id}">
+      <td colspan="7">
+        <div class="detalle-pedido">
+          <div>
+            <strong>Cliente</strong>
+            <p>
+              ${p.cliente.nombre}<br>
+              WhatsApp: ${p.cliente.whatsapp}<br>
+              ${p.cliente.ciudad} — ${p.cliente.direccion}<br>
+              ${p.cliente.correo}
+            </p>
+          </div>
+          <div>
+            <strong>Ítems</strong>
+            <ul>${(p.items || []).map(filaItemHTML).join("")}</ul>
+          </div>
+          <div>
+            <strong>Comprobante</strong>
+            ${vistaComprobante(p.comprobanteUrl)}
+          </div>
+        </div>
+        <div class="acciones-pedido">
+          <button type="button" class="btn btn-dorado" data-marcar="${p.id}" data-estado="aprobado" ${p.estado === "aprobado" ? "disabled" : ""}>
+            ✓ Marcar como aprobado
+          </button>
+          <button type="button" class="btn btn-borde" data-marcar="${p.id}" data-estado="rechazado" ${p.estado === "rechazado" ? "disabled" : ""}>
+            ✕ Marcar como rechazado
+          </button>
+          ${p.estado !== "pendiente" ? `<button type="button" class="btn btn-borde" data-marcar="${p.id}" data-estado="pendiente">↺ Volver a pendiente</button>` : ""}
+        </div>
+      </td>
+    </tr>
+  `;
+}
+
+async function cargarPedidos() {
+  const cuerpo = document.getElementById("cuerpo-tabla-pedidos");
+  const mensaje = document.getElementById("mensaje-tabla");
+
+  try {
+    const r = await fetch("/api/admin/pedidos");
+    if (r.status === 401) {
+      window.location.href = "/admin/login.html";
+      return;
+    }
+    const pedidos = await r.json();
+
+    if (pedidos.length === 0) {
+      cuerpo.innerHTML = `<tr><td colspan="7" class="tabla-vacia">Todavía no hay pedidos.</td></tr>`;
+      return;
+    }
+
+    cuerpo.innerHTML = pedidos.map(filaPedidoHTML).join("");
+  } catch (err) {
+    mensaje.textContent = "No se pudo cargar el listado de pedidos.";
+    mensaje.className = "mensaje-admin error";
+  }
+}
+
+document.getElementById("cuerpo-tabla-pedidos").addEventListener("click", async (e) => {
+  const botonVer = e.target.closest("button.btn-ver-pedido");
+  if (botonVer) {
+    const id = botonVer.getAttribute("data-id");
+    const filaDetalle = document.querySelector(`tr[data-detalle="${id}"]`);
+    if (!filaDetalle) return;
+    const abierta = !filaDetalle.classList.contains("oculto");
+    filaDetalle.classList.toggle("oculto", abierta);
+    botonVer.textContent = abierta ? "Ver" : "Ocultar";
+    return;
+  }
+
+  const botonMarcar = e.target.closest("button[data-marcar]");
+  if (botonMarcar) {
+    const id = botonMarcar.getAttribute("data-marcar");
+    const estado = botonMarcar.getAttribute("data-estado");
+    botonMarcar.disabled = true;
+    try {
+      const r = await fetch(`/api/admin/pedidos/${encodeURIComponent(id)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ estado }),
+      });
+      if (!r.ok) throw new Error("no se pudo actualizar");
+      await cargarPedidos();
+      const filaDetalle = document.querySelector(`tr[data-detalle="${id}"]`);
+      if (filaDetalle) filaDetalle.classList.remove("oculto");
+    } catch (err) {
+      alert("No se pudo actualizar el estado del pedido.");
+      botonMarcar.disabled = false;
+    }
+  }
+});
+
+renderAdminSidebar("pedidos");
+
+(async () => {
+  const autenticado = await exigirSesion();
+  if (autenticado) cargarPedidos();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "name": "catalogo-dinar3dwx",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Catálogo de modelos para joyeros de Dinar 3D Wax, con carrito, checkout y pago por transferencia bancaria.",
+  "engines": {
+    "node": "24.x"
+  },
+  "scripts": {
+    "db:migrate": "node scripts/migrar-db.js"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.0.2",
+    "@vercel/blob": "^2.8.0"
+  }
+}

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dinar 3D Wax · Catálogo para joyeros</title>
+<link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+
+<header class="cabecera">
+  <div class="contenedor">
+    <a href="index.html" class="marca">
+      <span class="logo">DINAR 3D WAX</span>
+      <span class="subtitulo">Catálogo de modelos</span>
+    </a>
+    <nav class="nav-principal">
+      <a href="index.html">Catálogo</a>
+      <a href="calculadora.html">Calculadora</a>
+      <a href="index.html#recursos">Recursos</a>
+      <a href="index.html#faq">Preguntas frecuentes</a>
+    </nav>
+    <div class="acciones-cabecera">
+      <form id="form-busqueda-rapida" class="buscador-rapido">
+        <span>🔎</span>
+        <input type="text" id="campo-busqueda-rapida" placeholder="Buscar referencia">
+      </form>
+      <a href="carrito.html" class="carrito-boton">🛒 Carrito (<span data-contador-carrito>0</span>)</a>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="contenedor">
+    <h1>Catálogo para joyeros</h1>
+    <p>Modelos en cera casteable listos para producción</p>
+  </div>
+</section>
+
+<div class="contenedor">
+  <div class="bloque-buscador-ref" style="margin-top: 32px;">
+    <h2>¿Ya tienes la referencia?</h2>
+    <form id="form-busqueda-referencia" class="fila-buscador-ref">
+      <input type="text" id="campo-busqueda-referencia" placeholder="Escribe: AN-025">
+      <button type="submit" class="btn btn-dorado">Buscar</button>
+    </form>
+    <div id="mensaje-busqueda-ref" class="mensaje-buscador"></div>
+  </div>
+
+  <div class="zona-catalogo">
+    <aside class="panel-filtros">
+      <h3>Filtros</h3>
+      <label class="opcion-filtro">
+        <input type="radio" name="filtro-categoria" id="cat-todos" value="todos" checked>
+        Todos
+      </label>
+      <label class="opcion-filtro">
+        <input type="radio" name="filtro-categoria" value="anillos"> Anillos
+      </label>
+      <label class="opcion-filtro">
+        <input type="radio" name="filtro-categoria" value="dijes"> Dijes
+      </label>
+      <label class="opcion-filtro">
+        <input type="radio" name="filtro-categoria" value="aretes"> Aretes
+      </label>
+      <label class="opcion-filtro">
+        <input type="radio" name="filtro-categoria" value="cadenas"> Cadenas
+      </label>
+      <label class="opcion-filtro">
+        <input type="radio" name="filtro-categoria" value="pulseras"> Pulseras
+      </label>
+
+      <h3>Peso</h3>
+      <div class="rango-filtro">
+        0 g – <output id="salida-peso">20 g</output>
+        <input type="range" id="filtro-peso" min="0" max="20" step="0.5" value="20">
+      </div>
+
+      <h3>Volumen</h3>
+      <div class="rango-filtro">
+        0 cm³ – <output id="salida-volumen">5 cm³</output>
+        <input type="range" id="filtro-volumen" min="0" max="5" step="0.1" value="5">
+      </div>
+
+      <button type="button" id="btn-limpiar-filtros" class="btn-limpiar-filtros">Limpiar filtros</button>
+    </aside>
+
+    <div id="resultado-catalogo"></div>
+  </div>
+</div>
+
+<section id="recursos" class="seccion-recursos">
+  <div class="contenedor">
+    <h2 class="titulo-seccion">Recursos para joyeros</h2>
+    <div class="grid-recursos">
+      <div class="tarjeta-recurso">
+        <span class="icono">📄</span>
+        <span class="titulo">Guía de tallas</span>
+        <a href="pdf/guias/guia-tallas.pdf" target="_blank" rel="noopener">Descargar PDF</a>
+      </div>
+      <div class="tarjeta-recurso">
+        <span class="icono">📄</span>
+        <span class="titulo">Guía de medidas</span>
+        <a href="pdf/guias/guia-medidas.pdf" target="_blank" rel="noopener">Descargar PDF</a>
+      </div>
+      <div class="tarjeta-recurso">
+        <span class="icono">📄</span>
+        <span class="titulo">Especificaciones STL</span>
+        <a href="pdf/guias/especificaciones-stl.pdf" target="_blank" rel="noopener">Descargar PDF</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="faq" class="seccion-faq">
+  <div class="contenedor">
+    <h2 class="titulo-seccion">Preguntas frecuentes</h2>
+
+    <details class="item-faq">
+      <summary>¿Cuánto tarda mi pedido?</summary>
+      <p>Los tiempos de entrega dependen de la cantidad de piezas y la complejidad del modelo. Te confirmamos el tiempo estimado al recibir tu pedido.</p>
+    </details>
+    <details class="item-faq">
+      <summary>¿Qué archivos puedo enviar?</summary>
+      <p>Aceptamos archivos STL, OBJ y 3DM para la fabricación de modelos personalizados.</p>
+    </details>
+    <details class="item-faq">
+      <summary>¿Qué formatos manejan?</summary>
+      <p>Trabajamos principalmente en cera casteable rosa y verde, según el tipo de pieza.</p>
+    </details>
+    <details class="item-faq">
+      <summary>¿Hacen envíos nacionales?</summary>
+      <p>Sí, realizamos envíos a nivel nacional a través de transportadoras aliadas.</p>
+    </details>
+    <details class="item-faq">
+      <summary>¿Cómo funcionan las garantías?</summary>
+      <p>Toda pieza con defectos de fabricación puede ser reportada dentro de los primeros 5 días hábiles tras la entrega.</p>
+    </details>
+    <details class="item-faq">
+      <summary>¿Cómo calculan el precio?</summary>
+      <p>El precio se calcula según el peso estimado de la pieza (equivalente en oro 18k) y su volumen. Puedes usar nuestra <a href="calculadora.html">calculadora de servicio</a> para estimarlo.</p>
+    </details>
+  </div>
+</section>
+
+<footer class="pie-pagina">
+  <div class="contenedor">
+    Dinar 3D Wax · Catálogo de modelos para joyeros
+  </div>
+</footer>
+
+<script src="js/productos.js"></script>
+<script src="js/carrito.js"></script>
+<script src="js/catalogo.js"></script>
+</body>
+</html>

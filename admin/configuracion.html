@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Configuración · Panel Dinar 3D Wax</title>
+<link rel="stylesheet" href="/css/estilos.css">
+</head>
+<body>
+
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <a href="/admin/index.html" class="admin-sidebar-marca">
+      <span class="logo">DINAR 3D WAX</span>
+      <span class="subtitulo">Panel de administración</span>
+    </a>
+    <nav id="admin-sidebar-nav" class="admin-sidebar-nav"></nav>
+    <div class="admin-sidebar-pie">
+      <a href="/index.html" target="_blank" rel="noopener">Ver catálogo ↗</a>
+      <button type="button" id="btn-cerrar-sesion">Salir</button>
+    </div>
+  </aside>
+
+  <main class="admin-main" style="max-width:520px;">
+    <h1 class="titulo-seccion" style="margin-top:0;">Configuración</h1>
+
+    <form id="form-configuracion" class="formulario-datos">
+      <label for="whatsappNumero">Número de WhatsApp</label>
+      <input type="text" id="whatsappNumero" placeholder="Ej: 573001234567" required>
+      <p style="color:var(--gris); font-size:0.78rem; margin:4px 0 0;">
+        Con indicativo de país, solo números (sin +, espacios ni guiones). Es el número al que llega el botón "Enviar confirmación por WhatsApp" de cada pedido.
+      </p>
+
+      <label for="divisorPesoOro18k" style="margin-top:20px;">Divisor de la calculadora</label>
+      <input type="number" id="divisorPesoOro18k" min="0.01" step="0.01" required>
+      <p style="color:var(--gris); font-size:0.78rem; margin:4px 0 0;">
+        El peso ingresado (equivalente en oro 18k) se divide por este número para obtener el peso en cera.
+      </p>
+
+      <label for="precioPorGramoCera" style="margin-top:20px;">Precio por gramo (cera)</label>
+      <input type="number" id="precioPorGramoCera" min="1" step="100" required>
+      <p style="color:var(--gris); font-size:0.78rem; margin:4px 0 0;">
+        El peso en cera (ya dividido) se multiplica por este valor para obtener el precio final.
+      </p>
+
+      <div class="tarjeta-stat" style="margin-top:20px;">
+        <div class="etiqueta" style="margin-bottom:8px;">Vista previa con peso = 10 g</div>
+        <div id="vista-previa-formula" style="font-size:0.95rem;"></div>
+      </div>
+
+      <h2 class="titulo-seccion" style="font-size:0.9rem; margin-top:28px;">Cuenta para transferencias</h2>
+      <p style="color:var(--gris); font-size:0.82rem; margin-top:-8px;">
+        Estos datos se muestran a los clientes en el checkout para que hagan la transferencia.
+      </p>
+
+      <label for="bancoNombre">Banco</label>
+      <input type="text" id="bancoNombre" placeholder="Ej: Bancolombia" required>
+
+      <label for="bancoTipoCuenta" style="margin-top:14px;">Tipo de cuenta</label>
+      <select id="bancoTipoCuenta" required>
+        <option value="Ahorros">Ahorros</option>
+        <option value="Corriente">Corriente</option>
+      </select>
+
+      <label for="bancoNumeroCuenta" style="margin-top:14px;">Número de cuenta</label>
+      <input type="text" id="bancoNumeroCuenta" placeholder="Ej: 000-000000-00" required>
+
+      <label for="bancoTitular" style="margin-top:14px;">Titular de la cuenta</label>
+      <input type="text" id="bancoTitular" placeholder="Nombre completo o razón social" required>
+
+      <label for="bancoDocumento" style="margin-top:14px;">Documento del titular</label>
+      <input type="text" id="bancoDocumento" placeholder="Cédula o NIT" required>
+
+      <button type="submit" class="btn btn-dorado btn-full" style="margin-top:20px;">Guardar configuración</button>
+      <p id="mensaje-formulario" class="mensaje-admin"></p>
+    </form>
+  </main>
+</div>
+
+<script src="/admin/js/admin.js"></script>
+<script src="/admin/js/layout.js"></script>
+<script>
+function actualizarVistaPrevia() {
+  const divisor = parseFloat(document.getElementById("divisorPesoOro18k").value) || 0;
+  const precioGramo = parseFloat(document.getElementById("precioPorGramoCera").value) || 0;
+  const contenedor = document.getElementById("vista-previa-formula");
+
+  if (divisor <= 0 || precioGramo <= 0) {
+    contenedor.textContent = "Completa el divisor y el precio por gramo para ver el ejemplo.";
+    return;
+  }
+
+  const pesoCera = Math.trunc((10 / divisor) * 100) / 100;
+  const precio = Math.round(pesoCera * precioGramo);
+  contenedor.innerHTML = `10 g ÷ ${divisor} = <strong>${pesoCera}</strong> g en cera → <strong>${formatearPrecioAdmin(precio)}</strong>`;
+}
+
+document.getElementById("divisorPesoOro18k").addEventListener("input", actualizarVistaPrevia);
+document.getElementById("precioPorGramoCera").addEventListener("input", actualizarVistaPrevia);
+
+async function cargarConfiguracion() {
+  const mensaje = document.getElementById("mensaje-formulario");
+  try {
+    const r = await fetch("/api/admin/configuracion");
+    if (r.status === 401) {
+      window.location.href = "/admin/login.html";
+      return;
+    }
+    const config = await r.json();
+    document.getElementById("whatsappNumero").value = config.whatsappNumero;
+    document.getElementById("divisorPesoOro18k").value = config.divisorPesoOro18k;
+    document.getElementById("precioPorGramoCera").value = config.precioPorGramoCera;
+    document.getElementById("bancoNombre").value = config.bancoNombre;
+    document.getElementById("bancoTipoCuenta").value = config.bancoTipoCuenta;
+    document.getElementById("bancoNumeroCuenta").value = config.bancoNumeroCuenta;
+    document.getElementById("bancoTitular").value = config.bancoTitular;
+    document.getElementById("bancoDocumento").value = config.bancoDocumento;
+    actualizarVistaPrevia();
+  } catch (err) {
+    mensaje.textContent = "No se pudo cargar la configuración.";
+    mensaje.className = "mensaje-admin error";
+  }
+}
+
+document.getElementById("form-configuracion").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const mensaje = document.getElementById("mensaje-formulario");
+  mensaje.textContent = "";
+  mensaje.className = "mensaje-admin";
+
+  const cuerpo = {
+    whatsappNumero: document.getElementById("whatsappNumero").value,
+    divisorPesoOro18k: document.getElementById("divisorPesoOro18k").value,
+    precioPorGramoCera: document.getElementById("precioPorGramoCera").value,
+    bancoNombre: document.getElementById("bancoNombre").value,
+    bancoTipoCuenta: document.getElementById("bancoTipoCuenta").value,
+    bancoNumeroCuenta: document.getElementById("bancoNumeroCuenta").value,
+    bancoTitular: document.getElementById("bancoTitular").value,
+    bancoDocumento: document.getElementById("bancoDocumento").value,
+  };
+
+  try {
+    const r = await fetch("/api/admin/configuracion", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(cuerpo),
+    });
+    const datos = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      mensaje.textContent = datos.error || "No se pudo guardar la configuración.";
+      mensaje.className = "mensaje-admin error";
+      return;
+    }
+    mensaje.textContent = "Configuración guardada correctamente.";
+    mensaje.className = "mensaje-admin ok";
+  } catch (err) {
+    mensaje.textContent = "Error de conexión. Intenta de nuevo.";
+    mensaje.className = "mensaje-admin error";
+  }
+});
+
+renderAdminSidebar("configuracion");
+
+(async () => {
+  const autenticado = await exigirSesion();
+  if (autenticado) cargarConfiguracion();
+})();
+</script>
+</body>
+</html>

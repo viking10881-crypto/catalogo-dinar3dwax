@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi carrito · Dinar 3D Wax</title>
+<link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+
+<header class="cabecera">
+  <div class="contenedor">
+    <a href="index.html" class="marca">
+      <span class="logo">DINAR 3D WAX</span>
+      <span class="subtitulo">Catálogo de modelos</span>
+    </a>
+    <nav class="nav-principal">
+      <a href="index.html">Catálogo</a>
+      <a href="calculadora.html">Calculadora</a>
+      <a href="index.html#recursos">Recursos</a>
+      <a href="index.html#faq">Preguntas frecuentes</a>
+    </nav>
+    <div class="acciones-cabecera">
+      <form id="form-busqueda-rapida" class="buscador-rapido">
+        <span>🔎</span>
+        <input type="text" id="campo-busqueda-rapida" placeholder="Buscar referencia">
+      </form>
+      <a href="carrito.html" class="carrito-boton">🛒 Carrito (<span data-contador-carrito>0</span>)</a>
+    </div>
+  </div>
+</header>
+
+<div class="contenedor pagina-carrito">
+  <h1 class="titulo-seccion">Mi carrito</h1>
+
+  <div id="carrito-vacio" class="carrito-vacio oculto">
+    <p>Tu carrito está vacío.</p>
+    <a href="index.html" class="btn btn-dorado">Ver catálogo</a>
+  </div>
+
+  <div id="lista-carrito"></div>
+
+  <div id="resumen-pedido" class="resumen-pedido">
+    <div class="linea">
+      <span>Subtotal</span>
+      <span data-subtotal>$0</span>
+    </div>
+    <div class="linea total">
+      <span>Total</span>
+      <span data-total>$0</span>
+    </div>
+    <a href="checkout.html" class="btn btn-oscuro btn-full" style="margin-top:16px;">Continuar compra</a>
+  </div>
+</div>
+
+<footer class="pie-pagina">
+  <div class="contenedor">
+    Dinar 3D Wax · Catálogo de modelos para joyeros
+  </div>
+</footer>
+
+<script src="js/productos.js"></script>
+<script src="js/carrito.js"></script>
+<script src="js/catalogo.js"></script>
+</body>
+</html>

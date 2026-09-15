@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pedido recibido · Dinar 3D Wax</title>
+<link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+
+<header class="cabecera">
+  <div class="contenedor">
+    <a href="index.html" class="marca">
+      <span class="logo">DINAR 3D WAX</span>
+      <span class="subtitulo">Catálogo de modelos</span>
+    </a>
+  </div>
+</header>
+
+<div class="contenedor">
+  <p id="confirmacion-cargando" style="text-align:center; padding:60px 0; color:var(--gris);">
+    Verificando tu pedido...
+  </p>
+
+  <div id="confirmacion-error" class="pagina-confirmacion oculto">
+    <h1>No encontramos tu pedido</h1>
+    <p>Si ya realizaste el pago, escríbenos por WhatsApp con el número de referencia de tu compra.</p>
+    <a href="index.html" class="btn btn-dorado" style="margin-top:16px;">Volver al catálogo</a>
+  </div>
+
+  <div id="confirmacion-contenido" class="pagina-confirmacion oculto">
+    <div class="icono-check">✓</div>
+    <h1>Pedido recibido</h1>
+    <p id="mensaje-estado-orden">¡Gracias por tu compra!</p>
+
+    <p style="color:var(--gris); margin-bottom:2px;">Número de orden</p>
+    <div id="numero-orden" class="numero-orden"></div>
+
+    <p style="color:var(--gris); margin-bottom:2px;">Estado</p>
+    <span id="estado-orden" class="estado-pago"></span>
+
+    <p style="color:var(--gris); margin: 16px 0 2px;">Total</p>
+    <div id="total-orden" class="numero-orden"></div>
+
+    <a id="btn-whatsapp" href="#" target="_blank" rel="noopener" class="btn btn-whatsapp btn-full">
+      Enviar comprobante por WhatsApp
+    </a>
+
+    <a href="index.html" class="btn btn-borde btn-full" style="margin-top:10px;">Seguir viendo el catálogo</a>
+  </div>
+</div>
+
+<footer class="pie-pagina">
+  <div class="contenedor">
+    Dinar 3D Wax · Catálogo de modelos para joyeros
+  </div>
+</footer>
+
+<script src="js/productos.js"></script>
+<script src="js/carrito.js"></script>
+<script src="js/confirmacion.js"></script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel · Dinar 3D Wax</title>
+<link rel="stylesheet" href="/css/estilos.css">
+</head>
+<body>
+
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <a href="/admin/index.html" class="admin-sidebar-marca">
+      <span class="logo">DINAR 3D WAX</span>
+      <span class="subtitulo">Panel de administración</span>
+    </a>
+    <nav id="admin-sidebar-nav" class="admin-sidebar-nav"></nav>
+    <div class="admin-sidebar-pie">
+      <a href="/index.html" target="_blank" rel="noopener">Ver catálogo ↗</a>
+      <button type="button" id="btn-cerrar-sesion">Salir</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <h1 class="titulo-seccion" style="margin-top:0;">Inicio</h1>
+    <p style="color:var(--gris); margin-top:-8px;">Resumen del catálogo de Dinar 3D Wax.</p>
+
+    <div id="grid-stats" class="grid-stats"></div>
+
+    <h2 class="titulo-seccion" style="font-size:0.95rem;">Secciones</h2>
+    <div class="grid-accesos">
+      <a href="/admin/productos.html" class="tarjeta-acceso" style="text-decoration:none; color:inherit;">
+        <span class="titulo">💍 Productos</span>
+        <span class="descripcion">Crear, editar y eliminar referencias del catálogo — precios, medidas, imágenes y archivos STL.</span>
+        <span class="btn btn-dorado" style="align-self:flex-start;">Ir a productos</span>
+      </a>
+      <a href="/admin/pedidos.html" class="tarjeta-acceso" style="text-decoration:none; color:inherit;">
+        <span class="titulo">🧾 Pedidos</span>
+        <span class="descripcion">Ver los pedidos recibidos, sus datos de entrega y su estado de pago.</span>
+        <span class="btn btn-dorado" style="align-self:flex-start;">Ir a pedidos</span>
+      </a>
+      <a href="/admin/configuracion.html" class="tarjeta-acceso" style="text-decoration:none; color:inherit;">
+        <span class="titulo">⚙️ Configuración</span>
+        <span class="descripcion">Número de WhatsApp y la fórmula de precio de la calculadora.</span>
+        <span class="btn btn-dorado" style="align-self:flex-start;">Ir a configuración</span>
+      </a>
+    </div>
+  </main>
+</div>
+
+<script src="/admin/js/admin.js"></script>
+<script src="/admin/js/layout.js"></script>
+<script>
+async function cargarStats() {
+  const grid = document.getElementById("grid-stats");
+  try {
+    const [rProductos, rPedidos] = await Promise.all([
+      fetch("/api/admin/productos"),
+      fetch("/api/admin/pedidos"),
+    ]);
+    if (rProductos.status === 401 || rPedidos.status === 401) {
+      window.location.href = "/admin/login.html";
+      return;
+    }
+    const productos = await rProductos.json();
+    const pedidos = await rPedidos.json();
+
+    const conImagenes = productos.filter((p) => p.imagenes && p.imagenes.length > 0).length;
+    const conStl = productos.filter((p) => p.modeloStl).length;
+    const categorias = new Set(productos.map((p) => p.tipo)).size;
+    const pedidosPendientes = pedidos.filter((p) => p.estado === "pendiente").length;
+
+    const tarjetas = [
+      { valor: productos.length, etiqueta: "Productos totales" },
+      { valor: categorias, etiqueta: "Categorías con productos" },
+      { valor: conImagenes, etiqueta: "Con imágenes" },
+      { valor: conStl, etiqueta: "Con archivo STL" },
+      { valor: pedidos.length, etiqueta: "Pedidos totales" },
+      { valor: pedidosPendientes, etiqueta: "Pedidos pendientes" },
+    ];
+
+    grid.innerHTML = tarjetas
+      .map((t) => `<div class="tarjeta-stat"><div class="valor">${t.valor}</div><div class="etiqueta">${t.etiqueta}</div></div>`)
+      .join("");
+  } catch (err) {
+    grid.innerHTML = `<p class="mensaje-admin error">No se pudieron cargar las estadísticas.</p>`;
+  }
+}
+
+renderAdminSidebar("inicio");
+
+(async () => {
+  const autenticado = await exigirSesion();
+  if (autenticado) cargarStats();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ficha de producto · Dinar 3D Wax</title>
+<link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+
+<header class="cabecera">
+  <div class="contenedor">
+    <a href="index.html" class="marca">
+      <span class="logo">DINAR 3D WAX</span>
+      <span class="subtitulo">Catálogo de modelos</span>
+    </a>
+    <nav class="nav-principal">
+      <a href="index.html">Catálogo</a>
+      <a href="calculadora.html">Calculadora</a>
+      <a href="index.html#recursos">Recursos</a>
+      <a href="index.html#faq">Preguntas frecuentes</a>
+    </nav>
+    <div class="acciones-cabecera">
+      <form id="form-busqueda-rapida" class="buscador-rapido">
+        <span>🔎</span>
+        <input type="text" id="campo-busqueda-rapida" placeholder="Buscar referencia">
+      </form>
+      <a href="carrito.html" class="carrito-boton">🛒 Carrito (<span data-contador-carrito>0</span>)</a>
+    </div>
+  </div>
+</header>
+
+<div class="contenedor">
+
+  <div id="producto-no-encontrado" class="carrito-vacio oculto">
+    <p>No encontramos esa referencia en el catálogo.</p>
+    <a href="index.html" class="btn btn-dorado">Volver al catálogo</a>
+  </div>
+
+  <div id="ficha-producto" class="ficha-producto">
+    <div class="columna-galeria">
+      <div id="ficha-render" class="ficha-render"></div>
+      <div id="galeria-miniaturas" class="galeria-miniaturas oculto"></div>
+    </div>
+
+    <div class="ficha-info">
+      <div id="ficha-ref" class="ref"></div>
+      <h1 id="ficha-nombre"></h1>
+      <p id="ficha-descripcion" class="descripcion"></p>
+
+      <table class="tabla-specs">
+        <tbody id="tabla-specs"></tbody>
+      </table>
+
+      <div id="bloque-talla" class="selector-bloque">
+        <label>Selecciona la talla</label>
+        <div id="opciones-talla" class="opciones-talla"></div>
+      </div>
+
+      <div class="selector-bloque">
+        <label>Cantidad</label>
+        <div class="contador">
+          <button type="button" id="btn-menos-ficha">−</button>
+          <input type="number" id="cantidad-ficha" min="1" value="1">
+          <button type="button" id="btn-mas-ficha">+</button>
+        </div>
+      </div>
+
+      <div class="selector-bloque">
+        <label>Precio</label>
+        <div id="precio-ficha" class="precio-total"></div>
+      </div>
+
+      <button type="button" id="btn-agregar-carrito" class="btn btn-dorado btn-full">Añadir al carrito</button>
+    </div>
+  </div>
+
+  <section id="seccion-visor-stl" class="seccion-visor-stl oculto">
+    <h2 class="titulo-seccion">Vista 3D del modelo</h2>
+    <p class="ayuda-visor">Arrastra para rotar, rueda del mouse para acercar/alejar.</p>
+    <div id="contenedor-visor-stl" class="contenedor-visor-stl"></div>
+  </section>
+</div>
+
+<footer class="pie-pagina">
+  <div class="contenedor">
+    Dinar 3D Wax · Catálogo de modelos para joyeros
+  </div>
+</footer>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+  }
+}
+</script>
+<script src="js/productos.js"></script>
+<script src="js/carrito.js"></script>
+<script src="js/catalogo.js"></script>
+<script type="module" src="js/visor-stl.js"></script>
+<script src="js/producto.js"></script>
+</body>
+</html>

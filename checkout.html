@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finalizar compra · Dinar 3D Wax</title>
+<link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+
+<header class="cabecera">
+  <div class="contenedor">
+    <a href="index.html" class="marca">
+      <span class="logo">DINAR 3D WAX</span>
+      <span class="subtitulo">Catálogo de modelos</span>
+    </a>
+    <nav class="nav-principal">
+      <a href="index.html">Catálogo</a>
+      <a href="calculadora.html">Calculadora</a>
+      <a href="index.html#recursos">Recursos</a>
+      <a href="index.html#faq">Preguntas frecuentes</a>
+    </nav>
+    <div class="acciones-cabecera">
+      <a href="carrito.html" class="carrito-boton">🛒 Carrito (<span data-contador-carrito>0</span>)</a>
+    </div>
+  </div>
+</header>
+
+<div class="contenedor pagina-checkout">
+  <div>
+    <h1 class="titulo-seccion">Datos de entrega</h1>
+    <form id="form-checkout" class="formulario-datos" novalidate>
+      <label for="nombre">Nombre completo</label>
+      <input type="text" id="nombre" name="nombre" required>
+      <div class="error-campo">Este campo es obligatorio</div>
+
+      <label for="whatsapp">WhatsApp</label>
+      <input type="tel" id="whatsapp" name="whatsapp" required>
+      <div class="error-campo">Este campo es obligatorio</div>
+
+      <label for="ciudad">Ciudad</label>
+      <input type="text" id="ciudad" name="ciudad" required>
+      <div class="error-campo">Este campo es obligatorio</div>
+
+      <label for="direccion">Dirección</label>
+      <input type="text" id="direccion" name="direccion" required>
+      <div class="error-campo">Este campo es obligatorio</div>
+
+      <label for="correo">Correo electrónico</label>
+      <input type="email" id="correo" name="correo" required>
+      <div class="error-campo">Este campo es obligatorio</div>
+    </form>
+  </div>
+
+  <div>
+    <div class="resumen-pedido" id="resumen-pedido-checkout">
+      <h2 class="titulo-seccion" style="font-size:0.95rem;">Resumen del pedido</h2>
+      <div id="resumen-items-checkout"></div>
+      <div class="linea total">
+        <span>Total</span>
+        <span id="total-checkout">$0</span>
+      </div>
+    </div>
+
+    <div class="resumen-pedido" style="margin-top:20px;">
+      <h2 class="titulo-seccion" style="font-size:0.95rem;">Datos para tu transferencia</h2>
+      <div id="datos-banco"></div>
+      <p style="color:var(--gris); font-size:0.82rem; margin-top:10px;">
+        Realiza la transferencia por el total del pedido y sube tu comprobante para confirmarlo. Verificaremos el pago y te avisaremos por WhatsApp.
+      </p>
+
+      <label for="archivo-comprobante" style="margin-top:16px;">Comprobante de la transferencia (JPG, PNG o PDF, máx. 8 MB)</label>
+      <input type="file" id="archivo-comprobante" accept="image/jpeg,image/png,application/pdf">
+      <p id="mensaje-comprobante" class="mensaje-admin"></p>
+
+      <button type="submit" form="form-checkout" id="btn-confirmar-pedido" class="btn btn-dorado btn-full" style="margin-top:16px;" disabled>
+        Confirmar pedido
+      </button>
+      <p id="mensaje-error-checkout" style="color:#b23b3b; font-size:0.82rem; margin-top:10px;"></p>
+    </div>
+  </div>
+</div>
+
+<footer class="pie-pagina">
+  <div class="contenedor">
+    Dinar 3D Wax · Catálogo de modelos para joyeros
+  </div>
+</footer>
+
+<script src="js/productos.js"></script>
+<script src="js/carrito.js"></script>
+<script src="js/checkout.js"></script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de servicio · Dinar 3D Wax</title>
+<link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+
+<header class="cabecera">
+  <div class="contenedor">
+    <a href="index.html" class="marca">
+      <span class="logo">DINAR 3D WAX</span>
+      <span class="subtitulo">Catálogo de modelos</span>
+    </a>
+    <nav class="nav-principal">
+      <a href="index.html">Catálogo</a>
+      <a href="calculadora.html">Calculadora</a>
+      <a href="index.html#recursos">Recursos</a>
+      <a href="index.html#faq">Preguntas frecuentes</a>
+    </nav>
+    <div class="acciones-cabecera">
+      <form id="form-busqueda-rapida" class="buscador-rapido">
+        <span>🔎</span>
+        <input type="text" id="campo-busqueda-rapida" placeholder="Buscar referencia">
+      </form>
+      <a href="carrito.html" class="carrito-boton">🛒 Carrito (<span data-contador-carrito>0</span>)</a>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="contenedor">
+    <h1>Calcula tu servicio</h1>
+    <p>Estima el precio de una pieza a partir de su volumen y peso estimado (equivalente en oro 18k)</p>
+  </div>
+</section>
+
+<div class="contenedor" style="padding: 32px 0 60px;">
+  <form id="form-calculadora" class="tarjeta-calculadora">
+    <h2>Calcula tu servicio</h2>
+
+    <div class="campo-calc">
+      <label for="calc-volumen">Volumen de la pieza (cm³)</label>
+      <input type="number" id="calc-volumen" min="0" step="0.01" value="0.45">
+    </div>
+
+    <div class="campo-calc">
+      <label for="calc-peso">Peso estimado (g, equivalente oro 18k)</label>
+      <input type="number" id="calc-peso" min="0" step="0.01" value="4.35">
+    </div>
+
+    <div class="campo-calc">
+      <label for="calc-cantidad">Cantidad</label>
+      <div class="contador">
+        <button type="button" id="calc-btn-menos">−</button>
+        <input type="number" id="calc-cantidad" min="1" value="1">
+        <button type="button" id="calc-btn-mas">+</button>
+      </div>
+    </div>
+
+    <hr class="separador-calc">
+
+    <div class="resumen-calc">
+      <span>Precio por pieza</span>
+      <span id="calc-precio-pieza"></span>
+    </div>
+    <div class="resumen-calc">
+      <span>Cantidad</span>
+      <span id="calc-cantidad-resumen"></span>
+    </div>
+    <div class="resumen-calc total">
+      <span>Total</span>
+      <span id="calc-total"></span>
+    </div>
+
+    <button type="button" id="btn-agregar-calculadora" class="btn btn-dorado btn-full" style="margin-top: 18px;">
+      Añadir al carrito
+    </button>
+  </form>
+
+  <p style="max-width:420px; margin-left:auto; margin-right:auto; text-align:center; color:var(--gris); font-size:0.85rem; margin-top:16px;">
+    ¿Ya tienes el modelo en nuestro catálogo? <a href="index.html">Búscalo por referencia</a> para ver el precio exacto.
+  </p>
+</div>
+
+<footer class="pie-pagina">
+  <div class="contenedor">
+    Dinar 3D Wax · Catálogo de modelos para joyeros
+  </div>
+</footer>
+
+<script src="js/productos.js"></script>
+<script src="js/carrito.js"></script>
+<script src="js/catalogo.js"></script>
+<script src="js/calculadora.js"></script>
+</body>
+</html>

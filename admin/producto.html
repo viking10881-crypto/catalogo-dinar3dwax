@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Producto · Panel Dinar 3D Wax</title>
+<link rel="stylesheet" href="/css/estilos.css">
+</head>
+<body>
+
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <a href="/admin/index.html" class="admin-sidebar-marca">
+      <span class="logo">DINAR 3D WAX</span>
+      <span class="subtitulo">Panel de administración</span>
+    </a>
+    <nav id="admin-sidebar-nav" class="admin-sidebar-nav"></nav>
+    <div class="admin-sidebar-pie">
+      <a href="/index.html" target="_blank" rel="noopener">Ver catálogo ↗</a>
+      <button type="button" id="btn-cerrar-sesion">Salir</button>
+    </div>
+  </aside>
+
+  <main class="admin-main" style="max-width:640px;">
+  <div class="admin-cabecera-fila">
+    <h1 class="titulo-seccion" id="titulo-formulario" style="margin:0;">Nuevo producto</h1>
+    <a href="/admin/productos.html" class="btn btn-borde">Volver al listado</a>
+  </div>
+
+  <form id="form-producto" class="formulario-datos">
+    <label for="referencia">Referencia</label>
+    <input type="text" id="referencia" placeholder="Ej: AN-052" required>
+
+    <label for="tipo">Categoría</label>
+    <select id="tipo" required>
+      <option value="">Selecciona una categoría</option>
+      <option value="anillos">Anillos</option>
+      <option value="dijes">Dijes</option>
+      <option value="aretes">Aretes</option>
+      <option value="cadenas">Cadenas</option>
+      <option value="pulseras">Pulseras</option>
+    </select>
+
+    <label for="nombre">Nombre</label>
+    <input type="text" id="nombre" placeholder="Ej: Anillo modelo clásico" required>
+
+    <label for="descripcion">Descripción</label>
+    <textarea id="descripcion" rows="3" placeholder="Descripción breve del modelo"></textarea>
+
+    <label for="peso">Peso estimado (g, equivalente oro 18k)</label>
+    <input type="number" id="peso" min="0" step="0.01" required>
+
+    <label for="volumen">Volumen (cm³)</label>
+    <input type="number" id="volumen" min="0" step="0.01" required>
+
+    <label for="precioBase">Precio (COP)</label>
+    <input type="number" id="precioBase" min="0" step="100" required>
+
+    <label for="material">Material</label>
+    <input type="text" id="material" placeholder="Ej: Cera casteable rosa">
+
+    <label for="archivo-imagen">Imágenes del producto (JPG, PNG o WEBP, máx. 8 MB c/u — puedes elegir varias a la vez)</label>
+    <input type="file" id="archivo-imagen" accept="image/jpeg,image/png,image/webp" multiple>
+    <div id="galeria-imagenes-admin" class="galeria-imagenes-admin"></div>
+    <p id="mensaje-imagen" class="mensaje-admin"></p>
+
+    <label for="archivo-stl">Archivo STL (vista 3D del modelo, máx. 20 MB)</label>
+    <input type="file" id="archivo-stl" accept=".stl">
+    <p id="estado-stl" class="mensaje-admin"></p>
+    <p id="mensaje-stl" class="mensaje-admin"></p>
+    <input type="hidden" id="modeloStl">
+
+    <label for="nueva-talla">Tallas disponibles (dejar vacío si no aplica)</label>
+    <div style="display:flex; gap:8px;">
+      <input type="text" id="nueva-talla" placeholder="Ej: 7">
+      <button type="button" id="btn-agregar-talla" class="btn btn-borde">+ Agregar</button>
+    </div>
+    <div id="chips-tallas" class="chips-tallas"></div>
+
+    <label>Medidas (opcional, hasta 3)</label>
+    <div id="filas-medidas"></div>
+
+    <button type="submit" class="btn btn-dorado btn-full" style="margin-top:20px;">Guardar producto</button>
+    <p id="mensaje-formulario" class="mensaje-admin"></p>
+  </form>
+  </main>
+</div>
+
+<script src="/admin/js/admin.js"></script>
+<script src="/admin/js/layout.js"></script>
+<script>
+const ETIQUETAS_MEDIDA = [
+  { valor: "", etiqueta: "— Ninguna —" },
+  { valor: "diametro", etiqueta: "Diámetro (mm)" },
+  { valor: "grosor", etiqueta: "Grosor (mm)" },
+  { valor: "piedra", etiqueta: "Piedra (mm)" },
+  { valor: "alto", etiqueta: "Alto (mm)" },
+  { valor: "ancho", etiqueta: "Ancho (mm)" },
+  { valor: "largo", etiqueta: "Largo (mm)" },
+];
+
+function filaMedidaHTML(indice, claveSeleccionada, valorSeleccionado) {
+  const opciones = ETIQUETAS_MEDIDA.map(
+    (o) => `<option value="${o.valor}" ${o.valor === claveSeleccionada ? "selected" : ""}>${o.etiqueta}</option>`
+  ).join("");
+  return `
+    <div class="fila-medida" style="margin-bottom:10px;">
+      <select data-medida-clave="${indice}">${opciones}</select>
+      <input type="number" step="0.01" data-medida-valor="${indice}" placeholder="Valor en mm" value="${valorSeleccionado ?? ""}">
+    </div>
+  `;
+}
+
+function pintarFilasMedidas(medidas = {}) {
+  const claves = Object.keys(medidas);
+  const contenedor = document.getElementById("filas-medidas");
+  let html = "";
+  for (let i = 0; i < 3; i++) {
+    const clave = claves[i] || "";
+    html += filaMedidaHTML(i, clave, clave ? medidas[clave] : "");
+  }
+  contenedor.innerHTML = html;
+}
+
+function leerMedidasDelFormulario() {
+  const medidas = {};
+  for (let i = 0; i < 3; i++) {
+    const claveEl = document.querySelector(`[data-medida-clave="${i}"]`);
+    const valorEl = document.querySelector(`[data-medida-valor="${i}"]`);
+    if (!claveEl || !valorEl) continue;
+    if (claveEl.value && valorEl.value !== "") medidas[claveEl.value] = Number(valorEl.value);
+  }
+  return medidas;
+}
+
+let tallasActuales = [];
+
+function renderChipsTallas() {
+  const contenedor = document.getElementById("chips-tallas");
+  contenedor.innerHTML = tallasActuales
+    .map(
+      (t, i) => `
+      <span class="chip-talla">
+        ${t}
+        <button type="button" data-quitar-talla="${i}" title="Quitar">✕</button>
+      </span>
+    `
+    )
+    .join("");
+}
+
+function agregarTalla() {
+  const campo = document.getElementById("nueva-talla");
+  const valor = campo.value.trim();
+  if (!valor) return;
+  const normalizada = isNaN(Number(valor)) ? valor : Number(valor);
+  if (!tallasActuales.includes(normalizada)) {
+    tallasActuales.push(normalizada);
+    renderChipsTallas();
+  }
+  campo.value = "";
+  campo.focus();
+}
+
+document.getElementById("btn-agregar-talla").addEventListener("click", agregarTalla);
+document.getElementById("nueva-talla").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" || e.key === ",") {
+    e.preventDefault();
+    agregarTalla();
+  }
+});
+document.getElementById("chips-tallas").addEventListener("click", (e) => {
+  const boton = e.target.closest("button[data-quitar-talla]");
+  if (!boton) return;
+  tallasActuales.splice(Number(boton.getAttribute("data-quitar-talla")), 1);
+  renderChipsTallas();
+});
+
+const TAMANO_MAXIMO_IMAGEN = 8 * 1024 * 1024;
+let imagenesActuales = [];
+
+function renderGaleriaImagenesAdmin() {
+  const contenedor = document.getElementById("galeria-imagenes-admin");
+  contenedor.innerHTML = imagenesActuales
+    .map(
+      (url, i) => `
+      <div class="miniatura-admin-editable">
+        <div class="miniatura-admin"><img src="${url}" alt="Imagen ${i + 1}"></div>
+        ${i === 0 ? '<span class="badge-tipo">Portada</span>' : ""}
+        <div class="miniatura-acciones">
+          ${i > 0 ? `<button type="button" data-mover="${i}" title="Mover antes">↑</button>` : ""}
+          <button type="button" data-quitar="${i}" title="Quitar">✕</button>
+        </div>
+      </div>
+    `
+    )
+    .join("");
+}
+
+function archivoABase64(file) {
+  return new Promise((resolve, reject) => {
+    const lector = new FileReader();
+    lector.onload = () => resolve(String(lector.result).split(",")[1] || "");
+    lector.onerror = reject;
+    lector.readAsDataURL(file);
+  });
+}
+
+document.getElementById("galeria-imagenes-admin").addEventListener("click", async (e) => {
+  const btnQuitar = e.target.closest("button[data-quitar]");
+  const btnMover = e.target.closest("button[data-mover]");
+
+  if (btnQuitar) {
+    const indice = Number(btnQuitar.getAttribute("data-quitar"));
+    const url = imagenesActuales[indice];
+    if (!confirm("¿Quitar esta imagen del producto?")) return;
+    imagenesActuales.splice(indice, 1);
+    renderGaleriaImagenesAdmin();
+    fetch("/api/admin/borrar-imagen", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url }),
+    }).catch(() => {});
+  }
+
+  if (btnMover) {
+    const indice = Number(btnMover.getAttribute("data-mover"));
+    [imagenesActuales[indice - 1], imagenesActuales[indice]] = [imagenesActuales[indice], imagenesActuales[indice - 1]];
+    renderGaleriaImagenesAdmin();
+  }
+});
+
+document.getElementById("archivo-imagen").addEventListener("change", async (e) => {
+  const archivos = Array.from(e.target.files || []);
+  const mensaje = document.getElementById("mensaje-imagen");
+  mensaje.textContent = "";
+  mensaje.className = "mensaje-admin";
+  if (archivos.length === 0) return;
+
+  const referenciaActual = document.getElementById("referencia").value || "producto";
+  let subidas = 0;
+
+  for (const archivo of archivos) {
+    if (!["image/jpeg", "image/png", "image/webp"].includes(archivo.type)) {
+      mensaje.textContent = `"${archivo.name}" no es JPG, PNG ni WEBP — se omitió.`;
+      mensaje.className = "mensaje-admin error";
+      continue;
+    }
+    if (archivo.size > TAMANO_MAXIMO_IMAGEN) {
+      mensaje.textContent = `"${archivo.name}" supera 8 MB — se omitió.`;
+      mensaje.className = "mensaje-admin error";
+      continue;
+    }
+
+    mensaje.textContent = `Subiendo ${subidas + 1} de ${archivos.length}...`;
+    mensaje.className = "mensaje-admin";
+
+    try {
+      const datosBase64 = await archivoABase64(archivo);
+      const r = await fetch(`/api/admin/subir-imagen?referencia=${encodeURIComponent(referenciaActual)}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contentType: archivo.type, datosBase64 }),
+      });
+      const datos = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(datos.error || "No se pudo subir la imagen");
+
+      imagenesActuales.push(datos.url);
+      renderGaleriaImagenesAdmin();
+      subidas++;
+    } catch (err) {
+      mensaje.textContent = err.message || `No se pudo subir "${archivo.name}".`;
+      mensaje.className = "mensaje-admin error";
+    }
+  }
+
+  if (subidas === archivos.length) {
+    mensaje.textContent = `${subidas} imagen(es) subida(s) correctamente.`;
+    mensaje.className = "mensaje-admin ok";
+  }
+  e.target.value = "";
+});
+
+const TAMANO_MAXIMO_STL = 20 * 1024 * 1024;
+
+function mostrarEstadoStl(url) {
+  const estado = document.getElementById("estado-stl");
+  estado.innerHTML = url
+    ? `✓ Archivo STL cargado — <a href="${url}" target="_blank" rel="noopener">ver / descargar</a>`
+    : "Sin archivo STL todavía.";
+}
+
+document.getElementById("archivo-stl").addEventListener("change", async (e) => {
+  const archivo = e.target.files[0];
+  const mensaje = document.getElementById("mensaje-stl");
+  mensaje.textContent = "";
+  mensaje.className = "mensaje-admin";
+  if (!archivo) return;
+
+  if (!/\.stl$/i.test(archivo.name)) {
+    mensaje.textContent = "El archivo debe tener extensión .stl";
+    mensaje.className = "mensaje-admin error";
+    e.target.value = "";
+    return;
+  }
+  if (archivo.size > TAMANO_MAXIMO_STL) {
+    mensaje.textContent = "El archivo STL no puede superar 20 MB.";
+    mensaje.className = "mensaje-admin error";
+    e.target.value = "";
+    return;
+  }
+
+  mensaje.textContent = "Subiendo archivo STL...";
+
+  try {
+    const datosBase64 = await archivoABase64(archivo);
+    const referenciaActual = document.getElementById("referencia").value || "producto";
+    const urlActual = document.getElementById("modeloStl").value;
+
+    const r = await fetch(`/api/admin/subir-stl?referencia=${encodeURIComponent(referenciaActual)}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        datosBase64,
+        nombreOriginal: archivo.name,
+        reemplazaUrl: urlActual,
+      }),
+    });
+    const datos = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(datos.error || "No se pudo subir el archivo STL");
+
+    document.getElementById("modeloStl").value = datos.url;
+    mostrarEstadoStl(datos.url);
+    mensaje.textContent = "Archivo STL subido correctamente.";
+    mensaje.className = "mensaje-admin ok";
+  } catch (err) {
+    mensaje.textContent = err.message || "No se pudo subir el archivo STL.";
+    mensaje.className = "mensaje-admin error";
+  } finally {
+    e.target.value = "";
+  }
+});
+
+const params = new URLSearchParams(window.location.search);
+const referenciaEdicion = params.get("ref");
+
+async function cargarProductoParaEditar() {
+  document.getElementById("titulo-formulario").textContent = `Editar ${referenciaEdicion}`;
+  document.getElementById("referencia").value = referenciaEdicion;
+  document.getElementById("referencia").disabled = true;
+
+  const r = await fetch(`/api/admin/productos/${encodeURIComponent(referenciaEdicion)}`);
+  if (!r.ok) {
+    document.getElementById("mensaje-formulario").textContent = "No se encontró ese producto.";
+    document.getElementById("mensaje-formulario").className = "mensaje-admin error";
+    return;
+  }
+  const p = await r.json();
+
+  document.getElementById("tipo").value = p.tipo;
+  document.getElementById("nombre").value = p.nombre;
+  document.getElementById("descripcion").value = p.descripcion || "";
+  document.getElementById("peso").value = p.peso;
+  document.getElementById("volumen").value = p.volumen;
+  document.getElementById("precioBase").value = p.precioBase;
+  document.getElementById("material").value = p.material || "";
+  imagenesActuales = p.imagenes ? [...p.imagenes] : [];
+  renderGaleriaImagenesAdmin();
+  document.getElementById("modeloStl").value = p.modeloStl || "";
+  mostrarEstadoStl(p.modeloStl);
+  tallasActuales = p.tallas ? [...p.tallas] : [];
+  renderChipsTallas();
+  pintarFilasMedidas(p.medidas || {});
+}
+
+document.getElementById("form-producto").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const mensaje = document.getElementById("mensaje-formulario");
+  mensaje.textContent = "";
+  mensaje.className = "mensaje-admin";
+
+  const cuerpo = {
+    referencia: document.getElementById("referencia").value,
+    tipo: document.getElementById("tipo").value,
+    nombre: document.getElementById("nombre").value,
+    descripcion: document.getElementById("descripcion").value,
+    peso: document.getElementById("peso").value,
+    volumen: document.getElementById("volumen").value,
+    precioBase: document.getElementById("precioBase").value,
+    material: document.getElementById("material").value,
+    imagenes: imagenesActuales,
+    modeloStl: document.getElementById("modeloStl").value,
+    tallas: tallasActuales,
+    medidas: leerMedidasDelFormulario(),
+  };
+
+  const url = referenciaEdicion
+    ? `/api/admin/productos/${encodeURIComponent(referenciaEdicion)}`
+    : "/api/admin/productos";
+  const metodo = referenciaEdicion ? "PUT" : "POST";
+
+  try {
+    const r = await fetch(url, {
+      method: metodo,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(cuerpo),
+    });
+    const datos = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      mensaje.textContent = datos.error || "No se pudo guardar el producto.";
+      mensaje.className = "mensaje-admin error";
+      return;
+    }
+    window.location.href = "/admin/productos.html";
+  } catch (err) {
+    mensaje.textContent = "Error de conexión. Intenta de nuevo.";
+    mensaje.className = "mensaje-admin error";
+  }
+});
+
+renderAdminSidebar("productos");
+
+(async () => {
+  const autenticado = await exigirSesion();
+  if (!autenticado) return;
+  if (referenciaEdicion) {
+    await cargarProductoParaEditar();
+  } else {
+    pintarFilasMedidas({});
+    mostrarEstadoStl("");
+    renderGaleriaImagenesAdmin();
+    renderChipsTallas();
+  }
+})();
+</script>
+</body>
+</html>
