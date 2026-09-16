@@ -62,6 +62,38 @@ function vistaComprobante(url) {
   return `<a href="${url}" target="_blank" rel="noopener">Ver comprobante (PDF)</a>`;
 }
 
+const URL_TALLER = "https://dinar-3dwax.vercel.app";
+
+function formatOT(otId) {
+  return `OT-${String(otId).padStart(4, "0")}`;
+}
+
+function vistaProduccion(p) {
+  if (p.produccionEstado === "enviado") {
+    const ots = (p.produccionInfo && p.produccionInfo.ots) || [];
+    return `
+      <p class="mensaje-admin ok" style="margin-top:0;">✓ Enviado al taller (dinar-3dwax)</p>
+      <ul>
+        ${ots
+          .map(
+            (o) =>
+              `<li><a href="${URL_TALLER}/pedidos/${o.otId}/ficha" target="_blank" rel="noopener">${formatOT(o.otId)}</a>${o.yaExistia ? " (ya existía)" : ""}</li>`
+          )
+          .join("")}
+      </ul>
+    `;
+  }
+  if (p.produccionEstado === "error") {
+    const info = p.produccionInfo || {};
+    return `
+      <p class="mensaje-admin error" style="margin-top:0;">✕ No se pudo enviar al taller: ${info.error || "error desconocido"}</p>
+      ${info.omitidos && info.omitidos.length ? `<p class="mensaje-admin" style="margin-top:0;">Omitidos: ${info.omitidos.join(", ")}</p>` : ""}
+      <p style="color:var(--gris); font-size:0.82rem;">Vuelve a dar clic en "Marcar como aprobado" para reintentar.</p>
+    `;
+  }
+  return `<p style="color:var(--gris);">Se envía automáticamente al taller cuando apruebes el pago.</p>`;
+}
+
 function formatearFechaPedido(iso) {
   return new Date(iso).toLocaleString("es-CO", { dateStyle: "medium", timeStyle: "short" });
 }
@@ -82,7 +114,11 @@ function filaPedidoHTML(p) {
       <td>${formatearFechaPedido(p.creadoEn)}</td>
       <td>${cantidadItems}</td>
       <td>${formatearPrecioAdmin(p.total)}</td>
-      <td><span class="estado-pago ${estado}" style="margin-bottom:0;">${ETIQUETAS_ESTADO_PEDIDO[estado]}</span></td>
+      <td>
+        <span class="estado-pago ${estado}" style="margin-bottom:0;">${ETIQUETAS_ESTADO_PEDIDO[estado]}</span>
+        ${p.produccionEstado === "enviado" ? '<span class="badge-tipo" title="Ya está en el taller">🏭 enviado</span>' : ""}
+        ${p.produccionEstado === "error" ? '<span class="badge-tipo" title="Falló el envío al taller" style="background:#fbe9e9; color:#b23b3b;">🏭 error</span>' : ""}
+      </td>
       <td><button type="button" class="btn-ver-pedido" data-id="${p.id}">Ver</button></td>
     </tr>
     <tr class="fila-detalle-pedido oculto" data-detalle="${p.id}">
@@ -105,10 +141,14 @@ function filaPedidoHTML(p) {
             <strong>Comprobante</strong>
             ${vistaComprobante(p.comprobanteUrl)}
           </div>
+          <div>
+            <strong>Producción (dinar-3dwax)</strong>
+            ${vistaProduccion(p)}
+          </div>
         </div>
         <div class="acciones-pedido">
-          <button type="button" class="btn btn-dorado" data-marcar="${p.id}" data-estado="aprobado" ${p.estado === "aprobado" ? "disabled" : ""}>
-            ✓ Marcar como aprobado
+          <button type="button" class="btn btn-dorado" data-marcar="${p.id}" data-estado="aprobado" ${p.estado === "aprobado" && p.produccionEstado === "enviado" ? "disabled" : ""}>
+            ${p.estado === "aprobado" && p.produccionEstado === "error" ? "↻ Reintentar envío al taller" : "✓ Marcar como aprobado"}
           </button>
           <button type="button" class="btn btn-borde" data-marcar="${p.id}" data-estado="rechazado" ${p.estado === "rechazado" ? "disabled" : ""}>
             ✕ Marcar como rechazado

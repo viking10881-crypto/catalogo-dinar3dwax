@@ -1,5 +1,6 @@
 import { requiereAdmin } from "../../lib/adminAuth.js";
-import { obtenerPedidoAdmin, actualizarEstadoPedido } from "../../lib/pedidos.js";
+import { obtenerPedidoAdmin, actualizarEstadoPedido, guardarEstadoProduccion } from "../../lib/pedidos.js";
+import { enviarAProduccion } from "../../lib/produccion.js";
 
 const ESTADOS_VALIDOS = ["pendiente", "aprobado", "rechazado"];
 
@@ -23,7 +24,14 @@ export default async function handler(req, res) {
       }
 
       await actualizarEstadoPedido(id, estado);
-      res.status(200).json({ ok: true });
+
+      let produccion = null;
+      if (estado === "aprobado") {
+        produccion = await enviarAProduccion(pedido);
+        await guardarEstadoProduccion(id, produccion);
+      }
+
+      res.status(200).json({ ok: true, produccion });
     } catch (err) {
       console.error("Error actualizando pedido:", err);
       res.status(500).json({ error: "No se pudo actualizar el pedido" });

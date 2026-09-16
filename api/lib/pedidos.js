@@ -32,6 +32,14 @@ export async function actualizarEstadoPedido(id, estado) {
   `;
 }
 
+export async function guardarEstadoProduccion(id, { estado, info }) {
+  const sql = getSql();
+  await sql`
+    UPDATE pedidos SET produccion_estado = ${estado}, produccion_info = ${JSON.stringify(info)}
+    WHERE id = ${id}
+  `;
+}
+
 export function filaAPedidoPublico(fila) {
   return {
     id: fila.id,
@@ -56,6 +64,8 @@ function filaAPedidoAdmin(fila) {
     total: Number(fila.total),
     estado: fila.estado,
     comprobanteUrl: fila.comprobante_url,
+    produccionEstado: fila.produccion_estado,
+    produccionInfo: fila.produccion_info,
     creadoEn: fila.creado_en,
     actualizadoEn: fila.actualizado_en,
   };
