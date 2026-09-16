@@ -8,6 +8,7 @@
     "node": "24.x"
   },
   "scripts": {
+    "start": "vercel dev",
     "db:migrate": "node scripts/migrar-db.js"
   },
   "dependencies": {

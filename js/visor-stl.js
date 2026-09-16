@@ -6,7 +6,19 @@ import * as THREE from "three";
 import { STLLoader } from "three/addons/loaders/STLLoader.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
-window.iniciarVisorSTL = function iniciarVisorSTL(idContenedor, urlStl) {
+/**
+ * Aproxima el color de la cera real a partir del texto del campo "material"
+ * del producto (p. ej. "Cera casteable rosa" / "Cera casteable verde"),
+ * para que el visor se vea parecido a la pieza física. Rosa es el color por
+ * defecto porque es el material más común del catálogo.
+ */
+function colorCeraPorMaterial(material) {
+  const texto = String(material || "").toLowerCase();
+  if (texto.includes("verde")) return 0x6fae6f;
+  return 0xe87da0; // rosa
+}
+
+window.iniciarVisorSTL = function iniciarVisorSTL(idContenedor, urlStl, material) {
   const contenedor = document.getElementById(idContenedor);
   if (!contenedor || !urlStl) return;
   contenedor.innerHTML = "";
@@ -44,12 +56,12 @@ window.iniciarVisorSTL = function iniciarVisorSTL(idContenedor, urlStl) {
       geometria.computeVertexNormals();
       geometria.computeBoundingSphere();
 
-      const material = new THREE.MeshStandardMaterial({
-        color: 0xb8963e,
-        metalness: 0.55,
-        roughness: 0.35,
+      const materialCera = new THREE.MeshStandardMaterial({
+        color: colorCeraPorMaterial(material),
+        metalness: 0.05,
+        roughness: 0.55,
       });
-      escena.add(new THREE.Mesh(geometria, material));
+      escena.add(new THREE.Mesh(geometria, materialCera));
 
       const radio = geometria.boundingSphere ? geometria.boundingSphere.radius : 10;
       camara.position.set(radio * 1.8, radio * 1.4, radio * 1.8);

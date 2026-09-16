@@ -488,6 +488,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 }
 .fila-buscador-ref input {
   flex: 1;
+  min-width: 0;
   padding: 11px 14px;
   border: 1px solid var(--borde);
   border-radius: 999px;
@@ -689,11 +690,18 @@ ul { list-style: none; margin: 0; padding: 0; }
     flex-direction: row;
     align-items: center;
     flex-wrap: wrap;
-    gap: 10px 16px;
+    gap: 8px 14px;
     padding: 14px 16px;
   }
   .admin-sidebar-marca { margin-bottom: 0; }
-  .admin-sidebar-nav { flex-direction: row; flex: none; }
+  .admin-sidebar-nav {
+    flex-direction: row;
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    order: 3;
+  }
+  .admin-sidebar-nav a { padding: 6px 8px; font-size: 0.85rem; }
   .admin-sidebar-pie {
     flex-direction: row;
     align-items: center;
@@ -701,8 +709,9 @@ ul { list-style: none; margin: 0; padding: 0; }
     padding-top: 0;
     margin-top: 0;
     margin-left: auto;
+    order: 2;
   }
-  .admin-main { padding: 20px 16px; }
+  .admin-main { padding: 20px 16px; max-width: 100% !important; overflow-x: hidden; }
 }
 
 /* ===== Admin: tarjetas del dashboard ===== */
@@ -824,6 +833,59 @@ ul { list-style: none; margin: 0; padding: 0; }
 .mensaje-admin.ok { color: #2f9e52; }
 .mensaje-admin a { color: var(--dorado); font-weight: 600; }
 .tabla-vacia { padding: 40px; text-align: center; color: var(--gris); }
+
+.barra-tabla-productos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.barra-tabla-productos #buscador-productos {
+  flex: 1;
+  min-width: 220px;
+  padding: 9px 14px;
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+  font-size: 0.9rem;
+}
+.etiqueta-tamano-pagina {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--gris);
+  white-space: nowrap;
+}
+.etiqueta-tamano-pagina select {
+  padding: 6px 10px;
+  border: 1px solid var(--borde);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  background: var(--blanco);
+}
+.paginacion-productos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+  font-size: 0.85rem;
+  color: var(--gris);
+}
+.botones-paginacion {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.botones-paginacion .btn {
+  padding: 7px 14px;
+  font-size: 0.78rem;
+}
+.botones-paginacion .btn:disabled { opacity: 0.4; cursor: default; }
+#indicador-pagina { white-space: nowrap; }
 .btn-ver-pedido {
   border: 1px solid var(--borde);
   background: var(--blanco);
@@ -938,8 +1000,16 @@ ul { list-style: none; margin: 0; padding: 0; }
 
 @media (max-width: 600px) {
   .cabecera .contenedor { flex-direction: column; align-items: stretch; }
-  .nav-principal { display: none; }
+  .nav-principal {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px 14px;
+    font-size: 0.82rem;
+    padding: 2px 0 4px;
+  }
   .buscador-rapido input { width: 100%; }
   .hero h1 { font-size: 1.5rem; }
   .fila-carrito { grid-template-columns: 60px 1fr; grid-template-rows: auto auto; }
+  .bloque-buscador-ref { padding: 20px; }
+  .fila-buscador-ref button { padding: 0 16px; }
 }

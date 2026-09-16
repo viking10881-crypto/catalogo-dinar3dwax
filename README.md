@@ -177,10 +177,22 @@ verificación bancaria automática.
 
 ### Productos (`/admin/productos.html`)
 
-- Ver el listado completo (con miniatura de la portada de cada uno).
-- Crear un producto nuevo (referencia, categoría, nombre, descripción, peso,
-  volumen, precio, material, imágenes, tallas y hasta 3 medidas).
+- Ver el listado completo (con miniatura de la portada de cada uno), con
+  buscador (por referencia, nombre o categoría) y paginación (10/30/100 por página).
+- Crear un producto nuevo (referencia, categoría, nombre, descripción,
+  material de la cera, peso de la cera, tipo de material (ej. "Oro 18k"),
+  peso del material, volumen, precio, imágenes, tallas y hasta 3 medidas).
 - Editar o eliminar un producto existente.
+
+Un producto maneja **dos pesos distintos**, a propósito: `pesoCera` (el peso
+real de la pieza impresa en cera, en gramos) y `peso` (el peso equivalente
+una vez fundida en el material indicado en `materialTipo`, típicamente
+"Oro 18k" — este es el que usan los filtros del catálogo y el que se
+muestra como "Peso material" en la ficha). La ficha de producto
+(`producto.html`) solo muestra: Tipo, Material, Peso cera, Tipo material,
+Peso material y Tallas — el volumen y las medidas (diámetro, grosor, etc.)
+siguen siendo editables en el panel pero ya no se muestran en la ficha
+pública.
 - Subir **varias fotos/renders** por producto directo desde el navegador (JPG,
   PNG o WEBP, máx. 8 MB c/u, se pueden elegir varias a la vez) — se guardan en
   Vercel Blob y quedan públicas al instante. La primera imagen de la lista es

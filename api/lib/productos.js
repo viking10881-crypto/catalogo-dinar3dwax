@@ -12,6 +12,8 @@ function filaAProductoPublico(fila) {
     descripcion: fila.descripcion,
     volumen: Number(fila.volumen),
     peso: Number(fila.peso),
+    pesoCera: Number(fila.peso_cera),
+    materialTipo: fila.material_tipo,
     precioBase: Number(fila.precio_base),
     material: fila.material,
     medidas: fila.medidas,
@@ -42,8 +44,8 @@ export async function precioProducto(referencia) {
 export async function crearProducto(datos) {
   const sql = getSql();
   await sql`
-    INSERT INTO productos (referencia, tipo, nombre, descripcion, volumen, peso, precio_base, material, medidas, tallas, imagenes, modelo_stl)
-    VALUES (${datos.referencia}, ${datos.tipo}, ${datos.nombre}, ${datos.descripcion}, ${datos.volumen}, ${datos.peso}, ${datos.precioBase}, ${datos.material}, ${JSON.stringify(datos.medidas)}, ${JSON.stringify(datos.tallas)}, ${JSON.stringify(datos.imagenes)}, ${datos.modeloStl})
+    INSERT INTO productos (referencia, tipo, nombre, descripcion, volumen, peso, peso_cera, material_tipo, precio_base, material, medidas, tallas, imagenes, modelo_stl)
+    VALUES (${datos.referencia}, ${datos.tipo}, ${datos.nombre}, ${datos.descripcion}, ${datos.volumen}, ${datos.peso}, ${datos.pesoCera}, ${datos.materialTipo}, ${datos.precioBase}, ${datos.material}, ${JSON.stringify(datos.medidas)}, ${JSON.stringify(datos.tallas)}, ${JSON.stringify(datos.imagenes)}, ${datos.modeloStl})
   `;
 }
 
@@ -52,7 +54,8 @@ export async function actualizarProducto(referencia, datos) {
   await sql`
     UPDATE productos SET
       tipo = ${datos.tipo}, nombre = ${datos.nombre}, descripcion = ${datos.descripcion},
-      volumen = ${datos.volumen}, peso = ${datos.peso}, precio_base = ${datos.precioBase},
+      volumen = ${datos.volumen}, peso = ${datos.peso}, peso_cera = ${datos.pesoCera},
+      material_tipo = ${datos.materialTipo}, precio_base = ${datos.precioBase},
       material = ${datos.material}, medidas = ${JSON.stringify(datos.medidas)},
       tallas = ${JSON.stringify(datos.tallas)}, imagenes = ${JSON.stringify(datos.imagenes)},
       modelo_stl = ${datos.modeloStl}, actualizado_en = now()

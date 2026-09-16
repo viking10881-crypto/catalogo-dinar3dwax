@@ -9,15 +9,6 @@ const NOMBRES_TIPO = {
   pulseras: "Pulsera",
 };
 
-const ETIQUETAS_MEDIDA = {
-  diametro: "Diámetro",
-  grosor: "Grosor",
-  piedra: "Piedra",
-  alto: "Alto",
-  ancho: "Ancho",
-  largo: "Largo",
-};
-
 let productoActual = null;
 let tallaSeleccionada = null;
 
@@ -76,17 +67,13 @@ function renderFichaProducto() {
   // Tabla de especificaciones
   const filas = [];
   filas.push(["Tipo", NOMBRES_TIPO[productoActual.tipo] || productoActual.tipo]);
-  filas.push(["Peso aproximado", `${productoActual.peso} g`]);
-  filas.push(["Volumen", `${productoActual.volumen} cm³`]);
-  Object.entries(productoActual.medidas).forEach(([clave, valor]) => {
-    if (!valor) return;
-    const etiqueta = ETIQUETAS_MEDIDA[clave] || clave;
-    filas.push([etiqueta, `${valor} mm`]);
-  });
+  filas.push(["Material", productoActual.material]);
+  filas.push(["Peso cera", `${productoActual.pesoCera} g`]);
+  filas.push(["Tipo material", productoActual.materialTipo]);
+  filas.push(["Peso material", `${productoActual.peso} g`]);
   if (productoActual.tallas.length > 0) {
     filas.push(["Tallas disponibles", productoActual.tallas.join(" / ")]);
   }
-  filas.push(["Material", productoActual.material]);
 
   document.getElementById("tabla-specs").innerHTML = filas
     .map(([etiqueta, valor]) => `<tr><td>${etiqueta}</td><td>${valor}</td></tr>`)
@@ -115,7 +102,7 @@ function renderFichaProducto() {
   if (productoActual.modeloStl) {
     seccionStl.classList.remove("oculto");
     if (typeof window.iniciarVisorSTL === "function") {
-      window.iniciarVisorSTL("contenedor-visor-stl", productoActual.modeloStl);
+      window.iniciarVisorSTL("contenedor-visor-stl", productoActual.modeloStl, productoActual.material);
     }
   } else {
     seccionStl.classList.add("oculto");

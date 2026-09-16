@@ -19,6 +19,7 @@ export function validarProducto(body, { exigirReferencia = true } = {}) {
 
   datos.descripcion = String(body.descripcion || "").trim();
   datos.material = String(body.material || "").trim();
+  datos.materialTipo = String(body.materialTipo || "").trim() || "Oro 18k";
   datos.imagenes = Array.isArray(body.imagenes)
     ? body.imagenes.map((u) => String(u || "").trim()).filter(Boolean)
     : [];
@@ -29,6 +30,9 @@ export function validarProducto(body, { exigirReferencia = true } = {}) {
 
   datos.peso = Number(body.peso);
   if (!Number.isFinite(datos.peso) || datos.peso < 0) errores.push("Peso inválido");
+
+  datos.pesoCera = Number(body.pesoCera);
+  if (!Number.isFinite(datos.pesoCera) || datos.pesoCera < 0) errores.push("Peso de la cera inválido");
 
   datos.precioBase = Number(body.precioBase);
   if (!Number.isFinite(datos.precioBase) || datos.precioBase <= 0) {

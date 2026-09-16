@@ -47,7 +47,16 @@
     <label for="descripcion">Descripción</label>
     <textarea id="descripcion" rows="3" placeholder="Descripción breve del modelo"></textarea>
 
-    <label for="peso">Peso estimado (g, equivalente oro 18k)</label>
+    <label for="material">Material (cera)</label>
+    <input type="text" id="material" placeholder="Ej: Cera casteable rosa">
+
+    <label for="pesoCera">Peso cera (g)</label>
+    <input type="number" id="pesoCera" min="0" step="0.01" required>
+
+    <label for="materialTipo">Tipo de material</label>
+    <input type="text" id="materialTipo" placeholder="Ej: Oro 18k">
+
+    <label for="peso">Peso material (g, equivalente oro 18k)</label>
     <input type="number" id="peso" min="0" step="0.01" required>
 
     <label for="volumen">Volumen (cm³)</label>
@@ -55,9 +64,6 @@
 
     <label for="precioBase">Precio (COP)</label>
     <input type="number" id="precioBase" min="0" step="100" required>
-
-    <label for="material">Material</label>
-    <input type="text" id="material" placeholder="Ej: Cera casteable rosa">
 
     <label for="archivo-imagen">Imágenes del producto (JPG, PNG o WEBP, máx. 8 MB c/u — puedes elegir varias a la vez)</label>
     <input type="file" id="archivo-imagen" accept="image/jpeg,image/png,image/webp" multiple>
@@ -361,6 +367,8 @@ async function cargarProductoParaEditar() {
   document.getElementById("nombre").value = p.nombre;
   document.getElementById("descripcion").value = p.descripcion || "";
   document.getElementById("peso").value = p.peso;
+  document.getElementById("pesoCera").value = p.pesoCera;
+  document.getElementById("materialTipo").value = p.materialTipo || "Oro 18k";
   document.getElementById("volumen").value = p.volumen;
   document.getElementById("precioBase").value = p.precioBase;
   document.getElementById("material").value = p.material || "";
@@ -385,6 +393,8 @@ document.getElementById("form-producto").addEventListener("submit", async (e) =>
     nombre: document.getElementById("nombre").value,
     descripcion: document.getElementById("descripcion").value,
     peso: document.getElementById("peso").value,
+    pesoCera: document.getElementById("pesoCera").value,
+    materialTipo: document.getElementById("materialTipo").value,
     volumen: document.getElementById("volumen").value,
     precioBase: document.getElementById("precioBase").value,
     material: document.getElementById("material").value,
@@ -426,6 +436,7 @@ renderAdminSidebar("productos");
   if (referenciaEdicion) {
     await cargarProductoParaEditar();
   } else {
+    document.getElementById("materialTipo").value = "Oro 18k";
     pintarFilasMedidas({});
     mostrarEstadoStl("");
     renderGaleriaImagenesAdmin();

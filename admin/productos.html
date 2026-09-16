@@ -27,6 +27,19 @@
       <a href="/admin/producto.html" class="btn btn-dorado">+ Nuevo producto</a>
     </div>
 
+    <div class="barra-tabla-productos">
+      <input type="text" id="buscador-productos" placeholder="Buscar por referencia, nombre o categoría…">
+      <label class="etiqueta-tamano-pagina">
+        Mostrar
+        <select id="tamano-pagina">
+          <option value="10">10</option>
+          <option value="30">30</option>
+          <option value="100">100</option>
+        </select>
+        productos
+      </label>
+    </div>
+
     <div style="overflow-x:auto;">
       <table class="tabla-admin">
         <thead>
@@ -43,6 +56,16 @@
         <tbody id="cuerpo-tabla-productos"></tbody>
       </table>
     </div>
+
+    <div class="paginacion-productos">
+      <span id="resumen-paginacion"></span>
+      <div class="botones-paginacion">
+        <button type="button" id="btn-pagina-anterior" class="btn btn-borde">‹ Anterior</button>
+        <span id="indicador-pagina"></span>
+        <button type="button" id="btn-pagina-siguiente" class="btn btn-borde">Siguiente ›</button>
+      </div>
+    </div>
+
     <p id="mensaje-tabla" class="mensaje-admin"></p>
   </main>
 </div>
@@ -50,46 +73,97 @@
 <script src="/admin/js/admin.js"></script>
 <script src="/admin/js/layout.js"></script>
 <script>
-async function cargarTabla() {
-  const cuerpo = document.getElementById("cuerpo-tabla-productos");
-  const mensaje = document.getElementById("mensaje-tabla");
+let todosLosProductos = [];
+let paginaActual = 1;
 
+function filaProductoHTML(p) {
+  return `
+    <tr>
+      <td>${(p.imagenes && p.imagenes[0]) ? `<div class="miniatura-admin" style="width:44px;height:44px;"><img src="${p.imagenes[0]}" alt="${p.nombre}" onerror="this.parentElement.remove()"></div>` : ""}</td>
+      <td>${p.referencia}</td>
+      <td><span class="badge-tipo">${p.tipo}</span></td>
+      <td>${p.nombre} ${p.modeloStl ? '<span class="badge-tipo" title="Tiene archivo STL">🧊 STL</span>' : ""}</td>
+      <td>${p.peso} g</td>
+      <td>${formatearPrecioAdmin(p.precioBase)}</td>
+      <td class="acciones-fila">
+        <a href="/admin/producto.html?ref=${encodeURIComponent(p.referencia)}">Editar</a>
+        <button type="button" class="eliminar" data-ref="${p.referencia}">Eliminar</button>
+      </td>
+    </tr>
+  `;
+}
+
+function productosFiltrados() {
+  const termino = document.getElementById("buscador-productos").value.trim().toLowerCase();
+  if (!termino) return todosLosProductos;
+  return todosLosProductos.filter(
+    (p) =>
+      p.referencia.toLowerCase().includes(termino) ||
+      p.nombre.toLowerCase().includes(termino) ||
+      p.tipo.toLowerCase().includes(termino)
+  );
+}
+
+function renderizarTabla() {
+  const cuerpo = document.getElementById("cuerpo-tabla-productos");
+  const tamanoPagina = Number(document.getElementById("tamano-pagina").value);
+  const filtrados = productosFiltrados();
+  const totalPaginas = Math.max(1, Math.ceil(filtrados.length / tamanoPagina));
+  paginaActual = Math.min(paginaActual, totalPaginas);
+
+  if (filtrados.length === 0) {
+    const vacioTexto =
+      todosLosProductos.length === 0
+        ? 'Todavía no hay productos. Crea el primero con "Nuevo producto".'
+        : "Ningún producto coincide con la búsqueda.";
+    cuerpo.innerHTML = `<tr><td colspan="7" class="tabla-vacia">${vacioTexto}</td></tr>`;
+  } else {
+    const inicio = (paginaActual - 1) * tamanoPagina;
+    const pagina = filtrados.slice(inicio, inicio + tamanoPagina);
+    cuerpo.innerHTML = pagina.map(filaProductoHTML).join("");
+  }
+
+  document.getElementById("resumen-paginacion").textContent =
+    filtrados.length === 0
+      ? ""
+      : `${filtrados.length} producto${filtrados.length === 1 ? "" : "s"}${filtrados.length !== todosLosProductos.length ? ` (de ${todosLosProductos.length})` : ""}`;
+  document.getElementById("indicador-pagina").textContent = `Página ${paginaActual} de ${totalPaginas}`;
+  document.getElementById("btn-pagina-anterior").disabled = paginaActual <= 1;
+  document.getElementById("btn-pagina-siguiente").disabled = paginaActual >= totalPaginas;
+}
+
+async function cargarTabla() {
+  const mensaje = document.getElementById("mensaje-tabla");
   try {
     const r = await fetch("/api/admin/productos");
     if (r.status === 401) {
       window.location.href = "/admin/login.html";
       return;
     }
-    const productos = await r.json();
-
-    if (productos.length === 0) {
-      cuerpo.innerHTML = `<tr><td colspan="7" class="tabla-vacia">Todavía no hay productos. Crea el primero con "Nuevo producto".</td></tr>`;
-      return;
-    }
-
-    cuerpo.innerHTML = productos
-      .map(
-        (p) => `
-        <tr>
-          <td>${(p.imagenes && p.imagenes[0]) ? `<div class="miniatura-admin" style="width:44px;height:44px;"><img src="${p.imagenes[0]}" alt="${p.nombre}" onerror="this.parentElement.remove()"></div>` : ""}</td>
-          <td>${p.referencia}</td>
-          <td><span class="badge-tipo">${p.tipo}</span></td>
-          <td>${p.nombre} ${p.modeloStl ? '<span class="badge-tipo" title="Tiene archivo STL">🧊 STL</span>' : ""}</td>
-          <td>${p.peso} g</td>
-          <td>${formatearPrecioAdmin(p.precioBase)}</td>
-          <td class="acciones-fila">
-            <a href="/admin/producto.html?ref=${encodeURIComponent(p.referencia)}">Editar</a>
-            <button type="button" class="eliminar" data-ref="${p.referencia}">Eliminar</button>
-          </td>
-        </tr>
-      `
-      )
-      .join("");
+    todosLosProductos = await r.json();
+    renderizarTabla();
   } catch (err) {
     mensaje.textContent = "No se pudo cargar el listado de productos.";
     mensaje.className = "mensaje-admin error";
   }
 }
+
+document.getElementById("buscador-productos").addEventListener("input", () => {
+  paginaActual = 1;
+  renderizarTabla();
+});
+document.getElementById("tamano-pagina").addEventListener("change", () => {
+  paginaActual = 1;
+  renderizarTabla();
+});
+document.getElementById("btn-pagina-anterior").addEventListener("click", () => {
+  paginaActual -= 1;
+  renderizarTabla();
+});
+document.getElementById("btn-pagina-siguiente").addEventListener("click", () => {
+  paginaActual += 1;
+  renderizarTabla();
+});
 
 document.getElementById("cuerpo-tabla-productos").addEventListener("click", async (e) => {
   const boton = e.target.closest("button.eliminar");
