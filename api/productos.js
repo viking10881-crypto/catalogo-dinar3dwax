@@ -1,4 +1,4 @@
-import { listarProductos } from "./lib/productos.js";
+import { listarProductos } from "../lib/productos.js";
 
 export default async function handler(req, res) {
   if (req.method !== "GET") {

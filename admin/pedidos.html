@@ -202,7 +202,7 @@ document.getElementById("cuerpo-tabla-pedidos").addEventListener("click", async 
     const estado = botonMarcar.getAttribute("data-estado");
     botonMarcar.disabled = true;
     try {
-      const r = await fetch(`/api/admin/pedidos/${encodeURIComponent(id)}`, {
+      const r = await fetch(`/api/admin/pedidos?id=${encodeURIComponent(id)}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ estado }),

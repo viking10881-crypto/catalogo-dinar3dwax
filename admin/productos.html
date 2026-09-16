@@ -172,7 +172,7 @@ document.getElementById("cuerpo-tabla-productos").addEventListener("click", asyn
   if (!confirm(`¿Eliminar el producto ${ref}? Esta acción no se puede deshacer.`)) return;
 
   try {
-    const r = await fetch(`/api/admin/productos/${encodeURIComponent(ref)}`, { method: "DELETE" });
+    const r = await fetch(`/api/admin/productos?referencia=${encodeURIComponent(ref)}`, { method: "DELETE" });
     if (!r.ok) throw new Error("fallo al eliminar");
     cargarTabla();
   } catch (err) {

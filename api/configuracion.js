@@ -1,4 +1,4 @@
-import { obtenerConfiguracion } from "./lib/configuracion.js";
+import { obtenerConfiguracion } from "../lib/configuracion.js";
 
 export default async function handler(req, res) {
   if (req.method !== "GET") {

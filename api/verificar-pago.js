@@ -1,4 +1,4 @@
-import { obtenerPedido, filaAPedidoPublico } from "./lib/pedidos.js";
+import { obtenerPedido, filaAPedidoPublico } from "../lib/pedidos.js";
 
 export default async function handler(req, res) {
   if (req.method !== "GET") {

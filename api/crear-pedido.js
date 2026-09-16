@@ -1,7 +1,7 @@
-import { crearPedido } from "./lib/pedidos.js";
-import { precioProducto } from "./lib/productos.js";
-import { obtenerConfiguracion, calcularPrecioServicio } from "./lib/configuracion.js";
-import { esUrlDeNuestroBlob } from "./lib/blob.js";
+import { crearPedido } from "../lib/pedidos.js";
+import { precioProducto } from "../lib/productos.js";
+import { obtenerConfiguracion, calcularPrecioServicio } from "../lib/configuracion.js";
+import { esUrlDeNuestroBlob } from "../lib/blob.js";
 
 /**
  * Revalida cada línea del carrito contra el catálogo del servidor.
