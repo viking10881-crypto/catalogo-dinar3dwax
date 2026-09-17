@@ -57,11 +57,10 @@ ul { list-style: none; margin: 0; padding: 0; }
   gap: 2px;
 }
 
-.marca .logo {
-  font-size: 1.25rem;
-  font-weight: 700;
-  letter-spacing: 1px;
-  color: var(--dorado-claro);
+.marca .logo-img {
+  display: block;
+  height: 64px;
+  width: auto;
 }
 
 .marca .subtitulo {
@@ -638,12 +637,11 @@ ul { list-style: none; margin: 0; padding: 0; }
   padding: 22px 16px;
 }
 .admin-sidebar-marca { margin-bottom: 26px; display: block; }
-.admin-sidebar-marca .logo {
+.admin-sidebar-marca .logo-img {
   display: block;
-  color: var(--dorado-claro);
-  font-weight: 700;
-  letter-spacing: 1px;
-  font-size: 1.05rem;
+  height: 76px;
+  width: auto;
+  margin-bottom: 6px;
 }
 .admin-sidebar-marca .subtitulo {
   color: #b6b2a8;
@@ -766,6 +764,12 @@ ul { list-style: none; margin: 0; padding: 0; }
   width: 100%;
   max-width: 360px;
   box-shadow: var(--sombra);
+}
+.admin-login-card .logo-img {
+  display: block;
+  height: 56px;
+  width: auto;
+  margin: 0 auto 14px;
 }
 .admin-login-card h1 {
   font-size: 1.1rem;
