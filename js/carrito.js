@@ -37,14 +37,13 @@ function agregarAlCarrito(referencia, cantidad, talla) {
 /**
  * Agrega una pieza personalizada cotizada con la calculadora (sin referencia de catálogo).
  */
-function agregarPersonalizadoAlCarrito({ peso, volumen, precioUnitario, cantidad }) {
+function agregarPersonalizadoAlCarrito({ peso, precioUnitario, cantidad }) {
   const carrito = obtenerCarrito();
   carrito.push({
     referencia: null,
     personalizado: true,
     nombre: "Pieza personalizada",
     peso,
-    volumen,
     precioUnitario,
     cantidad,
     talla: "",
@@ -60,7 +59,7 @@ function infoLineaCarrito(linea) {
   if (linea.personalizado) {
     return {
       referencia: "PERSONALIZADO",
-      nombre: `Pieza personalizada (${linea.peso} g · ${linea.volumen} cm³)`,
+      nombre: `Pieza personalizada (${linea.peso} g)`,
       imagen: "",
       precioUnitario: linea.precioUnitario,
     };

@@ -26,7 +26,6 @@ CREATE TABLE IF NOT EXISTS productos (
   tipo TEXT NOT NULL,
   nombre TEXT NOT NULL,
   descripcion TEXT NOT NULL DEFAULT '',
-  volumen NUMERIC(10, 2) NOT NULL DEFAULT 0,
   peso NUMERIC(10, 2) NOT NULL DEFAULT 0,
   peso_cera NUMERIC(10, 2) NOT NULL DEFAULT 0,
   material_tipo TEXT NOT NULL DEFAULT 'Oro 18k',
@@ -45,6 +44,7 @@ ALTER TABLE productos ADD COLUMN IF NOT EXISTS imagenes JSONB NOT NULL DEFAULT '
 ALTER TABLE productos DROP COLUMN IF EXISTS imagen;
 ALTER TABLE productos ADD COLUMN IF NOT EXISTS peso_cera NUMERIC(10, 2) NOT NULL DEFAULT 0;
 ALTER TABLE productos ADD COLUMN IF NOT EXISTS material_tipo TEXT NOT NULL DEFAULT 'Oro 18k';
+ALTER TABLE productos DROP COLUMN IF EXISTS volumen;
 
 -- Fila única (id siempre 1) con la configuración editable del sitio.
 CREATE TABLE IF NOT EXISTS configuracion (

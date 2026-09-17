@@ -1,9 +1,8 @@
 /**
  * Calculadora de servicio: estima el precio de una pieza a partir de su
- * volumen y peso (equivalente en oro 18k), sin necesidad de tener una referencia.
+ * peso (equivalente en oro 18k), sin necesidad de tener una referencia.
  */
 function actualizarCalculadora() {
-  const volumen = parseFloat(document.getElementById("calc-volumen").value) || 0;
   const peso = parseFloat(document.getElementById("calc-peso").value) || 0;
   const cantidad = parseInt(document.getElementById("calc-cantidad").value) || 1;
 
@@ -24,7 +23,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   await configuracionLista;
   actualizarCalculadora();
 
-  ["calc-volumen", "calc-peso"].forEach((id) => {
+  ["calc-peso"].forEach((id) => {
     document.getElementById(id).addEventListener("input", actualizarCalculadora);
   });
 
@@ -40,13 +39,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   campoCantidad.addEventListener("input", actualizarCalculadora);
 
   document.getElementById("btn-agregar-calculadora").addEventListener("click", () => {
-    const volumen = parseFloat(document.getElementById("calc-volumen").value) || 0;
     const peso = parseFloat(document.getElementById("calc-peso").value) || 0;
     const cantidad = parseInt(document.getElementById("calc-cantidad").value) || 1;
     if (peso <= 0) return;
     agregarPersonalizadoAlCarrito({
       peso,
-      volumen,
       precioUnitario: calcularPrecioServicio(peso),
       cantidad,
     });

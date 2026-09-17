@@ -30,11 +30,9 @@ function tarjetaProductoHTML(producto) {
 function obtenerFiltrosActuales() {
   const categoriaEl = document.querySelector('input[name="filtro-categoria"]:checked');
   const pesoEl = document.getElementById("filtro-peso");
-  const volumenEl = document.getElementById("filtro-volumen");
   return {
     categoria: categoriaEl ? categoriaEl.value : "todos",
     pesoMax: pesoEl ? parseFloat(pesoEl.value) : 999,
-    volumenMax: volumenEl ? parseFloat(volumenEl.value) : 999,
   };
 }
 
@@ -42,17 +40,14 @@ function renderCatalogo() {
   const contenedor = document.getElementById("resultado-catalogo");
   if (!contenedor) return;
 
-  const { categoria, pesoMax, volumenMax } = obtenerFiltrosActuales();
+  const { categoria, pesoMax } = obtenerFiltrosActuales();
 
   const pesoSalida = document.getElementById("salida-peso");
   if (pesoSalida) pesoSalida.textContent = pesoMax + " g";
-  const volumenSalida = document.getElementById("salida-volumen");
-  if (volumenSalida) volumenSalida.textContent = volumenMax + " cm³";
 
   const filtrados = PRODUCTOS.filter((p) => {
     if (categoria !== "todos" && p.tipo !== categoria) return false;
     if (p.peso > pesoMax) return false;
-    if (p.volumen > volumenMax) return false;
     return true;
   });
 
@@ -93,10 +88,10 @@ function irAReferencia(valor, elementoMensaje) {
 }
 
 /**
- * Los sliders de peso/volumen deben cubrir siempre el catálogo real: si un
- * producto queda por encima del tope fijo del slider, desaparece de la
- * vista por defecto sin ningún aviso. Se recalculan los topes con lo que
- * realmente hay en PRODUCTOS (con un pequeño margen) al cargar.
+ * El slider de peso debe cubrir siempre el catálogo real: si un producto
+ * queda por encima del tope fijo del slider, desaparece de la vista por
+ * defecto sin ningún aviso. Se recalcula el tope con lo que realmente hay
+ * en PRODUCTOS (con un pequeño margen) al cargar.
  */
 function ajustarRangosFiltro() {
   if (PRODUCTOS.length === 0) return;
@@ -106,13 +101,6 @@ function ajustarRangosFiltro() {
     const tope = Math.ceil(Math.max(...PRODUCTOS.map((p) => p.peso)) * 1.05) || 20;
     pesoEl.max = tope;
     pesoEl.value = tope;
-  }
-
-  const volumenEl = document.getElementById("filtro-volumen");
-  if (volumenEl) {
-    const tope = Math.ceil(Math.max(...PRODUCTOS.map((p) => p.volumen)) * 1.05) || 5;
-    volumenEl.max = tope;
-    volumenEl.value = tope;
   }
 }
 
@@ -126,8 +114,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
   const pesoEl = document.getElementById("filtro-peso");
   if (pesoEl) pesoEl.addEventListener("input", renderCatalogo);
-  const volumenEl = document.getElementById("filtro-volumen");
-  if (volumenEl) volumenEl.addEventListener("input", renderCatalogo);
 
   const btnLimpiar = document.getElementById("btn-limpiar-filtros");
   if (btnLimpiar) {
@@ -135,7 +121,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       const todos = document.getElementById("cat-todos");
       if (todos) todos.checked = true;
       if (pesoEl) pesoEl.value = pesoEl.max;
-      if (volumenEl) volumenEl.value = volumenEl.max;
       renderCatalogo();
     });
   }
