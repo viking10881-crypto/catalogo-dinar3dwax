@@ -74,16 +74,14 @@ function renderCatalogo() {
     .join("");
 }
 
-function irAReferencia(valor, elementoMensaje) {
+function irAReferencia(valor) {
   const ref = valor.trim().toUpperCase();
   if (!ref) return;
   const producto = buscarProducto(ref);
   if (producto) {
     window.location.href = `producto.html?ref=${producto.referencia}`;
-  } else if (elementoMensaje) {
-    elementoMensaje.textContent = `No encontramos la referencia "${ref}".`;
   } else {
-    window.location.href = `index.html?buscar=${encodeURIComponent(ref)}`;
+    alert(`No encontramos la referencia "${ref}".`);
   }
 }
 
@@ -134,22 +132,4 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // Bloque "¿Ya tienes la referencia?"
-  const formBusquedaRef = document.getElementById("form-busqueda-referencia");
-  if (formBusquedaRef) {
-    formBusquedaRef.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const mensaje = document.getElementById("mensaje-busqueda-ref");
-      mensaje.textContent = "";
-      irAReferencia(document.getElementById("campo-busqueda-referencia").value, mensaje);
-    });
-  }
-
-  // Si llegamos con ?buscar= en la URL, precargamos el campo
-  const params = new URLSearchParams(window.location.search);
-  const buscar = params.get("buscar");
-  if (buscar) {
-    const campo = document.getElementById("campo-busqueda-referencia");
-    if (campo) campo.value = buscar;
-  }
 });

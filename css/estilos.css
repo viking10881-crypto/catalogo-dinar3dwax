@@ -469,35 +469,6 @@ ul { list-style: none; margin: 0; padding: 0; }
 .resumen-calc { display: flex; justify-content: space-between; font-size: 0.9rem; padding: 4px 0; }
 .resumen-calc.total { font-weight: 700; font-size: 1.1rem; padding-top: 10px; border-top: 1px solid var(--borde); margin-top: 6px; }
 
-/* ===== Buscador por referencia (bloque) ===== */
-.bloque-buscador-ref {
-  background: var(--blanco);
-  border: 1px solid var(--borde);
-  border-radius: var(--radio);
-  padding: 28px;
-  text-align: center;
-  max-width: 520px;
-  margin: 0 auto 40px;
-}
-.bloque-buscador-ref h2 { margin-top: 0; font-size: 1.05rem; }
-.fila-buscador-ref {
-  display: flex;
-  gap: 10px;
-  margin-top: 14px;
-}
-.fila-buscador-ref input {
-  flex: 1;
-  min-width: 0;
-  padding: 11px 14px;
-  border: 1px solid var(--borde);
-  border-radius: 999px;
-  font-size: 0.95rem;
-}
-.fila-buscador-ref button {
-  border-radius: 999px;
-  padding: 0 22px;
-}
-.mensaje-buscador { margin-top: 10px; font-size: 0.85rem; color: #b23b3b; min-height: 1.2em; }
 
 /* ===== Carrito ===== */
 .pagina-carrito { padding: 40px 0 60px; }
@@ -1014,6 +985,4 @@ ul { list-style: none; margin: 0; padding: 0; }
   .buscador-rapido input { width: 100%; }
   .hero h1 { font-size: 1.5rem; }
   .fila-carrito { grid-template-columns: 60px 1fr; grid-template-rows: auto auto; }
-  .bloque-buscador-ref { padding: 20px; }
-  .fila-buscador-ref button { padding: 0 16px; }
 }
