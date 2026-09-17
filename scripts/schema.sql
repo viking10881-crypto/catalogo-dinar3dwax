@@ -45,6 +45,7 @@ ALTER TABLE productos DROP COLUMN IF EXISTS imagen;
 ALTER TABLE productos ADD COLUMN IF NOT EXISTS peso_cera NUMERIC(10, 2) NOT NULL DEFAULT 0;
 ALTER TABLE productos ADD COLUMN IF NOT EXISTS material_tipo TEXT NOT NULL DEFAULT 'Oro 18k';
 ALTER TABLE productos DROP COLUMN IF EXISTS volumen;
+ALTER TABLE productos ADD COLUMN IF NOT EXISTS subcategoria TEXT NOT NULL DEFAULT '';
 
 -- Fila única (id siempre 1) con la configuración editable del sitio.
 CREATE TABLE IF NOT EXISTS configuracion (
@@ -67,3 +68,4 @@ ALTER TABLE configuracion ADD COLUMN IF NOT EXISTS banco_tipo_cuenta TEXT NOT NU
 ALTER TABLE configuracion ADD COLUMN IF NOT EXISTS banco_numero_cuenta TEXT NOT NULL DEFAULT '';
 ALTER TABLE configuracion ADD COLUMN IF NOT EXISTS banco_titular TEXT NOT NULL DEFAULT '';
 ALTER TABLE configuracion ADD COLUMN IF NOT EXISTS banco_documento TEXT NOT NULL DEFAULT '';
+ALTER TABLE configuracion ADD COLUMN IF NOT EXISTS banner_imagenes JSONB NOT NULL DEFAULT '[]';

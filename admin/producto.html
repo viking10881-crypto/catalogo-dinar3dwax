@@ -41,6 +41,13 @@
       <option value="pulseras">Pulseras</option>
     </select>
 
+    <label for="subcategoria">Subcategoría (opcional)</label>
+    <input type="text" id="subcategoria" list="lista-subcategorias" placeholder="Ej: Solitarios, Argollas Matrimonio...">
+    <datalist id="lista-subcategorias"></datalist>
+    <p style="color:var(--gris); font-size:0.78rem; margin:4px 0 0;">
+      Se usa para armar el árbol de categorías del catálogo público. Escribe una nueva o elige una ya usada.
+    </p>
+
     <label for="nombre">Nombre</label>
     <input type="text" id="nombre" placeholder="Ej: Anillo modelo clásico" required>
 
@@ -344,6 +351,20 @@ document.getElementById("archivo-stl").addEventListener("change", async (e) => {
   }
 });
 
+async function cargarSugerenciasSubcategoria() {
+  try {
+    const r = await fetch("/api/admin/productos");
+    if (!r.ok) return;
+    const productos = await r.json();
+    const subcategorias = [...new Set(productos.map((p) => p.subcategoria).filter(Boolean))].sort();
+    document.getElementById("lista-subcategorias").innerHTML = subcategorias
+      .map((s) => `<option value="${s}">`)
+      .join("");
+  } catch (err) {
+    // No es crítico: el campo sigue funcionando como texto libre sin sugerencias.
+  }
+}
+
 const params = new URLSearchParams(window.location.search);
 const referenciaEdicion = params.get("ref");
 
@@ -361,6 +382,7 @@ async function cargarProductoParaEditar() {
   const p = await r.json();
 
   document.getElementById("tipo").value = p.tipo;
+  document.getElementById("subcategoria").value = p.subcategoria || "";
   document.getElementById("nombre").value = p.nombre;
   document.getElementById("descripcion").value = p.descripcion || "";
   document.getElementById("peso").value = p.peso;
@@ -386,6 +408,7 @@ document.getElementById("form-producto").addEventListener("submit", async (e) =>
   const cuerpo = {
     referencia: document.getElementById("referencia").value,
     tipo: document.getElementById("tipo").value,
+    subcategoria: document.getElementById("subcategoria").value,
     nombre: document.getElementById("nombre").value,
     descripcion: document.getElementById("descripcion").value,
     peso: document.getElementById("peso").value,
@@ -428,6 +451,7 @@ renderAdminSidebar("productos");
 (async () => {
   const autenticado = await exigirSesion();
   if (!autenticado) return;
+  cargarSugerenciasSubcategoria();
   if (referenciaEdicion) {
     await cargarProductoParaEditar();
   } else {

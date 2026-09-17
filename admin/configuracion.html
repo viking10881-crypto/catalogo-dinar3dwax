@@ -71,6 +71,16 @@
       <label for="bancoDocumento" style="margin-top:14px;">Documento del titular</label>
       <input type="text" id="bancoDocumento" placeholder="Cédula o NIT" required>
 
+      <h2 class="titulo-seccion" style="font-size:0.9rem; margin-top:28px;">Banner del catálogo</h2>
+      <p style="color:var(--gris); font-size:0.82rem; margin-top:-8px;">
+        Se muestra como fondo de la portada. 1 imagen = banner fijo, 2 o más = carrusel automático.
+      </p>
+
+      <label for="archivo-banner">Imágenes del banner (JPG, PNG o WEBP, máx. 8 MB c/u — puedes elegir varias a la vez)</label>
+      <input type="file" id="archivo-banner" accept="image/jpeg,image/png,image/webp" multiple>
+      <div id="galeria-banner-admin" class="galeria-imagenes-admin"></div>
+      <p id="mensaje-banner" class="mensaje-admin"></p>
+
       <button type="submit" class="btn btn-dorado btn-full" style="margin-top:20px;">Guardar configuración</button>
       <p id="mensaje-formulario" class="mensaje-admin"></p>
     </form>
@@ -98,6 +108,112 @@ function actualizarVistaPrevia() {
 document.getElementById("divisorPesoOro18k").addEventListener("input", actualizarVistaPrevia);
 document.getElementById("precioPorGramoCera").addEventListener("input", actualizarVistaPrevia);
 
+const TAMANO_MAXIMO_IMAGEN_BANNER = 8 * 1024 * 1024;
+let bannerImagenesActuales = [];
+
+function renderGaleriaBanner() {
+  const contenedor = document.getElementById("galeria-banner-admin");
+  contenedor.innerHTML = bannerImagenesActuales
+    .map(
+      (url, i) => `
+      <div class="miniatura-admin-editable">
+        <div class="miniatura-admin"><img src="${url}" alt="Banner ${i + 1}"></div>
+        <div class="miniatura-acciones">
+          ${i > 0 ? `<button type="button" data-mover-banner="${i}" title="Mover antes">↑</button>` : ""}
+          <button type="button" data-quitar-banner="${i}" title="Quitar">✕</button>
+        </div>
+      </div>
+    `
+    )
+    .join("");
+}
+
+function archivoABase64(file) {
+  return new Promise((resolve, reject) => {
+    const lector = new FileReader();
+    lector.onload = () => resolve(String(lector.result).split(",")[1] || "");
+    lector.onerror = reject;
+    lector.readAsDataURL(file);
+  });
+}
+
+document.getElementById("galeria-banner-admin").addEventListener("click", (e) => {
+  const btnQuitar = e.target.closest("button[data-quitar-banner]");
+  const btnMover = e.target.closest("button[data-mover-banner]");
+
+  if (btnQuitar) {
+    const indice = Number(btnQuitar.getAttribute("data-quitar-banner"));
+    const url = bannerImagenesActuales[indice];
+    if (!confirm("¿Quitar esta imagen del banner?")) return;
+    bannerImagenesActuales.splice(indice, 1);
+    renderGaleriaBanner();
+    fetch("/api/admin/borrar-imagen", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url }),
+    }).catch(() => {});
+  }
+
+  if (btnMover) {
+    const indice = Number(btnMover.getAttribute("data-mover-banner"));
+    [bannerImagenesActuales[indice - 1], bannerImagenesActuales[indice]] = [
+      bannerImagenesActuales[indice],
+      bannerImagenesActuales[indice - 1],
+    ];
+    renderGaleriaBanner();
+  }
+});
+
+document.getElementById("archivo-banner").addEventListener("change", async (e) => {
+  const archivos = Array.from(e.target.files || []);
+  const mensaje = document.getElementById("mensaje-banner");
+  mensaje.textContent = "";
+  mensaje.className = "mensaje-admin";
+  if (archivos.length === 0) return;
+
+  let subidas = 0;
+
+  for (const archivo of archivos) {
+    if (!["image/jpeg", "image/png", "image/webp"].includes(archivo.type)) {
+      mensaje.textContent = `"${archivo.name}" no es JPG, PNG ni WEBP — se omitió.`;
+      mensaje.className = "mensaje-admin error";
+      continue;
+    }
+    if (archivo.size > TAMANO_MAXIMO_IMAGEN_BANNER) {
+      mensaje.textContent = `"${archivo.name}" supera 8 MB — se omitió.`;
+      mensaje.className = "mensaje-admin error";
+      continue;
+    }
+
+    mensaje.textContent = `Subiendo ${subidas + 1} de ${archivos.length}...`;
+    mensaje.className = "mensaje-admin";
+
+    try {
+      const datosBase64 = await archivoABase64(archivo);
+      const r = await fetch("/api/admin/subir-imagen?referencia=banner&carpeta=banner", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contentType: archivo.type, datosBase64 }),
+      });
+      const datos = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(datos.error || "No se pudo subir la imagen");
+
+      bannerImagenesActuales.push(datos.url);
+      renderGaleriaBanner();
+      subidas++;
+    } catch (err) {
+      mensaje.textContent = err.message || `No se pudo subir "${archivo.name}".`;
+      mensaje.className = "mensaje-admin error";
+    }
+  }
+
+  if (subidas === archivos.length) {
+    mensaje.textContent = `${subidas} imagen(es) subida(s) correctamente. Se guardan al enviar el formulario.`;
+    mensaje.className = "mensaje-admin ok";
+  }
+  e.target.value = "";
+});
+
 async function cargarConfiguracion() {
   const mensaje = document.getElementById("mensaje-formulario");
   try {
@@ -115,6 +231,8 @@ async function cargarConfiguracion() {
     document.getElementById("bancoNumeroCuenta").value = config.bancoNumeroCuenta;
     document.getElementById("bancoTitular").value = config.bancoTitular;
     document.getElementById("bancoDocumento").value = config.bancoDocumento;
+    bannerImagenesActuales = config.bannerImagenes ? [...config.bannerImagenes] : [];
+    renderGaleriaBanner();
     actualizarVistaPrevia();
   } catch (err) {
     mensaje.textContent = "No se pudo cargar la configuración.";
@@ -137,6 +255,7 @@ document.getElementById("form-configuracion").addEventListener("submit", async (
     bancoNumeroCuenta: document.getElementById("bancoNumeroCuenta").value,
     bancoTitular: document.getElementById("bancoTitular").value,
     bancoDocumento: document.getElementById("bancoDocumento").value,
+    bannerImagenes: bannerImagenesActuales,
   };
 
   try {

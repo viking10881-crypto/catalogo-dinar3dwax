@@ -110,6 +110,10 @@ function validarConfiguracionBody(body) {
   datos.bancoDocumento = String(body.bancoDocumento || "").trim();
   if (!datos.bancoDocumento) errores.push("El documento del titular es obligatorio");
 
+  datos.bannerImagenes = Array.isArray(body.bannerImagenes)
+    ? body.bannerImagenes.map((u) => String(u || "").trim()).filter(Boolean)
+    : [];
+
   return { datos, errores };
 }
 
@@ -182,6 +186,7 @@ async function manejarSubirImagen(req, res) {
   try {
     const { contentType, datosBase64 } = req.body || {};
     const referencia = String(req.query.referencia || "producto").trim().toUpperCase() || "PRODUCTO";
+    const carpeta = req.query.carpeta === "banner" ? "banner" : "productos";
 
     const extension = TIPOS_IMAGEN_PERMITIDOS[contentType];
     if (!extension) {
@@ -203,7 +208,7 @@ async function manejarSubirImagen(req, res) {
       return;
     }
 
-    const nombreArchivo = `productos/${referencia}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${extension}`;
+    const nombreArchivo = `${carpeta}/${referencia}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${extension}`;
     const blob = await put(nombreArchivo, buffer, {
       access: "public",
       contentType,

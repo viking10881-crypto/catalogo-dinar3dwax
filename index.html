@@ -4,6 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dinar 3D Wax · Catálogo para joyeros</title>
+<script>
+(function () {
+  try {
+    var t = localStorage.getItem("tema-sitio");
+    if (!t) t = matchMedia("(prefers-color-scheme: dark)").matches ? "oscuro" : "claro";
+    document.documentElement.dataset.tema = t;
+  } catch (e) {}
+})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
@@ -14,51 +26,44 @@
       <img src="img/logo-dinar3dwax.png" alt="Dinar 3D Wax" class="logo-img">
     </a>
     <nav class="nav-principal">
-      <a href="index.html">Catálogo</a>
-      <a href="calculadora.html">Calculadora</a>
-      <a href="index.html#recursos">Recursos</a>
-      <a href="index.html#faq">Preguntas frecuentes</a>
+      <a href="index.html">Categorías</a>
+      <a href="calculadora.html">Calculadora de Pesos</a>
+      <a href="index.html#recursos">Recursos 3D</a>
+      <a href="index.html#faq">Preguntas Frecuentes</a>
     </nav>
     <div class="acciones-cabecera">
-      <form id="form-busqueda-rapida" class="buscador-rapido">
-        <span>🔎</span>
-        <input type="text" id="campo-busqueda-rapida" placeholder="Buscar referencia">
-      </form>
-      <a href="carrito.html" class="carrito-boton">🛒 Carrito (<span data-contador-carrito>0</span>)</a>
+      <button type="button" id="toggle-tema" class="toggle-tema" title="Cambiar modo oscuro/claro" aria-label="Cambiar modo oscuro/claro">
+        <svg class="icono-sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        <svg class="icono-luna" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
+      </button>
+      <a href="carrito.html" class="carrito-boton">🛒 (<span data-contador-carrito>0</span>)</a>
     </div>
   </div>
 </header>
 
-<section class="hero">
-  <div class="contenedor">
-    <h1>Catálogo para joyeros</h1>
-    <p>Modelos en cera casteable listos para producción</p>
+<section class="hero-catalogo" id="hero-catalogo">
+  <div class="capa-banner"></div>
+  <div class="contenido-hero-catalogo">
+    <span class="pill-hero">✨ Edición 2026 · Modelos 3D</span>
+    <h1>Catálogo Exclusivo para Joyeros</h1>
+    <p>Modelos digitales listos para impresión 3D directa en cera casteable y fundición de alta fidelidad.</p>
+    <form id="form-busqueda-hero" class="buscador-hero">
+      <input type="text" id="campo-busqueda-hero" placeholder="Escribe la referencia exacta (ej. AN-025)...">
+      <button type="submit">🔎 Buscar</button>
+    </form>
   </div>
+  <div class="puntos-banner"></div>
 </section>
 
 <div class="contenedor">
   <div class="zona-catalogo" style="margin-top: 32px;">
     <aside class="panel-filtros">
-      <h3>Filtros</h3>
+      <h3>Categorías</h3>
       <label class="opcion-filtro">
         <input type="radio" name="filtro-categoria" id="cat-todos" value="todos" checked>
         Todos
       </label>
-      <label class="opcion-filtro">
-        <input type="radio" name="filtro-categoria" value="anillos"> Anillos
-      </label>
-      <label class="opcion-filtro">
-        <input type="radio" name="filtro-categoria" value="dijes"> Dijes
-      </label>
-      <label class="opcion-filtro">
-        <input type="radio" name="filtro-categoria" value="aretes"> Aretes
-      </label>
-      <label class="opcion-filtro">
-        <input type="radio" name="filtro-categoria" value="cadenas"> Cadenas
-      </label>
-      <label class="opcion-filtro">
-        <input type="radio" name="filtro-categoria" value="pulseras"> Pulseras
-      </label>
+      <div id="arbol-categorias"></div>
 
       <h3>Peso cera</h3>
       <div class="rango-filtro">
@@ -133,6 +138,7 @@
   </div>
 </footer>
 
+<script src="js/tema.js"></script>
 <script src="js/productos.js"></script>
 <script src="js/carrito.js"></script>
 <script src="js/catalogo.js"></script>
