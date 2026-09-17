@@ -52,13 +52,19 @@ function validarCampo(campo) {
   return true;
 }
 
-function archivoABase64(file) {
-  return new Promise((resolve, reject) => {
-    const lector = new FileReader();
-    lector.onload = () => resolve(String(lector.result).split(",")[1] || "");
-    lector.onerror = reject;
-    lector.readAsDataURL(file);
+/**
+ * Sube el comprobante directo desde el navegador a Vercel Blob (sin pasar
+ * por nuestra función de servidor). El límite de body de 4.5 MB de Vercel
+ * Functions rompía el flujo viejo de JSON+base64 para fotos de comprobante
+ * reales arriba de ~3.2 MB, aunque el mensaje dijera "máx. 8 MB".
+ */
+async function subirDirectoABlob(pathname, archivo) {
+  const { upload } = await import("https://esm.sh/@vercel/blob@2.8.0/client");
+  const blob = await upload(pathname, archivo, {
+    access: "public",
+    handleUploadUrl: "/api/subir-comprobante",
   });
+  return blob.url;
 }
 
 let comprobanteUrl = "";
@@ -87,14 +93,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     mensajeComprobante.className = "mensaje-admin";
     if (!archivo) return;
 
-    if (!["image/jpeg", "image/png", "application/pdf"].includes(archivo.type)) {
+    const EXTENSION_POR_TIPO = { "image/jpeg": "jpg", "image/png": "png", "application/pdf": "pdf" };
+    const extension = EXTENSION_POR_TIPO[archivo.type];
+    if (!extension) {
       mensajeComprobante.textContent = "Formato no soportado. Usa JPG, PNG o PDF.";
       mensajeComprobante.className = "mensaje-admin error";
       e.target.value = "";
       return;
     }
-    if (archivo.size > 8 * 1024 * 1024) {
-      mensajeComprobante.textContent = "El archivo no puede superar 8 MB.";
+    if (archivo.size > 20 * 1024 * 1024) {
+      mensajeComprobante.textContent = "El archivo no puede superar 20 MB.";
       mensajeComprobante.className = "mensaje-admin error";
       e.target.value = "";
       return;
@@ -103,16 +111,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     mensajeComprobante.textContent = "Subiendo comprobante...";
 
     try {
-      const datosBase64 = await archivoABase64(archivo);
-      const r = await fetch("/api/subir-comprobante", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contentType: archivo.type, datosBase64 }),
-      });
-      const datos = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(datos.error || "No se pudo subir el comprobante");
-
-      comprobanteUrl = datos.url;
+      const pathname = `comprobantes/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${extension}`;
+      comprobanteUrl = await subirDirectoABlob(pathname, archivo);
       btnConfirmar.disabled = false;
       mensajeComprobante.textContent = "Comprobante subido correctamente.";
       mensajeComprobante.className = "mensaje-admin ok";

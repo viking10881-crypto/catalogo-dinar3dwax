@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
-import { put, del } from "@vercel/blob";
+import { del } from "@vercel/blob";
+import { handleUpload } from "@vercel/blob/client";
 import {
   requiereAdmin,
   sesionValida,
@@ -170,106 +171,48 @@ async function manejarBorrarImagen(req, res) {
   }
 }
 
-const TIPOS_IMAGEN_PERMITIDOS = {
-  "image/jpeg": "jpg",
-  "image/png": "png",
-  "image/webp": "webp",
-};
-const TAMANO_MAXIMO_IMAGEN = 8 * 1024 * 1024; // 8 MB
-
-async function manejarSubirImagen(req, res) {
+/**
+ * Genera un token de subida para que el navegador suba el archivo
+ * directo a Vercel Blob, sin pasar por esta función. Es el reemplazo del
+ * viejo flujo JSON+base64 (que llevaba el archivo dentro del body de la
+ * petición): Vercel limita el body de una función a 4.5 MB, así que
+ * cualquier imagen/STL codificado en base64 arriba de ~3.2 MB fallaba con
+ * 413, aunque el mensaje dijera "máx. 8/20 MB". Subiendo directo a Blob
+ * ese límite no aplica.
+ */
+async function manejarUploadToken(req, res) {
   if (!requiereAdmin(req, res)) return;
   if (req.method !== "POST") {
     res.status(405).json({ error: "Método no permitido" });
     return;
   }
   try {
-    const { contentType, datosBase64 } = req.body || {};
-    const referencia = String(req.query.referencia || "producto").trim().toUpperCase() || "PRODUCTO";
-    const carpeta = req.query.carpeta === "banner" ? "banner" : "productos";
+    const jsonResponse = await handleUpload({
+      body: req.body,
+      request: req,
+      onBeforeGenerateToken: async (pathname, clientPayloadJson) => {
+        let contexto = "";
+        try {
+          contexto = clientPayloadJson ? JSON.parse(clientPayloadJson).contexto : "";
+        } catch {
+          contexto = "";
+        }
 
-    const extension = TIPOS_IMAGEN_PERMITIDOS[contentType];
-    if (!extension) {
-      res.status(400).json({ error: "Formato no soportado. Usa JPG, PNG o WEBP." });
-      return;
-    }
-    if (!datosBase64) {
-      res.status(400).json({ error: "El archivo está vacío" });
-      return;
-    }
+        if (contexto === "stl") {
+          if (!/\.stl$/i.test(pathname)) throw new Error("El archivo debe tener extensión .stl");
+          return { maximumSizeInBytes: 200 * 1024 * 1024 };
+        }
 
-    const buffer = Buffer.from(datosBase64, "base64");
-    if (buffer.length === 0) {
-      res.status(400).json({ error: "El archivo está vacío" });
-      return;
-    }
-    if (buffer.length > TAMANO_MAXIMO_IMAGEN) {
-      res.status(400).json({ error: "La imagen no puede superar 8 MB" });
-      return;
-    }
-
-    const nombreArchivo = `${carpeta}/${referencia}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${extension}`;
-    const blob = await put(nombreArchivo, buffer, {
-      access: "public",
-      contentType,
+        return {
+          allowedContentTypes: ["image/jpeg", "image/png", "image/webp"],
+          maximumSizeInBytes: 20 * 1024 * 1024,
+        };
+      },
     });
-
-    res.status(200).json({ url: blob.url });
+    res.status(200).json(jsonResponse);
   } catch (err) {
-    console.error("Error subiendo imagen:", err);
-    res.status(500).json({ error: "No se pudo subir la imagen" });
-  }
-}
-
-const TAMANO_MAXIMO_STL = 20 * 1024 * 1024; // 20 MB
-
-async function manejarSubirStl(req, res) {
-  if (!requiereAdmin(req, res)) return;
-  if (req.method !== "POST") {
-    res.status(405).json({ error: "Método no permitido" });
-    return;
-  }
-  try {
-    const { datosBase64, nombreOriginal, reemplazaUrl } = req.body || {};
-    const referencia = String(req.query.referencia || "producto").trim().toUpperCase() || "PRODUCTO";
-
-    if (!/\.stl$/i.test(String(nombreOriginal || ""))) {
-      res.status(400).json({ error: "El archivo debe tener extensión .stl" });
-      return;
-    }
-    if (!datosBase64) {
-      res.status(400).json({ error: "El archivo está vacío" });
-      return;
-    }
-
-    const buffer = Buffer.from(datosBase64, "base64");
-    if (buffer.length === 0) {
-      res.status(400).json({ error: "El archivo está vacío" });
-      return;
-    }
-    if (buffer.length > TAMANO_MAXIMO_STL) {
-      res.status(400).json({ error: "El archivo STL no puede superar 20 MB" });
-      return;
-    }
-
-    const nombreArchivo = `modelos-stl/${referencia}-${Date.now()}.stl`;
-    const blob = await put(nombreArchivo, buffer, {
-      access: "public",
-      contentType: "model/stl",
-    });
-
-    if (esUrlDeNuestroBlob(reemplazaUrl)) {
-      try {
-        await del(reemplazaUrl);
-      } catch (err) {
-        console.error("No se pudo borrar el STL anterior:", err);
-      }
-    }
-
-    res.status(200).json({ url: blob.url });
-  } catch (err) {
-    console.error("Error subiendo STL:", err);
-    res.status(500).json({ error: "No se pudo subir el archivo STL" });
+    console.error("Error generando token de subida:", err);
+    res.status(400).json({ error: err.message || "No se pudo generar el token de subida" });
   }
 }
 
@@ -452,10 +395,8 @@ export default async function handler(req, res) {
       return manejarConfiguracion(req, res);
     case "borrar-imagen":
       return manejarBorrarImagen(req, res);
-    case "subir-imagen":
-      return manejarSubirImagen(req, res);
-    case "subir-stl":
-      return manejarSubirStl(req, res);
+    case "upload-token":
+      return manejarUploadToken(req, res);
     case "productos":
       return manejarProductos(req, res);
     case "pedidos":

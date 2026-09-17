@@ -1,18 +1,13 @@
-import { put } from "@vercel/blob";
-
-const TIPOS_PERMITIDOS = {
-  "image/jpeg": "jpg",
-  "image/png": "png",
-  "application/pdf": "pdf",
-};
-
-const TAMANO_MAXIMO = 8 * 1024 * 1024; // 8 MB
+import { handleUpload } from "@vercel/blob/client";
 
 /**
  * Endpoint público (sin login): el cliente sube el comprobante de su
- * transferencia durante el checkout, antes de tener un pedido creado. Igual
- * que las subidas del panel, recibe JSON + base64 en vez de binario crudo
- * (ver nota en api/admin/subir-imagen.js sobre por qué).
+ * transferencia durante el checkout, antes de tener un pedido creado.
+ * Genera un token para que el navegador suba el archivo directo a Vercel
+ * Blob (sin pasar por esta función) — el viejo flujo JSON+base64 llevaba
+ * el archivo dentro del body de la petición, y Vercel limita ese body a
+ * 4.5 MB, así que cualquier comprobante codificado en base64 arriba de
+ * ~3.2 MB fallaba con 413 aunque el mensaje dijera "máx. 8 MB".
  */
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -21,37 +16,22 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { contentType, datosBase64 } = req.body || {};
-
-    const extension = TIPOS_PERMITIDOS[contentType];
-    if (!extension) {
-      res.status(400).json({ error: "Formato no soportado. Usa JPG, PNG o PDF." });
-      return;
-    }
-    if (!datosBase64) {
-      res.status(400).json({ error: "El archivo está vacío" });
-      return;
-    }
-
-    const buffer = Buffer.from(datosBase64, "base64");
-    if (buffer.length === 0) {
-      res.status(400).json({ error: "El archivo está vacío" });
-      return;
-    }
-    if (buffer.length > TAMANO_MAXIMO) {
-      res.status(400).json({ error: "El archivo no puede superar 8 MB" });
-      return;
-    }
-
-    const nombreArchivo = `comprobantes/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${extension}`;
-    const blob = await put(nombreArchivo, buffer, {
-      access: "public",
-      contentType,
+    const jsonResponse = await handleUpload({
+      body: req.body,
+      request: req,
+      onBeforeGenerateToken: async (pathname) => {
+        if (!/^comprobantes\//.test(pathname)) {
+          throw new Error("Ruta de destino inválida");
+        }
+        return {
+          allowedContentTypes: ["image/jpeg", "image/png", "application/pdf"],
+          maximumSizeInBytes: 20 * 1024 * 1024,
+        };
+      },
     });
-
-    res.status(200).json({ url: blob.url });
+    res.status(200).json(jsonResponse);
   } catch (err) {
-    console.error("Error subiendo comprobante:", err);
-    res.status(500).json({ error: "No se pudo subir el comprobante" });
+    console.error("Error generando token de subida de comprobante:", err);
+    res.status(400).json({ error: err.message || "No se pudo generar el token de subida" });
   }
 }

@@ -69,12 +69,12 @@
     <label for="precioBase">Precio (COP)</label>
     <input type="number" id="precioBase" min="0" step="100" required>
 
-    <label for="archivo-imagen">Imágenes del producto (JPG, PNG o WEBP, máx. 8 MB c/u — puedes elegir varias a la vez)</label>
+    <label for="archivo-imagen">Imágenes del producto (JPG, PNG o WEBP, máx. 20 MB c/u — puedes elegir varias a la vez)</label>
     <input type="file" id="archivo-imagen" accept="image/jpeg,image/png,image/webp" multiple>
     <div id="galeria-imagenes-admin" class="galeria-imagenes-admin"></div>
     <p id="mensaje-imagen" class="mensaje-admin"></p>
 
-    <label for="archivo-stl">Archivo STL (vista 3D del modelo, máx. 20 MB)</label>
+    <label for="archivo-stl">Archivo STL (vista 3D del modelo, máx. 150 MB)</label>
     <input type="file" id="archivo-stl" accept=".stl">
     <p id="estado-stl" class="mensaje-admin"></p>
     <p id="mensaje-stl" class="mensaje-admin"></p>
@@ -186,7 +186,7 @@ document.getElementById("chips-tallas").addEventListener("click", (e) => {
   renderChipsTallas();
 });
 
-const TAMANO_MAXIMO_IMAGEN = 8 * 1024 * 1024;
+const TAMANO_MAXIMO_IMAGEN = 20 * 1024 * 1024;
 let imagenesActuales = [];
 
 function renderGaleriaImagenesAdmin() {
@@ -207,13 +207,22 @@ function renderGaleriaImagenesAdmin() {
     .join("");
 }
 
-function archivoABase64(file) {
-  return new Promise((resolve, reject) => {
-    const lector = new FileReader();
-    lector.onload = () => resolve(String(lector.result).split(",")[1] || "");
-    lector.onerror = reject;
-    lector.readAsDataURL(file);
+/**
+ * Sube el archivo directo desde el navegador a Vercel Blob (sin pasar por
+ * nuestra función de servidor). Vercel limita el body de una función a
+ * 4.5 MB, así que el viejo flujo de JSON+base64 fallaba con 413 para
+ * cualquier archivo real arriba de ~3.2 MB codificado — aunque el mensaje
+ * dijera "máx. 8/20 MB". El módulo se importa dinámicamente porque este
+ * sitio no tiene paso de build/bundler.
+ */
+async function subirDirectoABlob(pathname, archivo, contexto) {
+  const { upload } = await import("https://esm.sh/@vercel/blob@2.8.0/client");
+  const blob = await upload(pathname, archivo, {
+    access: "public",
+    handleUploadUrl: "/api/admin/upload-token",
+    clientPayload: JSON.stringify({ contexto }),
   });
+  return blob.url;
 }
 
 document.getElementById("galeria-imagenes-admin").addEventListener("click", async (e) => {
@@ -240,6 +249,8 @@ document.getElementById("galeria-imagenes-admin").addEventListener("click", asyn
   }
 });
 
+const EXTENSION_POR_TIPO_IMAGEN = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
+
 document.getElementById("archivo-imagen").addEventListener("change", async (e) => {
   const archivos = Array.from(e.target.files || []);
   const mensaje = document.getElementById("mensaje-imagen");
@@ -247,17 +258,18 @@ document.getElementById("archivo-imagen").addEventListener("change", async (e) =
   mensaje.className = "mensaje-admin";
   if (archivos.length === 0) return;
 
-  const referenciaActual = document.getElementById("referencia").value || "producto";
+  const referenciaActual = (document.getElementById("referencia").value || "producto").trim().toUpperCase() || "PRODUCTO";
   let subidas = 0;
 
   for (const archivo of archivos) {
-    if (!["image/jpeg", "image/png", "image/webp"].includes(archivo.type)) {
+    const extension = EXTENSION_POR_TIPO_IMAGEN[archivo.type];
+    if (!extension) {
       mensaje.textContent = `"${archivo.name}" no es JPG, PNG ni WEBP — se omitió.`;
       mensaje.className = "mensaje-admin error";
       continue;
     }
     if (archivo.size > TAMANO_MAXIMO_IMAGEN) {
-      mensaje.textContent = `"${archivo.name}" supera 8 MB — se omitió.`;
+      mensaje.textContent = `"${archivo.name}" supera 20 MB — se omitió.`;
       mensaje.className = "mensaje-admin error";
       continue;
     }
@@ -266,16 +278,10 @@ document.getElementById("archivo-imagen").addEventListener("change", async (e) =
     mensaje.className = "mensaje-admin";
 
     try {
-      const datosBase64 = await archivoABase64(archivo);
-      const r = await fetch(`/api/admin/subir-imagen?referencia=${encodeURIComponent(referenciaActual)}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contentType: archivo.type, datosBase64 }),
-      });
-      const datos = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(datos.error || "No se pudo subir la imagen");
+      const pathname = `productos/${referenciaActual}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${extension}`;
+      const url = await subirDirectoABlob(pathname, archivo, "imagen");
 
-      imagenesActuales.push(datos.url);
+      imagenesActuales.push(url);
       renderGaleriaImagenesAdmin();
       subidas++;
     } catch (err) {
@@ -291,7 +297,7 @@ document.getElementById("archivo-imagen").addEventListener("change", async (e) =
   e.target.value = "";
 });
 
-const TAMANO_MAXIMO_STL = 20 * 1024 * 1024;
+const TAMANO_MAXIMO_STL = 150 * 1024 * 1024;
 
 function mostrarEstadoStl(url) {
   const estado = document.getElementById("estado-stl");
@@ -314,7 +320,7 @@ document.getElementById("archivo-stl").addEventListener("change", async (e) => {
     return;
   }
   if (archivo.size > TAMANO_MAXIMO_STL) {
-    mensaje.textContent = "El archivo STL no puede superar 20 MB.";
+    mensaje.textContent = "El archivo STL no puede superar 150 MB.";
     mensaje.className = "mensaje-admin error";
     e.target.value = "";
     return;
@@ -323,26 +329,24 @@ document.getElementById("archivo-stl").addEventListener("change", async (e) => {
   mensaje.textContent = "Subiendo archivo STL...";
 
   try {
-    const datosBase64 = await archivoABase64(archivo);
-    const referenciaActual = document.getElementById("referencia").value || "producto";
-    const urlActual = document.getElementById("modeloStl").value;
+    const referenciaActual = (document.getElementById("referencia").value || "producto").trim().toUpperCase() || "PRODUCTO";
+    const urlAnterior = document.getElementById("modeloStl").value;
 
-    const r = await fetch(`/api/admin/subir-stl?referencia=${encodeURIComponent(referenciaActual)}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        datosBase64,
-        nombreOriginal: archivo.name,
-        reemplazaUrl: urlActual,
-      }),
-    });
-    const datos = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error(datos.error || "No se pudo subir el archivo STL");
+    const pathname = `modelos-stl/${referenciaActual}-${Date.now()}.stl`;
+    const url = await subirDirectoABlob(pathname, archivo, "stl");
 
-    document.getElementById("modeloStl").value = datos.url;
-    mostrarEstadoStl(datos.url);
+    document.getElementById("modeloStl").value = url;
+    mostrarEstadoStl(url);
     mensaje.textContent = "Archivo STL subido correctamente.";
     mensaje.className = "mensaje-admin ok";
+
+    if (urlAnterior) {
+      fetch("/api/admin/borrar-imagen", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: urlAnterior }),
+      }).catch(() => {});
+    }
   } catch (err) {
     mensaje.textContent = err.message || "No se pudo subir el archivo STL.";
     mensaje.className = "mensaje-admin error";

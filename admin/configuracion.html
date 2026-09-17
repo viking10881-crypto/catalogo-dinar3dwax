@@ -76,7 +76,7 @@
         Se muestra como fondo de la portada. 1 imagen = banner fijo, 2 o más = carrusel automático.
       </p>
 
-      <label for="archivo-banner">Imágenes del banner (JPG, PNG o WEBP, máx. 8 MB c/u — puedes elegir varias a la vez)</label>
+      <label for="archivo-banner">Imágenes del banner (JPG, PNG o WEBP, máx. 20 MB c/u — puedes elegir varias a la vez)</label>
       <input type="file" id="archivo-banner" accept="image/jpeg,image/png,image/webp" multiple>
       <div id="galeria-banner-admin" class="galeria-imagenes-admin"></div>
       <p id="mensaje-banner" class="mensaje-admin"></p>
@@ -108,7 +108,7 @@ function actualizarVistaPrevia() {
 document.getElementById("divisorPesoOro18k").addEventListener("input", actualizarVistaPrevia);
 document.getElementById("precioPorGramoCera").addEventListener("input", actualizarVistaPrevia);
 
-const TAMANO_MAXIMO_IMAGEN_BANNER = 8 * 1024 * 1024;
+const TAMANO_MAXIMO_IMAGEN_BANNER = 20 * 1024 * 1024;
 let bannerImagenesActuales = [];
 
 function renderGaleriaBanner() {
@@ -128,13 +128,20 @@ function renderGaleriaBanner() {
     .join("");
 }
 
-function archivoABase64(file) {
-  return new Promise((resolve, reject) => {
-    const lector = new FileReader();
-    lector.onload = () => resolve(String(lector.result).split(",")[1] || "");
-    lector.onerror = reject;
-    lector.readAsDataURL(file);
+/**
+ * Sube directo desde el navegador a Vercel Blob (ver nota igual en
+ * admin/producto.html sobre por qué: el límite de body de 4.5 MB de
+ * Vercel Functions rompía el flujo viejo de JSON+base64 para imágenes
+ * reales arriba de ~3.2 MB).
+ */
+async function subirDirectoABlob(pathname, archivo, contexto) {
+  const { upload } = await import("https://esm.sh/@vercel/blob@2.8.0/client");
+  const blob = await upload(pathname, archivo, {
+    access: "public",
+    handleUploadUrl: "/api/admin/upload-token",
+    clientPayload: JSON.stringify({ contexto }),
   });
+  return blob.url;
 }
 
 document.getElementById("galeria-banner-admin").addEventListener("click", (e) => {
@@ -171,16 +178,18 @@ document.getElementById("archivo-banner").addEventListener("change", async (e) =
   mensaje.className = "mensaje-admin";
   if (archivos.length === 0) return;
 
+  const EXTENSION_POR_TIPO = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
   let subidas = 0;
 
   for (const archivo of archivos) {
-    if (!["image/jpeg", "image/png", "image/webp"].includes(archivo.type)) {
+    const extension = EXTENSION_POR_TIPO[archivo.type];
+    if (!extension) {
       mensaje.textContent = `"${archivo.name}" no es JPG, PNG ni WEBP — se omitió.`;
       mensaje.className = "mensaje-admin error";
       continue;
     }
     if (archivo.size > TAMANO_MAXIMO_IMAGEN_BANNER) {
-      mensaje.textContent = `"${archivo.name}" supera 8 MB — se omitió.`;
+      mensaje.textContent = `"${archivo.name}" supera 20 MB — se omitió.`;
       mensaje.className = "mensaje-admin error";
       continue;
     }
@@ -189,16 +198,10 @@ document.getElementById("archivo-banner").addEventListener("change", async (e) =
     mensaje.className = "mensaje-admin";
 
     try {
-      const datosBase64 = await archivoABase64(archivo);
-      const r = await fetch("/api/admin/subir-imagen?referencia=banner&carpeta=banner", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contentType: archivo.type, datosBase64 }),
-      });
-      const datos = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(datos.error || "No se pudo subir la imagen");
+      const pathname = `banner/${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${extension}`;
+      const url = await subirDirectoABlob(pathname, archivo, "imagen");
 
-      bannerImagenesActuales.push(datos.url);
+      bannerImagenesActuales.push(url);
       renderGaleriaBanner();
       subidas++;
     } catch (err) {
