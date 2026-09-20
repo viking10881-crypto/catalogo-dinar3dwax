@@ -205,6 +205,18 @@ function iniciarBannerCatalogo(imagenes) {
   }, 5000);
 }
 
+/**
+ * Botón flotante de WhatsApp del catálogo: usa el número configurado en
+ * /admin/configuracion.html (CONFIG.whatsappNumero), no uno fijo, para que
+ * si el cliente lo cambia en el admin, este botón lo refleje solo.
+ */
+function configurarBotonWhatsapp() {
+  const boton = document.getElementById("btn-whatsapp-flotante");
+  if (!boton) return;
+  const mensaje = encodeURIComponent("Hola Dinar 3D Wax, quisiera más información sobre su catálogo de modelos.");
+  boton.href = `https://wa.me/${CONFIG.whatsappNumero}?text=${mensaje}`;
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
   await productosListos;
   renderArbolCategorias();
@@ -215,6 +227,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // mezcla dentro de CONFIG (ver js/productos.js) y no retorna nada.
   await configuracionLista.catch(() => null);
   iniciarBannerCatalogo(CONFIG.bannerImagenes);
+  configurarBotonWhatsapp();
 
   // Delegado en todo el panel (no solo #arbol-categorias) para que también
   // cubra el radio "Todos", que vive fuera del árbol generado dinámicamente.

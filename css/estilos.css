@@ -1142,6 +1142,29 @@ input[type="file"]::file-selector-button:hover {
 .item-faq p { margin: 0 4px 16px; color: var(--gris); }
 
 /* ===== Footer ===== */
+/* ===== Botón flotante de WhatsApp (solo index.html) ===== */
+.btn-whatsapp-flotante {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 300;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #25d366;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(20, 18, 15, 0.28);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.btn-whatsapp-flotante:hover { transform: scale(1.08); box-shadow: 0 6px 20px rgba(20, 18, 15, 0.32); }
+.btn-whatsapp-flotante svg { width: 30px; height: 30px; color: #ffffff; }
+@media (max-width: 600px) {
+  .btn-whatsapp-flotante { right: 16px; bottom: 16px; width: 50px; height: 50px; }
+  .btn-whatsapp-flotante svg { width: 26px; height: 26px; }
+}
+
 .pie-pagina {
   /* Franja siempre oscura (no --negro, que se invierte en modo oscuro):
      es un elemento decorativo de fondo, no texto, así que no debe aclararse. */
