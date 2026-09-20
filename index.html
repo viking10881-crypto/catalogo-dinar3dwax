@@ -20,18 +20,53 @@
 </head>
 <body>
 
+<div id="splash-inicio" class="splash-inicio">
+  <img src="img/logo-splash.png" alt="Dinar 3D Wax" class="splash-inicio-logo" width="500" height="500">
+</div>
+<script>
+(function () {
+  var splash = document.getElementById("splash-inicio");
+  if (!splash) return;
+
+  // Solo se muestra la primera vez que entra a este navegador: si ya
+  // quedó la marca en localStorage, se quita antes de pintar nada, sin
+  // animación.
+  try {
+    if (localStorage.getItem("splash-visto")) {
+      splash.remove();
+      return;
+    }
+    localStorage.setItem("splash-visto", "1");
+  } catch (e) {
+    // localStorage puede fallar (modo privado/bloqueado): no es crítico,
+    // en ese caso simplemente se ve el splash en cada visita.
+  }
+
+  document.body.classList.add("con-splash");
+  splash.addEventListener("animationend", function (e) {
+    if (e.target !== splash) return;
+    document.body.classList.remove("con-splash");
+    splash.remove();
+  });
+})();
+</script>
+
 <header class="cabecera">
   <div class="contenedor">
     <a href="index.html" class="marca">
       <img src="img/logo-dinar3dwax.png" alt="Dinar 3D Wax" class="logo-img">
     </a>
-    <nav class="nav-principal">
-      <a href="index.html">Categorías</a>
+    <nav class="nav-principal" id="nav-principal">
+      <a href="index.html" aria-current="page">Categorías</a>
       <a href="calculadora.html">Calculadora de Pesos</a>
       <a href="index.html#recursos">Recursos 3D</a>
       <a href="index.html#faq">Preguntas Frecuentes</a>
     </nav>
     <div class="acciones-cabecera">
+      <button type="button" id="btn-menu-movil" class="btn-menu-movil" aria-label="Abrir menú" aria-expanded="false" aria-controls="nav-principal">
+        <svg class="icono-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        <svg class="icono-cerrar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
       <button type="button" id="toggle-tema" class="toggle-tema" title="Cambiar modo oscuro/claro" aria-label="Cambiar modo oscuro/claro">
         <svg class="icono-sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
         <svg class="icono-luna" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
@@ -49,7 +84,7 @@
     <p>Modelos digitales listos para impresión 3D directa en cera casteable y fundición de alta fidelidad.</p>
     <form id="form-busqueda-hero" class="buscador-hero">
       <input type="text" id="campo-busqueda-hero" placeholder="Escribe la referencia exacta (ej. AN-025)...">
-      <button type="submit">🔎 Buscar</button>
+      <button type="submit">Buscar</button>
     </form>
   </div>
   <div class="puntos-banner"></div>
@@ -85,17 +120,28 @@
       <div class="tarjeta-recurso">
         <span class="icono">📄</span>
         <span class="titulo">Guía de tallas</span>
-        <a href="pdf/guias/guia-tallas.pdf" target="_blank" rel="noopener">Descargar PDF</a>
+        <button type="button" class="btn-ver-recurso" data-pdf="pdf/guias/guia-tallas.pdf" data-titulo="Guía de tallas">Ver documento</button>
       </div>
       <div class="tarjeta-recurso">
         <span class="icono">📄</span>
-        <span class="titulo">Guía de medidas</span>
-        <a href="pdf/guias/guia-medidas.pdf" target="_blank" rel="noopener">Descargar PDF</a>
+        <span class="titulo">Ficha técnica</span>
+        <button type="button" class="btn-ver-recurso" data-pdf="pdf/guias/ficha-tecnica.pdf" data-titulo="Ficha técnica">Ver documento</button>
       </div>
       <div class="tarjeta-recurso">
         <span class="icono">📄</span>
         <span class="titulo">Especificaciones STL</span>
-        <a href="pdf/guias/especificaciones-stl.pdf" target="_blank" rel="noopener">Descargar PDF</a>
+        <button type="button" class="btn-ver-recurso" data-pdf="pdf/guias/especificaciones-stl.pdf" data-titulo="Especificaciones STL">Ver documento</button>
+      </div>
+    </div>
+
+    <div id="modal-pdf" class="modal-pdf oculto" aria-hidden="true">
+      <div class="modal-pdf-fondo" data-cerrar-modal-pdf></div>
+      <div class="modal-pdf-panel">
+        <div class="modal-pdf-cabecera">
+          <span id="modal-pdf-titulo"></span>
+          <button type="button" class="modal-pdf-cerrar" data-cerrar-modal-pdf aria-label="Cerrar documento">✕</button>
+        </div>
+        <iframe id="modal-pdf-iframe" title="Documento" oncontextmenu="return false;"></iframe>
       </div>
     </div>
   </div>
@@ -111,19 +157,15 @@
     </details>
     <details class="item-faq">
       <summary>¿Qué archivos puedo enviar?</summary>
-      <p>Aceptamos archivos STL, OBJ y 3DM para la fabricación de modelos personalizados.</p>
+      <p>Aceptamos archivos STL para la fabricación de modelos personalizados.</p>
     </details>
     <details class="item-faq">
       <summary>¿Qué formatos manejan?</summary>
-      <p>Trabajamos principalmente en cera casteable rosa y verde, según el tipo de pieza.</p>
+      <p>Trabajamos principalmente en cera casteable rosa según el tipo de pieza.</p>
     </details>
     <details class="item-faq">
       <summary>¿Hacen envíos nacionales?</summary>
       <p>Sí, realizamos envíos a nivel nacional a través de transportadoras aliadas.</p>
-    </details>
-    <details class="item-faq">
-      <summary>¿Cómo funcionan las garantías?</summary>
-      <p>Toda pieza con defectos de fabricación puede ser reportada dentro de los primeros 5 días hábiles tras la entrega.</p>
     </details>
     <details class="item-faq">
       <summary>¿Cómo calculan el precio?</summary>
@@ -134,7 +176,8 @@
 
 <footer class="pie-pagina">
   <div class="contenedor">
-    Dinar 3D Wax · Catálogo de modelos para joyeros
+    <div>Dinar 3D Wax · Catálogo de modelos para joyeros</div>
+    <div class="creditos-dev">Desarrollado por <a href="https://www.delasoftcompany.com/" target="_blank" rel="noopener">Delasoftcompany</a></div>
   </div>
 </footer>
 
@@ -142,5 +185,6 @@
 <script src="js/productos.js"></script>
 <script src="js/carrito.js"></script>
 <script src="js/catalogo.js"></script>
+<script src="js/visor-recursos.js"></script>
 </body>
 </html>

@@ -7,8 +7,13 @@
   --gris: #6b675f;
   --borde: #e5dfd2;
   --blanco: #ffffff;
+  --superficie: #f1ece1;
   --radio: 10px;
-  --sombra: 0 2px 10px rgba(20, 18, 15, 0.08);
+  --radio-sm: 6px;
+  --radio-lg: 14px;
+  --sombra: 0 1px 2px rgba(20, 18, 15, 0.06), 0 1px 1px rgba(20, 18, 15, 0.04);
+  --sombra-md: 0 8px 24px rgba(20, 18, 15, 0.10), 0 2px 8px rgba(20, 18, 15, 0.06);
+  --anillo-foco: 0 0 0 3px rgba(184, 150, 62, 0.35);
   --fuente-serif: "Instrument Serif", Georgia, serif;
   /* Siempre oscuro: texto sobre el dorado de marca (que no cambia entre
      modos). --negro sí cambia en modo oscuro, así que no sirve para esto. */
@@ -30,10 +35,35 @@ html[data-tema="oscuro"] {
   --blanco: #221f19;
   --gris: #b6b0a2;
   --borde: #3a3428;
+  --superficie: #2b2620;
   --sombra: 0 2px 14px rgba(0, 0, 0, 0.35);
 }
 
 * { box-sizing: border-box; }
+
+/* Evita el "rebote" elástico del navegador (trackpad/mobile) al hacer
+   scroll más allá del principio o el final de la página: sin esto, cada
+   vez que el usuario se pasa de scroll se ve un salto/flash del fondo. */
+html {
+  overscroll-behavior-y: none;
+}
+
+/* Foco accesible y consistente en todo el sitio (teclado/lector de
+   pantalla): un solo anillo dorado en vez del outline azul por defecto,
+   visible solo con :focus-visible para no aparecer en clics de mouse. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible {
+  outline: none;
+  box-shadow: var(--anillo-foco);
+}
+/* Los enlaces de texto normales no tienen radio propio: sin esto el
+   anillo de foco sale en ángulo recto pegado al texto. */
+a:not([class]):focus-visible { border-radius: var(--radio-sm); }
 
 body {
   margin: 0;
@@ -47,6 +77,21 @@ body {
 a { color: inherit; text-decoration: none; }
 img { max-width: 100%; display: block; }
 ul { list-style: none; margin: 0; padding: 0; }
+
+/* Ningún input/textarea del sitio fijaba fondo/color propio: en modo claro
+   no se notaba (blanco por defecto del navegador coincide con --blanco),
+   pero en modo oscuro se quedaban blancos con texto negro sin importar el
+   tema (ej. el contador de cantidad). Los inputs con su propio fondo
+   explícito (como el buscador del hero) siguen ganando por ir después. */
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="tel"],
+textarea,
+select {
+  background: var(--blanco);
+  color: var(--negro);
+}
 
 .contenedor {
   max-width: 1180px;
@@ -77,6 +122,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 .marca {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 2px;
 }
 
@@ -100,13 +146,53 @@ ul { list-style: none; margin: 0; padding: 0; }
   font-weight: 500;
 }
 
+.nav-principal a {
+  position: relative;
+  padding: 4px 0;
+  transition: color 0.15s ease;
+}
+.nav-principal a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 100%;
+  bottom: -1px;
+  height: 2px;
+  background: var(--dorado);
+  transition: right 0.2s ease;
+}
 .nav-principal a:hover { color: var(--dorado); }
+.nav-principal a:hover::after,
+.nav-principal a[aria-current="page"]::after { right: 0; }
+.nav-principal a[aria-current="page"] { color: var(--dorado); }
 
 .acciones-cabecera {
   display: flex;
   align-items: center;
   gap: 10px;
 }
+
+/* Botón hamburguesa: solo se muestra en móvil (ver media query), oculto
+   en escritorio donde el nav ya cabe en la cabecera. */
+.btn-menu-movil {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid var(--borde);
+  background: var(--crema);
+  color: var(--negro);
+  cursor: pointer;
+  flex-shrink: 0;
+  order: -1;
+}
+.btn-menu-movil:hover { border-color: var(--dorado); }
+.btn-menu-movil svg { width: 18px; height: 18px; }
+.btn-menu-movil .icono-cerrar { display: none; }
+.btn-menu-movil[aria-expanded="true"] .icono-menu { display: none; }
+.btn-menu-movil[aria-expanded="true"] .icono-cerrar { display: block; }
 
 .toggle-tema {
   display: flex;
@@ -138,6 +224,38 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
   font-weight: 600;
   font-size: 0.85rem;
   white-space: nowrap;
+}
+
+/* ===== Splash de bienvenida (solo index.html): tapa toda la pantalla al
+   cargar el catálogo, se queda quieta un momento y se desvanece sola. Se
+   elimina del DOM al terminar (ver script inline en index.html), así que
+   no queda un overlay invisible estorbando clics ni lectores de pantalla. */
+.con-splash, .con-modal-pdf { overflow: hidden; }
+.splash-inicio {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000000;
+  animation: splash-desvanecer 2.6s ease forwards;
+}
+.splash-inicio-logo {
+  width: 180px;
+  height: 180px;
+  animation: splash-logo-entrada 0.8s ease both;
+}
+@keyframes splash-logo-entrada {
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes splash-desvanecer {
+  0%, 60% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@media (max-width: 480px) {
+  .splash-inicio-logo { width: 130px; height: 130px; }
 }
 
 /* ===== Hero ===== */
@@ -269,11 +387,17 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
   align-items: center;
   gap: 8px;
   background: var(--blanco);
+  border: 1px solid transparent;
   border-radius: 999px;
   padding: 6px 6px 6px 18px;
-  box-shadow: var(--sombra);
+  box-shadow: var(--sombra-md);
   max-width: 480px;
   margin: 0 auto;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.buscador-hero:focus-within {
+  border-color: var(--dorado-claro);
+  box-shadow: var(--sombra-md), var(--anillo-foco);
 }
 .buscador-hero input {
   flex: 1;
@@ -284,6 +408,10 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
   font-size: 0.92rem;
   color: var(--negro);
 }
+/* El anillo de foco vive en el contenedor (:focus-within más arriba); si
+   también se le pone al input suelto, salen dos anillos: uno redondeado
+   (la píldora) y uno en ángulo recto pegado al input, encimados. */
+.buscador-hero input:focus-visible { box-shadow: none; }
 .buscador-hero button {
   display: flex;
   align-items: center;
@@ -332,10 +460,14 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 0;
+  padding: 6px 8px;
+  margin: 0 -8px;
+  border-radius: var(--radio-sm);
   font-size: 0.9rem;
   cursor: pointer;
+  transition: background-color 0.12s ease;
 }
+.opcion-filtro:hover { background: rgba(184, 150, 62, 0.08); }
 
 .opcion-filtro input { accent-color: var(--dorado); }
 
@@ -347,9 +479,14 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 6px 0;
+  padding: 6px 8px;
+  margin: 0 -8px;
+  border-radius: var(--radio-sm);
+  transition: background-color 0.12s ease;
 }
-.categoria-grupo-cabecera .opcion-filtro { padding: 0; flex: 1; }
+.categoria-grupo-cabecera:hover { background: rgba(184, 150, 62, 0.08); }
+.categoria-grupo-cabecera .opcion-filtro { padding: 0; margin: 0; flex: 1; }
+.categoria-grupo-cabecera .opcion-filtro:hover { background: none; }
 
 .btn-expandir-subcategoria {
   background: none;
@@ -373,11 +510,15 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 4px 0;
+  padding: 4px 8px;
+  margin: 0 -8px;
+  border-radius: var(--radio-sm);
   font-size: 0.85rem;
   color: var(--gris);
   cursor: pointer;
+  transition: background-color 0.12s ease;
 }
+.opcion-subcategoria:hover { background: rgba(184, 150, 62, 0.08); }
 .opcion-subcategoria input { accent-color: var(--dorado); }
 
 .rango-filtro { font-size: 0.85rem; }
@@ -398,7 +539,9 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
   font-size: 0.8rem;
   color: var(--gris);
   cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
 }
+.btn-limpiar-filtros:hover { border-color: var(--dorado); color: var(--dorado); }
 
 /* ===== Grid productos ===== */
 .titulo-seccion {
@@ -407,9 +550,22 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
   letter-spacing: 1px;
   color: var(--negro);
   margin: 8px 0 16px;
-  border-bottom: 2px solid var(--dorado);
+  position: relative;
   display: inline-block;
-  padding-bottom: 6px;
+  padding-bottom: 10px;
+}
+/* Antes era un border-bottom que subrayaba todo el ancho del texto: un
+   acento corto y fijo se siente menos "bloque" y más de marca, sin
+   abandonar el lenguaje de mayúsculas + tracking que usa el resto del
+   sitio (h3 de filtros, labels de formulario, etc). */
+.titulo-seccion::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 28px;
+  height: 2px;
+  background: var(--dorado);
 }
 
 .grid-productos {
@@ -426,10 +582,20 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
   box-shadow: var(--sombra);
   display: flex;
   flex-direction: column;
-  transition: transform 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  animation: aparecer-tarjeta 0.35s ease both;
 }
 
-.tarjeta-producto:hover { transform: translateY(-3px); }
+@keyframes aparecer-tarjeta {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.tarjeta-producto:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--sombra-md);
+  border-color: var(--dorado-claro);
+}
 
 .tarjeta-producto .render {
   position: relative;
@@ -438,7 +604,7 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
      mínimo como item flex/grid y rompe el aspect-ratio de la tarjeta. */
   min-height: 0;
   overflow: hidden;
-  background: #f1ece1;
+  background: var(--superficie);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -512,7 +678,9 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
   text-transform: uppercase;
   cursor: pointer;
   text-align: center;
+  transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
 }
+.btn:active { transform: scale(0.97); }
 
 .btn-dorado { background: var(--dorado); color: var(--texto-sobre-dorado); }
 .btn-dorado:hover { background: var(--dorado-claro); }
@@ -525,6 +693,7 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
 }
 .btn-full { width: 100%; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn:disabled:active { transform: none; }
 
 .btn-ver {
   margin: 0 14px 14px;
@@ -537,6 +706,7 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
   font-weight: 700;
   letter-spacing: 0.5px;
   text-transform: uppercase;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 .btn-ver:hover { background: var(--dorado); color: var(--texto-sobre-dorado); }
 
@@ -544,6 +714,13 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
   padding: 40px;
   text-align: center;
   color: var(--gris);
+}
+.sin-resultados::before {
+  content: "🔍";
+  display: block;
+  font-size: 1.8rem;
+  margin-bottom: 10px;
+  opacity: 0.5;
 }
 
 /* ===== Ficha de producto ===== */
@@ -555,7 +732,7 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
 }
 
 .ficha-render {
-  background: #f1ece1;
+  background: var(--superficie);
   border-radius: var(--radio);
   aspect-ratio: 1 / 1;
   display: flex;
@@ -579,7 +756,7 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
   overflow: hidden;
   padding: 0;
   border: 2px solid transparent;
-  background: #f1ece1;
+  background: var(--superficie);
   cursor: pointer;
 }
 .miniatura-galeria img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -596,9 +773,19 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
   margin-bottom: 22px;
   font-size: 0.9rem;
 }
-.tabla-specs td { padding: 6px 0; border-bottom: 1px solid var(--borde); }
+.tabla-specs td { padding: 9px 0; border-bottom: 1px solid var(--borde); }
 .tabla-specs td:first-child { color: var(--gris); width: 45%; }
 .tabla-specs td:last-child { font-weight: 600; text-align: right; }
+
+.opciones-talla button {
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+.opciones-talla button:hover:not(.activo) { border-color: var(--dorado); color: var(--dorado); }
+
+.miniatura-galeria {
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.miniatura-galeria:hover:not(.activa) { border-color: var(--dorado-claro); transform: translateY(-2px); }
 
 .selector-bloque { margin-bottom: 18px; }
 .selector-bloque label {
@@ -640,7 +827,9 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
   height: 36px;
   font-size: 1.1rem;
   cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
+.contador button:hover { background: var(--dorado); color: var(--texto-sobre-dorado); }
 .contador input {
   width: 44px;
   border: none;
@@ -663,7 +852,7 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
 .contenedor-visor-stl {
   width: 100%;
   height: 420px;
-  background: #f1ece1;
+  background: var(--superficie);
   border: 1px solid var(--borde);
   border-radius: var(--radio);
   overflow: hidden;
@@ -711,26 +900,41 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
   grid-template-columns: 80px 1fr auto auto auto;
   gap: 16px;
   align-items: center;
-  padding: 16px 0;
+  padding: 16px 8px;
+  margin: 0 -8px;
+  border-radius: var(--radio-sm);
   border-bottom: 1px solid var(--borde);
+  transition: background-color 0.15s ease;
 }
+.fila-carrito:hover { background: rgba(184, 150, 62, 0.05); }
 .fila-carrito .render-mini {
   width: 70px;
   height: 70px;
   border-radius: 6px;
-  background: #f1ece1;
+  background: var(--superficie);
   overflow: hidden;
 }
 .fila-carrito .render-mini img { width: 100%; height: 100%; object-fit: cover; }
 .fila-carrito .detalle .ref { color: var(--dorado); font-size: 0.75rem; font-weight: 700; }
 .fila-carrito .detalle .nombre { font-weight: 600; }
 .fila-carrito .detalle .talla { font-size: 0.82rem; color: var(--gris); }
-.fila-carrito .quitar { background: none; border: none; color: #b23b3b; cursor: pointer; font-size: 0.8rem; }
+.fila-carrito .quitar {
+  background: none;
+  border: none;
+  color: #b23b3b;
+  cursor: pointer;
+  font-size: 0.8rem;
+  padding: 6px 8px;
+  border-radius: var(--radio-sm);
+  transition: background-color 0.15s ease;
+}
+.fila-carrito .quitar:hover { background: #fbe9e9; }
 
 .resumen-pedido {
   background: var(--blanco);
   border: 1px solid var(--borde);
   border-radius: var(--radio);
+  box-shadow: var(--sombra);
   padding: 22px;
   margin-top: 24px;
   max-width: 360px;
@@ -739,6 +943,23 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
 .resumen-pedido .linea { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.92rem; }
 .resumen-pedido .linea.total { font-weight: 700; font-size: 1.15rem; border-top: 1px solid var(--borde); margin-top: 8px; padding-top: 12px; }
 .carrito-vacio { text-align: center; padding: 60px 0; color: var(--gris); }
+/* Mismo bloque de estado vacío para dos contextos (carrito.html y "producto
+   no encontrado" en producto.html): se distingue el ícono por id, no por
+   clase, para no duplicar la clase compartida. */
+#carrito-vacio::before {
+  content: "🛒";
+  display: block;
+  font-size: 2.2rem;
+  margin-bottom: 12px;
+  opacity: 0.45;
+}
+#producto-no-encontrado::before {
+  content: "🔎";
+  display: block;
+  font-size: 2.2rem;
+  margin-bottom: 12px;
+  opacity: 0.45;
+}
 
 /* ===== Checkout ===== */
 .pagina-checkout { padding: 40px 0 60px; display: grid; grid-template-columns: 1fr 380px; gap: 40px; }
@@ -753,6 +974,28 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
 }
 .error-campo { color: #b23b3b; font-size: 0.78rem; margin-top: 4px; display: none; }
 
+input[type="file"] {
+  font-size: 0.85rem;
+  color: var(--gris);
+  padding: 4px 0;
+}
+input[type="file"]::file-selector-button {
+  margin-right: 12px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--borde);
+  background: var(--crema);
+  color: var(--negro);
+  font-weight: 600;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+input[type="file"]::file-selector-button:hover {
+  border-color: var(--dorado);
+  color: var(--dorado);
+}
+
 /* ===== Confirmación ===== */
 .pagina-confirmacion {
   max-width: 480px;
@@ -761,13 +1004,24 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
   background: var(--blanco);
   border: 1px solid var(--borde);
   border-radius: var(--radio);
+  box-shadow: var(--sombra-md);
   padding: 40px 28px;
+  animation: aparecer-confirmacion 0.4s ease;
 }
 .icono-check {
   width: 64px; height: 64px; border-radius: 50%;
   background: #e7f6ec; color: #2f9e52;
   display: flex; align-items: center; justify-content: center;
   font-size: 2rem; margin: 0 auto 18px;
+  animation: entrar-check 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes aparecer-confirmacion {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes entrar-check {
+  from { opacity: 0; transform: scale(0.4); }
+  to { opacity: 1; transform: scale(1); }
 }
 .pagina-confirmacion .numero-orden { font-size: 1.3rem; font-weight: 700; margin: 10px 0; }
 .estado-pago {
@@ -784,6 +1038,7 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
 .btn-whatsapp {
   background: #25d366; color: #fff; margin-top: 20px;
 }
+.btn-whatsapp:hover { background: #1fb85a; }
 
 /* ===== Recursos / FAQ ===== */
 .seccion-recursos { padding: 40px 0; }
@@ -796,10 +1051,77 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
   display: flex;
   flex-direction: column;
   gap: 10px;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
 }
+.tarjeta-recurso:hover { box-shadow: var(--sombra-md); border-color: var(--dorado-claro); }
 .tarjeta-recurso .icono { font-size: 1.4rem; }
 .tarjeta-recurso .titulo { font-weight: 600; }
-.tarjeta-recurso a { color: var(--dorado); font-size: 0.85rem; font-weight: 600; }
+.btn-ver-recurso {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--dorado);
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.btn-ver-recurso:hover { color: var(--dorado-claro); text-decoration: underline; }
+
+/* ===== Visor de PDF en modal: abre el documento dentro de la misma
+   página en vez de navegar al archivo suelto. Oculta la barra de
+   herramientas nativa del visor (incluye su botón de descarga) con
+   #toolbar=0 y bloquea el clic derecho; no es infalible, pero saca la
+   descarga de "un clic" del flujo normal. ===== */
+.modal-pdf {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.modal-pdf-fondo {
+  position: absolute;
+  inset: 0;
+  background: rgba(20, 18, 15, 0.72);
+}
+.modal-pdf-panel {
+  position: relative;
+  width: min(820px, 100%);
+  height: min(88vh, 900px);
+  background: var(--blanco);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra-md);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.modal-pdf-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--borde);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+.modal-pdf-cerrar {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--gris);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radio-sm);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.modal-pdf-cerrar:hover { background: var(--crema); color: var(--negro); }
+.modal-pdf-panel iframe { flex: 1; width: 100%; border: none; background: var(--crema); }
 
 .seccion-faq { padding: 20px 0 60px; }
 .item-faq { border-bottom: 1px solid var(--borde); }
@@ -811,7 +1133,9 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
   display: flex;
   justify-content: space-between;
   align-items: center;
+  transition: color 0.15s ease;
 }
+.item-faq summary:hover { color: var(--dorado); }
 .item-faq summary::-webkit-details-marker { display: none; }
 .item-faq summary::after { content: "+"; color: var(--dorado); font-size: 1.2rem; }
 .item-faq[open] summary::after { content: "−"; }
@@ -827,9 +1151,31 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
   text-align: center;
   font-size: 0.82rem;
 }
+.pie-pagina .creditos-dev {
+  margin-top: 6px;
+  font-size: 0.72rem;
+  color: #726e63;
+}
+.pie-pagina .creditos-dev a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.15s ease;
+}
+.pie-pagina .creditos-dev a:hover { color: var(--dorado-claro); }
 
 /* ===== Utilidades ===== */
 .oculto { display: none !important; }
+
+/* Respeta la preferencia de "reducir movimiento" del sistema: apaga las
+   animaciones de entrada y transiciones largas para quien las desactivó. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
 
 /* ===== Admin: layout con menú lateral ===== */
 .admin-layout { display: flex; min-height: 100vh; align-items: stretch; }
@@ -930,10 +1276,115 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
   background: var(--blanco);
   border: 1px solid var(--borde);
   border-radius: var(--radio);
-  padding: 18px;
+  padding: 16px 18px;
 }
-.tarjeta-stat .valor { font-size: 1.7rem; font-weight: 700; }
+.tarjeta-stat-cabecera { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.tarjeta-stat .icono-stat {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+  flex-shrink: 0;
+  background: rgba(184, 150, 62, 0.12);
+}
+.tarjeta-stat.icono-alerta .icono-stat { background: rgba(250, 178, 25, 0.16); }
+.tarjeta-stat .valor { font-size: 1.7rem; font-weight: 700; line-height: 1; }
 .tarjeta-stat .etiqueta { font-size: 0.8rem; color: var(--gris); margin-top: 4px; }
+.tarjeta-stat .delta-stat { font-size: 0.72rem; margin-top: 8px; color: var(--gris); }
+.tarjeta-stat .delta-stat.positivo { color: var(--estado-bueno); font-weight: 600; }
+
+/* ===== Admin: gráficas del dashboard (ECharts) =====
+   Colores de estado (pendiente/aprobado/rechazado): son semánticos, no de
+   marca, así que van fijos y nunca se tocan con --dorado ni con el tema. */
+:root {
+  --estado-bueno: #0ca30c;
+  --estado-alerta: #fab219;
+  --estado-critico: #d03b3b;
+}
+
+.filtro-rango {
+  display: inline-flex;
+  gap: 4px;
+  background: var(--crema);
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+  padding: 3px;
+  margin: 4px 0 18px;
+}
+.filtro-rango button {
+  border: none;
+  background: none;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--gris);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.filtro-rango button:hover { color: var(--negro); }
+.filtro-rango button.activo { background: var(--dorado); color: var(--texto-sobre-dorado); }
+
+.grid-graficas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+  margin: 0 0 32px;
+}
+.grid-graficas.fila-ancha { grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); }
+
+.tarjeta-grafica {
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  padding: 18px;
+  min-width: 0;
+}
+.tarjeta-grafica-cabecera { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 4px; }
+.tarjeta-grafica-cabecera .icono-grafica {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  background: rgba(184, 150, 62, 0.12);
+}
+.tarjeta-grafica .titulo-grafica { font-size: 0.85rem; font-weight: 700; margin: 0; }
+.tarjeta-grafica .subtitulo-grafica { font-size: 0.75rem; color: var(--gris); margin: 2px 0 0; }
+.tarjeta-grafica .lienzo-grafica { width: 100%; height: 220px; }
+.tarjeta-grafica .lienzo-grafica.chico { height: 170px; }
+.tarjeta-grafica .sin-datos-grafica {
+  padding: 40px 0;
+  text-align: center;
+  color: var(--gris);
+  font-size: 0.85rem;
+}
+
+/* Donut de estados: gráfica a la izquierda, conteo/porcentaje en filas a la
+   derecha (en vez de una leyenda genérica) para que se lea como tabla. */
+.fila-donut-estados { display: flex; align-items: center; gap: 18px; }
+.fila-donut-estados .lienzo-grafica { width: 130px; height: 130px; flex-shrink: 0; }
+.leyenda-estados { flex: 1; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.leyenda-estados .fila-leyenda-estado {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--negro);
+}
+.leyenda-estados .punto-leyenda { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.leyenda-estados .nombre-leyenda { flex: 1; }
+.leyenda-estados .cuenta-leyenda { font-weight: 700; }
+.leyenda-estados .pct-leyenda { color: var(--gris); font-size: 0.75rem; width: 34px; text-align: right; }
+
+.tabla-ultimos-pedidos-vacia { padding: 24px; text-align: center; color: var(--gris); font-size: 0.85rem; }
+.tooltip-grafica strong { font-size: 0.85rem; }
 .grid-accesos { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
 .tarjeta-acceso {
   background: var(--blanco);
@@ -1016,7 +1467,7 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
   display: inline-block;
   padding: 2px 10px;
   border-radius: 999px;
-  background: #f1ece1;
+  background: var(--superficie);
   font-size: 0.75rem;
   font-weight: 600;
 }
@@ -1140,7 +1591,7 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
   height: 120px;
   border-radius: 8px;
   overflow: hidden;
-  background: #f1ece1;
+  background: var(--superficie);
   border: 1px solid var(--borde);
 }
 .miniatura-admin img { width: 100%; height: 100%; object-fit: cover; }
@@ -1209,16 +1660,55 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
   .pagina-checkout { grid-template-columns: 1fr; }
 }
 
-@media (max-width: 600px) {
-  .cabecera .contenedor { flex-direction: column; align-items: stretch; }
+@media (max-width: 640px) {
+  .btn-menu-movil { display: flex; }
+
+  /* El nav pasa a ser un panel desplegable anclado a la cabecera (que ya
+     es position:sticky, así que sirve de referencia para el absolute)
+     en vez de envolverse en varias líneas dentro del header. */
   .nav-principal {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 6px 14px;
-    font-size: 0.82rem;
-    padding: 2px 0 4px;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    background: var(--blanco);
+    border-bottom: 1px solid var(--borde);
+    box-shadow: var(--sombra-md);
+    padding: 0 20px;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.25s ease, opacity 0.2s ease;
   }
+  .nav-principal.abierto {
+    max-height: 320px;
+    opacity: 1;
+    padding: 8px 20px 14px;
+  }
+  .nav-principal a { padding: 12px 4px; }
+  .nav-principal a::after { display: none; }
+  .nav-principal a[aria-current="page"] {
+    background: rgba(184, 150, 62, 0.08);
+    border-radius: var(--radio-sm);
+    padding-left: 10px;
+  }
+}
+
+@media (max-width: 600px) {
   .buscador-rapido input { width: 100%; }
   .hero h1 { font-size: 1.5rem; }
   .fila-carrito { grid-template-columns: 60px 1fr; grid-template-rows: auto auto; }
+
+  /* Tarjetas de producto: con el minmax(220px,1fr) de escritorio, una
+     pantalla angosta solo alcanza para 1 columna y se ven enormes. Se
+     fuerzan 2 columnas y se reduce el padding interno para que quepan
+     bien. */
+  .grid-productos { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .info-tarjeta { padding: 10px; gap: 2px; }
+  .info-tarjeta .nombre { font-size: 1rem; }
+  .badge-ref-tarjeta, .badge-material-tarjeta { font-size: 0.62rem; padding: 3px 8px; }
+  .btn-ver { margin: 0 10px 10px; font-size: 0.7rem; padding: 8px; }
 }

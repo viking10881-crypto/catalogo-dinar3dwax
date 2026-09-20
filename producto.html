@@ -25,13 +25,17 @@
     <a href="index.html" class="marca">
       <img src="img/logo-dinar3dwax.png" alt="Dinar 3D Wax" class="logo-img">
     </a>
-    <nav class="nav-principal">
+    <nav class="nav-principal" id="nav-principal">
       <a href="index.html">Categorías</a>
       <a href="calculadora.html">Calculadora de Pesos</a>
       <a href="index.html#recursos">Recursos 3D</a>
       <a href="index.html#faq">Preguntas Frecuentes</a>
     </nav>
     <div class="acciones-cabecera">
+      <button type="button" id="btn-menu-movil" class="btn-menu-movil" aria-label="Abrir menú" aria-expanded="false" aria-controls="nav-principal">
+        <svg class="icono-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        <svg class="icono-cerrar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
       <button type="button" id="toggle-tema" class="toggle-tema" title="Cambiar modo oscuro/claro" aria-label="Cambiar modo oscuro/claro">
         <svg class="icono-sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
         <svg class="icono-luna" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
@@ -95,7 +99,8 @@
 
 <footer class="pie-pagina">
   <div class="contenedor">
-    Dinar 3D Wax · Catálogo de modelos para joyeros
+    <div>Dinar 3D Wax · Catálogo de modelos para joyeros</div>
+    <div class="creditos-dev">Desarrollado por <a href="https://www.delasoftcompany.com/" target="_blank" rel="noopener">Delasoftcompany</a></div>
   </div>
 </footer>
 

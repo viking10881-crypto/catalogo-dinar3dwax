@@ -21,3 +21,27 @@ document.addEventListener("DOMContentLoaded", () => {
     aplicarTema(actual === "oscuro" ? "claro" : "oscuro");
   });
 });
+
+/**
+ * Menú hamburguesa (móvil): el nav de la cabecera pasa a ser un panel
+ * desplegable con .abierto (ver CSS) en vez de envolverse en el header.
+ */
+document.addEventListener("DOMContentLoaded", () => {
+  const btnMenu = document.getElementById("btn-menu-movil");
+  const nav = document.getElementById("nav-principal");
+  if (!btnMenu || !nav) return;
+
+  function cerrarMenu() {
+    nav.classList.remove("abierto");
+    btnMenu.setAttribute("aria-expanded", "false");
+  }
+
+  btnMenu.addEventListener("click", () => {
+    const abierto = nav.classList.toggle("abierto");
+    btnMenu.setAttribute("aria-expanded", abierto ? "true" : "false");
+  });
+
+  nav.addEventListener("click", (e) => {
+    if (e.target.tagName === "A") cerrarMenu();
+  });
+});
