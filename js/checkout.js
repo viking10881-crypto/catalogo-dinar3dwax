@@ -40,13 +40,75 @@ function renderDatosBanco() {
   `;
 }
 
+/**
+ * Reglas de formato por campo. "direccion" es un caso aparte a propósito:
+ * ahí sí es normal que lleguen números y letras juntos (calle 45 # 12-30),
+ * así que solo se exige que no esté vacío.
+ */
+const SOLO_LETRAS = /^[A-Za-zÀ-ÖØ-öø-ÿ\s'.-]+$/;
+const SOLO_NUMEROS = /^[0-9]+$/;
+const CORREO_VALIDO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const REGLAS_CAMPO = {
+  nombre: { regex: SOLO_LETRAS, mensaje: "Escribe solo letras, sin números" },
+  cedula: { regex: SOLO_NUMEROS, mensaje: "Escribe solo números" },
+  whatsapp: { regex: SOLO_NUMEROS, mensaje: "Escribe solo números" },
+  ciudad: { regex: SOLO_LETRAS, mensaje: "Escribe solo letras, sin números" },
+};
+
+/**
+ * Filtra en tiempo real los caracteres que no aplican al campo (p. ej. no
+ * deja teclear números en "nombre"/"ciudad", ni letras en "cedula"/"whatsapp").
+ */
+function filtrarCaracteres(campo) {
+  const regla = REGLAS_CAMPO[campo.id];
+  if (!regla) return;
+  campo.addEventListener("input", () => {
+    const patronCaracter = regla.regex === SOLO_NUMEROS ? /[^0-9]/g : /[0-9]/g;
+    const filtrado = campo.value.replace(patronCaracter, "");
+    if (filtrado !== campo.value) campo.value = filtrado;
+  });
+}
+
 function validarCampo(campo) {
   const errorEl = campo.parentElement.querySelector(".error-campo");
-  if (!campo.value.trim()) {
-    if (errorEl) errorEl.style.display = "block";
+  const valor = campo.value.trim();
+  const regla = REGLAS_CAMPO[campo.id];
+
+  let mensaje = null;
+  if (!valor) {
+    mensaje = "Este campo es obligatorio";
+  } else if (regla && !regla.regex.test(valor)) {
+    mensaje = regla.mensaje;
+  }
+
+  if (mensaje) {
+    if (errorEl) {
+      errorEl.textContent = mensaje;
+      errorEl.style.display = "block";
+    }
     campo.style.borderColor = "#b23b3b";
     return false;
   }
+
+  if (errorEl) errorEl.style.display = "none";
+  campo.style.borderColor = "";
+  return true;
+}
+
+function validarCorreo(campo) {
+  const errorEl = campo.parentElement.querySelector(".error-campo");
+  const valor = campo.value.trim();
+
+  if (valor && !CORREO_VALIDO.test(valor)) {
+    if (errorEl) {
+      errorEl.textContent = "Escribe un correo válido (ej: nombre@correo.com)";
+      errorEl.style.display = "block";
+    }
+    campo.style.borderColor = "#b23b3b";
+    return false;
+  }
+
   if (errorEl) errorEl.style.display = "none";
   campo.style.borderColor = "";
   return true;
@@ -80,6 +142,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const campos = ["nombre", "cedula", "whatsapp", "ciudad", "direccion"].map((id) =>
     document.getElementById(id)
   );
+  campos.forEach(filtrarCaracteres);
 
   const btnConfirmar = document.getElementById("btn-confirmar-pedido");
   const mensajeError = document.getElementById("mensaje-error-checkout");
@@ -127,7 +190,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     mensajeError.textContent = "";
 
     const camposValidos = campos.map(validarCampo).every(Boolean);
-    if (!camposValidos) return;
+    const correoValido = validarCorreo(document.getElementById("correo"));
+    if (!camposValidos || !correoValido) return;
 
     if (!comprobanteUrl) {
       mensajeError.textContent = "Sube el comprobante de tu transferencia antes de confirmar el pedido.";

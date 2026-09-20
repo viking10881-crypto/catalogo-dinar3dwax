@@ -4,6 +4,28 @@ import { obtenerConfiguracion, calcularPrecioServicio } from "../lib/configuraci
 import { esUrlDeNuestroBlob } from "../lib/blob.js";
 
 /**
+ * Mismas reglas de formato que js/checkout.js (validación en el cliente es
+ * solo UX; esta es la que de verdad impide guardar datos mal formados).
+ * "direccion" queda afuera a propósito: ahí es normal que lleguen números
+ * y letras juntos.
+ */
+const SOLO_LETRAS = /^[A-Za-zÀ-ÖØ-öø-ÿ\s'.-]+$/;
+const SOLO_NUMEROS = /^[0-9]+$/;
+const CORREO_VALIDO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function validarCliente(cliente) {
+  if (!cliente || !cliente.nombre || !cliente.cedula || !cliente.whatsapp || !cliente.ciudad || !cliente.direccion) {
+    return "Faltan datos de entrega";
+  }
+  if (!SOLO_LETRAS.test(cliente.nombre)) return "El nombre solo puede tener letras";
+  if (!SOLO_LETRAS.test(cliente.ciudad)) return "La ciudad solo puede tener letras";
+  if (!SOLO_NUMEROS.test(cliente.cedula)) return "La cédula solo puede tener números";
+  if (!SOLO_NUMEROS.test(cliente.whatsapp)) return "El WhatsApp solo puede tener números";
+  if (cliente.correo && !CORREO_VALIDO.test(cliente.correo)) return "El correo no es válido";
+  return null;
+}
+
+/**
  * Revalida cada línea del carrito contra el catálogo del servidor.
  * Nunca confiamos en el precio que envía el navegador.
  */
@@ -44,8 +66,9 @@ export default async function handler(req, res) {
   try {
     const { cliente, items, comprobanteUrl } = req.body || {};
 
-    if (!cliente || !cliente.nombre || !cliente.cedula || !cliente.whatsapp || !cliente.ciudad || !cliente.direccion) {
-      res.status(400).json({ error: "Faltan datos de entrega" });
+    const errorCliente = validarCliente(cliente);
+    if (errorCliente) {
+      res.status(400).json({ error: errorCliente });
       return;
     }
     if (!esUrlDeNuestroBlob(comprobanteUrl)) {
