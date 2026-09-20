@@ -128,9 +128,10 @@ function filaPedidoHTML(p) {
             <strong>Cliente</strong>
             <p>
               ${p.cliente.nombre}<br>
+              Cédula: ${p.cliente.cedula || "—"}<br>
               WhatsApp: ${p.cliente.whatsapp}<br>
               ${p.cliente.ciudad} — ${p.cliente.direccion}<br>
-              ${p.cliente.correo}
+              ${p.cliente.correo || "—"}
             </p>
           </div>
           <div>

@@ -77,7 +77,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   renderResumenCheckout();
   renderDatosBanco();
 
-  const campos = ["nombre", "whatsapp", "ciudad", "direccion", "correo"].map((id) =>
+  const campos = ["nombre", "cedula", "whatsapp", "ciudad", "direccion"].map((id) =>
     document.getElementById(id)
   );
 
@@ -152,6 +152,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const cliente = {
       nombre: document.getElementById("nombre").value.trim(),
+      cedula: document.getElementById("cedula").value.trim(),
       whatsapp: document.getElementById("whatsapp").value.trim(),
       ciudad: document.getElementById("ciudad").value.trim(),
       direccion: document.getElementById("direccion").value.trim(),

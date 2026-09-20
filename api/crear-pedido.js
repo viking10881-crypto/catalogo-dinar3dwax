@@ -44,7 +44,7 @@ export default async function handler(req, res) {
   try {
     const { cliente, items, comprobanteUrl } = req.body || {};
 
-    if (!cliente || !cliente.nombre || !cliente.whatsapp || !cliente.ciudad || !cliente.direccion || !cliente.correo) {
+    if (!cliente || !cliente.nombre || !cliente.cedula || !cliente.whatsapp || !cliente.ciudad || !cliente.direccion) {
       res.status(400).json({ error: "Faltan datos de entrega" });
       return;
     }
