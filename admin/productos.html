@@ -85,9 +85,11 @@ function filaProductoHTML(p) {
       <td>${p.nombre} ${p.modeloStl ? '<span class="badge-tipo" title="Tiene archivo STL">🧊 STL</span>' : ""}</td>
       <td>${p.peso} g</td>
       <td>${formatearPrecioAdmin(p.precioBase)}</td>
-      <td class="acciones-fila">
-        <a href="/admin/producto.html?ref=${encodeURIComponent(p.referencia)}">Editar</a>
-        <button type="button" class="eliminar" data-ref="${p.referencia}">Eliminar</button>
+      <td>
+        <div class="acciones-fila">
+          <a href="/admin/producto.html?ref=${encodeURIComponent(p.referencia)}">Editar</a>
+          <button type="button" class="eliminar" data-ref="${p.referencia}">Eliminar</button>
+        </div>
       </td>
     </tr>
   `;
