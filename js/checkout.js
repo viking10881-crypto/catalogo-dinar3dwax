@@ -56,6 +56,15 @@ const REGLAS_CAMPO = {
   ciudad: { regex: SOLO_LETRAS, mensaje: "Escribe solo letras, sin números" },
 };
 
+const ETIQUETAS_CAMPO = {
+  nombre: "Nombre completo",
+  cedula: "Cédula",
+  whatsapp: "WhatsApp",
+  ciudad: "Ciudad",
+  direccion: "Dirección",
+  correo: "Correo electrónico",
+};
+
 /**
  * Filtra en tiempo real los caracteres que no aplican al campo (p. ej. no
  * deja teclear números en "nombre"/"ciudad", ni letras en "cedula"/"whatsapp").
@@ -189,9 +198,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     e.preventDefault();
     mensajeError.textContent = "";
 
-    const camposValidos = campos.map(validarCampo).every(Boolean);
-    const correoValido = validarCorreo(document.getElementById("correo"));
-    if (!camposValidos || !correoValido) return;
+    const correoEl = document.getElementById("correo");
+    const camposInvalidos = [...campos.filter((campo) => !validarCampo(campo)), ...(!validarCorreo(correoEl) ? [correoEl] : [])];
+
+    if (camposInvalidos.length > 0) {
+      const nombres = camposInvalidos.map((campo) => ETIQUETAS_CAMPO[campo.id] || campo.id);
+      alert(`Revisa estos campos:\n- ${nombres.join("\n- ")}`);
+      return;
+    }
 
     if (!comprobanteUrl) {
       mensajeError.textContent = "Sube el comprobante de tu transferencia antes de confirmar el pedido.";
