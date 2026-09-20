@@ -27,6 +27,92 @@
 
     <div id="grid-stats" class="grid-stats"></div>
 
+    <h2 class="titulo-seccion" style="font-size:0.95rem;">Actividad reciente</h2>
+
+    <div class="filtro-rango" id="filtro-rango-graficas">
+      <button type="button" data-dias="14" class="activo">Últimos 14 días</button>
+      <button type="button" data-dias="30">Últimos 30 días</button>
+      <button type="button" data-dias="todo">Todo el histórico</button>
+    </div>
+
+    <div class="grid-graficas">
+      <div class="tarjeta-grafica">
+        <div class="tarjeta-grafica-cabecera">
+          <span class="icono-grafica">📈</span>
+          <div>
+            <p class="titulo-grafica">Pedidos por día</p>
+            <p class="subtitulo-grafica">Según el rango elegido arriba</p>
+          </div>
+        </div>
+        <div id="grafica-pedidos-dia" class="lienzo-grafica"></div>
+      </div>
+      <div class="tarjeta-grafica">
+        <div class="tarjeta-grafica-cabecera">
+          <span class="icono-grafica">🥧</span>
+          <div>
+            <p class="titulo-grafica">Pedidos por estado</p>
+            <p class="subtitulo-grafica">Todo el histórico</p>
+          </div>
+        </div>
+        <div class="fila-donut-estados">
+          <div id="grafica-estados" class="lienzo-grafica"></div>
+          <div id="leyenda-estados" class="leyenda-estados"></div>
+        </div>
+      </div>
+      <div class="tarjeta-grafica">
+        <div class="tarjeta-grafica-cabecera">
+          <span class="icono-grafica">📦</span>
+          <div>
+            <p class="titulo-grafica">Productos por categoría</p>
+            <p class="subtitulo-grafica">Catálogo actual</p>
+          </div>
+        </div>
+        <div id="grafica-categorias" class="lienzo-grafica"></div>
+      </div>
+    </div>
+
+    <div class="grid-graficas fila-ancha">
+      <div class="tarjeta-grafica">
+        <div class="tarjeta-grafica-cabecera">
+          <span class="icono-grafica">🏆</span>
+          <div>
+            <p class="titulo-grafica">Más vendidos</p>
+            <p class="subtitulo-grafica">Unidades por referencia, todo el histórico</p>
+          </div>
+        </div>
+        <div id="grafica-top-productos" class="lienzo-grafica"></div>
+      </div>
+      <div class="tarjeta-grafica">
+        <div class="tarjeta-grafica-cabecera">
+          <span class="icono-grafica">💰</span>
+          <div>
+            <p class="titulo-grafica">Tendencia de ventas</p>
+            <p class="subtitulo-grafica">Valor de pedidos, según el rango elegido arriba</p>
+          </div>
+        </div>
+        <div id="grafica-ventas" class="lienzo-grafica"></div>
+      </div>
+    </div>
+
+    <div class="tarjeta-grafica" style="margin-bottom:32px;">
+      <div class="tarjeta-grafica-cabecera">
+        <span class="icono-grafica">🧾</span>
+        <div>
+          <p class="titulo-grafica">Últimos pedidos</p>
+          <p class="subtitulo-grafica">Los 5 más recientes</p>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="tabla-admin">
+          <thead>
+            <tr><th>Orden</th><th>Cliente</th><th>Fecha</th><th>Estado</th><th>Total</th></tr>
+          </thead>
+          <tbody id="cuerpo-ultimos-pedidos"></tbody>
+        </table>
+      </div>
+      <p id="ultimos-pedidos-vacio" class="tabla-ultimos-pedidos-vacia oculto">Todavía no hay pedidos.</p>
+    </div>
+
     <h2 class="titulo-seccion" style="font-size:0.95rem;">Secciones</h2>
     <div class="grid-accesos">
       <a href="/admin/productos.html" class="tarjeta-acceso" style="text-decoration:none; color:inherit;">
@@ -48,8 +134,10 @@
   </main>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
 <script src="/admin/js/admin.js"></script>
 <script src="/admin/js/layout.js"></script>
+<script src="/admin/js/graficas.js"></script>
 <script>
 async function cargarStats() {
   const grid = document.getElementById("grid-stats");
@@ -70,29 +158,41 @@ async function cargarStats() {
     const categorias = new Set(productos.map((p) => p.tipo)).size;
     const pedidosPendientes = pedidos.filter((p) => p.estado === "pendiente").length;
 
+    // Solo los pedidos tienen fecha de creación disponible en la API, así
+    // que el delta "esta semana" solo se calcula (con datos reales, no
+    // inventados) para las dos tarjetas de pedidos.
+    const haceUnaSemana = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const pedidosEstaSemana = pedidos.filter((p) => p.creadoEn && new Date(p.creadoEn).getTime() >= haceUnaSemana).length;
+
     const tarjetas = [
-      { valor: productos.length, etiqueta: "Productos totales" },
-      { valor: categorias, etiqueta: "Categorías con productos" },
-      { valor: conImagenes, etiqueta: "Con imágenes" },
-      { valor: conStl, etiqueta: "Con archivo STL" },
-      { valor: pedidos.length, etiqueta: "Pedidos totales" },
-      { valor: pedidosPendientes, etiqueta: "Pedidos pendientes" },
+      { valor: productos.length, etiqueta: "Productos totales", icono: "📦" },
+      { valor: categorias, etiqueta: "Categorías con productos", icono: "🏷️" },
+      { valor: conImagenes, etiqueta: "Con imágenes", icono: "🖼️" },
+      { valor: conStl, etiqueta: "Con archivo STL", icono: "📄" },
+      { valor: pedidos.length, etiqueta: "Pedidos totales", icono: "🛒", delta: pedidosEstaSemana },
+      { valor: pedidosPendientes, etiqueta: "Pedidos pendientes", icono: "⏳", alerta: pedidosPendientes > 0 },
     ];
 
     grid.innerHTML = tarjetas
-      .map((t) => `<div class="tarjeta-stat"><div class="valor">${t.valor}</div><div class="etiqueta">${t.etiqueta}</div></div>`)
+      .map(
+        (t) => `
+        <div class="tarjeta-stat ${t.alerta ? "icono-alerta" : ""}">
+          <div class="tarjeta-stat-cabecera"><span class="icono-stat">${t.icono}</span></div>
+          <div class="valor">${t.valor}</div>
+          <div class="etiqueta">${t.etiqueta}</div>
+          ${t.delta !== undefined ? `<div class="delta-stat ${t.delta > 0 ? "positivo" : ""}">${t.delta > 0 ? "↗" : "·"} +${t.delta} esta semana</div>` : ""}
+        </div>`
+      )
       .join("");
+
+    renderGraficas(productos, pedidos);
   } catch (err) {
     grid.innerHTML = `<p class="mensaje-admin error">No se pudieron cargar las estadísticas.</p>`;
   }
 }
 
 renderAdminSidebar("inicio");
-
-(async () => {
-  const autenticado = await exigirSesion();
-  if (autenticado) cargarStats();
-})();
+cargarStats();
 </script>
 </body>
 </html>

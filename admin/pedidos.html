@@ -220,11 +220,7 @@ document.getElementById("cuerpo-tabla-pedidos").addEventListener("click", async 
 });
 
 renderAdminSidebar("pedidos");
-
-(async () => {
-  const autenticado = await exigirSesion();
-  if (autenticado) cargarPedidos();
-})();
+cargarPedidos();
 </script>
 </body>
 </html>

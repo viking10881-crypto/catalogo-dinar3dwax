@@ -181,11 +181,7 @@ document.getElementById("cuerpo-tabla-productos").addEventListener("click", asyn
 });
 
 renderAdminSidebar("productos");
-
-(async () => {
-  const autenticado = await exigirSesion();
-  if (autenticado) cargarTabla();
-})();
+cargarTabla();
 </script>
 </body>
 </html>

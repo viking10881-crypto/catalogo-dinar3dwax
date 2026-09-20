@@ -282,11 +282,7 @@ document.getElementById("form-configuracion").addEventListener("submit", async (
 });
 
 renderAdminSidebar("configuracion");
-
-(async () => {
-  const autenticado = await exigirSesion();
-  if (autenticado) cargarConfiguracion();
-})();
+cargarConfiguracion();
 </script>
 </body>
 </html>

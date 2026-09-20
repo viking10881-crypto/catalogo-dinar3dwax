@@ -3,7 +3,6 @@ import { del } from "@vercel/blob";
 import { handleUpload } from "@vercel/blob/client";
 import {
   requiereAdmin,
-  sesionValida,
   crearTokenSesion,
   establecerCookieSesion,
   borrarCookieSesion,
@@ -73,10 +72,6 @@ async function manejarLogout(req, res) {
   }
   borrarCookieSesion(req, res);
   res.status(200).json({ ok: true });
-}
-
-async function manejarSession(req, res) {
-  res.status(200).json({ autenticado: sesionValida(req) });
 }
 
 function validarConfiguracionBody(body) {
@@ -389,8 +384,6 @@ export default async function handler(req, res) {
       return manejarLogin(req, res);
     case "logout":
       return manejarLogout(req, res);
-    case "session":
-      return manejarSession(req, res);
     case "configuracion":
       return manejarConfiguracion(req, res);
     case "borrar-imagen":

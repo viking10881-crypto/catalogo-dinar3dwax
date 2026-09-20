@@ -378,6 +378,10 @@ async function cargarProductoParaEditar() {
   document.getElementById("referencia").disabled = true;
 
   const r = await fetch(`/api/admin/productos?referencia=${encodeURIComponent(referenciaEdicion)}`);
+  if (r.status === 401) {
+    window.location.href = "/admin/login.html";
+    return;
+  }
   if (!r.ok) {
     document.getElementById("mensaje-formulario").textContent = "No se encontró ese producto.";
     document.getElementById("mensaje-formulario").className = "mensaje-admin error";
@@ -453,8 +457,6 @@ document.getElementById("form-producto").addEventListener("submit", async (e) =>
 renderAdminSidebar("productos");
 
 (async () => {
-  const autenticado = await exigirSesion();
-  if (!autenticado) return;
   cargarSugerenciasSubcategoria();
   if (referenciaEdicion) {
     await cargarProductoParaEditar();

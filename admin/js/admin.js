@@ -13,19 +13,6 @@ function formatearPrecioAdmin(numero) {
   return "$" + Math.round(numero).toLocaleString("es-CO");
 }
 
-async function verificarSesion() {
-  const r = await fetch("/api/admin/session");
-  if (!r.ok) return false;
-  const datos = await r.json();
-  return !!datos.autenticado;
-}
-
-async function exigirSesion() {
-  const ok = await verificarSesion();
-  if (!ok) window.location.href = "/admin/login.html";
-  return ok;
-}
-
 async function cerrarSesion() {
   await fetch("/api/admin/logout", { method: "POST" });
   window.location.href = "/admin/login.html";
