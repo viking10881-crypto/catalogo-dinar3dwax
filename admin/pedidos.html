@@ -86,8 +86,8 @@ function vistaProduccion(p) {
   if (p.produccionEstado === "error") {
     const info = p.produccionInfo || {};
     return `
-      <p class="mensaje-admin error" style="margin-top:0;">✕ No se pudo enviar al taller: ${info.error || "error desconocido"}</p>
-      ${info.omitidos && info.omitidos.length ? `<p class="mensaje-admin" style="margin-top:0;">Omitidos: ${info.omitidos.join(", ")}</p>` : ""}
+      <p class="mensaje-admin error" style="margin-top:0;">✕ No se pudo enviar al taller: ${escaparHtml(info.error) || "error desconocido"}</p>
+      ${info.omitidos && info.omitidos.length ? `<p class="mensaje-admin" style="margin-top:0;">Omitidos: ${info.omitidos.map(escaparHtml).join(", ")}</p>` : ""}
       <p style="color:var(--gris); font-size:0.82rem;">Vuelve a dar clic en "Marcar como aprobado" para reintentar.</p>
     `;
   }
@@ -99,7 +99,7 @@ function formatearFechaPedido(iso) {
 }
 
 function filaItemHTML(item) {
-  const nombre = `${item.referencia && item.referencia !== "PERSONALIZADO" ? item.referencia + " · " : ""}${item.nombre}${item.talla ? ` (talla ${item.talla})` : ""}`;
+  const nombre = `${item.referencia && item.referencia !== "PERSONALIZADO" ? escaparHtml(item.referencia) + " · " : ""}${escaparHtml(item.nombre)}${item.talla ? ` (talla ${escaparHtml(item.talla)})` : ""}`;
   const subtotal = item.precioUnitario * item.cantidad;
   return `<li>${nombre} × ${item.cantidad} — ${formatearPrecioAdmin(subtotal)}</li>`;
 }
@@ -110,7 +110,7 @@ function filaPedidoHTML(p) {
   return `
     <tr>
       <td>${p.id}</td>
-      <td>${p.cliente.nombre}</td>
+      <td>${escaparHtml(p.cliente.nombre)}</td>
       <td>${formatearFechaPedido(p.creadoEn)}</td>
       <td>${cantidadItems}</td>
       <td>${formatearPrecioAdmin(p.total)}</td>
@@ -127,11 +127,11 @@ function filaPedidoHTML(p) {
           <div>
             <strong>Cliente</strong>
             <p>
-              ${p.cliente.nombre}<br>
-              Cédula: ${p.cliente.cedula || "—"}<br>
-              WhatsApp: ${p.cliente.whatsapp}<br>
-              ${p.cliente.ciudad} — ${p.cliente.direccion}<br>
-              ${p.cliente.correo || "—"}
+              ${escaparHtml(p.cliente.nombre)}<br>
+              Cédula: ${escaparHtml(p.cliente.cedula) || "—"}<br>
+              WhatsApp: ${escaparHtml(p.cliente.whatsapp)}<br>
+              ${escaparHtml(p.cliente.ciudad)} — ${escaparHtml(p.cliente.direccion)}<br>
+              ${escaparHtml(p.cliente.correo) || "—"}
             </p>
           </div>
           <div>
