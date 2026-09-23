@@ -26,7 +26,13 @@
       <img src="img/logo-dinar3dwax.png" alt="Dinar 3D Wax" class="logo-img">
     </a>
     <nav class="nav-principal" id="nav-principal">
-      <a href="index.html">Categorías</a>
+      <div class="nav-categorias">
+        <button type="button" id="nav-categorias-toggle" class="nav-cat-toggle" aria-expanded="false" aria-haspopup="true">
+          Categorías
+          <svg class="nav-cat-flecha" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div id="nav-categorias-panel" class="nav-cat-panel"></div>
+      </div>
       <a href="calculadora.html">Calculadora de Pesos</a>
       <a href="index.html#recursos">Recursos 3D</a>
       <a href="index.html#faq">Preguntas Frecuentes</a>
@@ -113,6 +119,7 @@
 
 <script src="js/tema.js"></script>
 <script src="js/productos.js"></script>
+<script src="js/nav-categorias.js"></script>
 <script src="js/carrito.js"></script>
 <script src="js/checkout.js"></script>
 </body>

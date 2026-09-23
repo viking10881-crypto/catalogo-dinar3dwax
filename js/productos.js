@@ -26,6 +26,20 @@ function calcularPrecioServicio(pesoOro18k) {
   return Math.round(pesoCera * CONFIG.precioPorGramoCera);
 }
 
+/**
+ * Nombres de categoría: vive aquí (no en catalogo.js) porque productos.js
+ * se carga en las 6 páginas públicas, y el menú de categorías de la barra
+ * de navegación (js/nav-categorias.js) también lo necesita en páginas que
+ * no cargan catalogo.js (checkout, confirmación).
+ */
+const NOMBRES_CATEGORIA = {
+  anillos: "Anillos",
+  dijes: "Dijes",
+  aretes: "Aretes",
+  cadenas: "Cadenas",
+  pulseras: "Pulseras",
+};
+
 let PRODUCTOS = [];
 
 /**
@@ -65,3 +79,25 @@ const configuracionLista = fetch("/api/configuracion")
   .catch((err) => {
     console.error("No se pudo cargar la configuración, se usan los valores por defecto:", err);
   });
+
+/**
+ * Árbol de categorías/subcategorías armado con lo que realmente existe en
+ * PRODUCTOS (no hay una lista fija de subcategorías en el admin). Llamar
+ * solo después de esperar productosListos. Lo usa tanto el panel de
+ * filtros del catálogo (catalogo.js) como el menú desplegable de
+ * "Categorías" de la barra de navegación (nav-categorias.js).
+ */
+function construirArbolCategorias() {
+  const subcategoriasPorTipo = {};
+  for (const p of PRODUCTOS) {
+    if (!p.subcategoria) continue;
+    if (!subcategoriasPorTipo[p.tipo]) subcategoriasPorTipo[p.tipo] = new Set();
+    subcategoriasPorTipo[p.tipo].add(p.subcategoria);
+  }
+
+  return Object.keys(NOMBRES_CATEGORIA).map((tipo) => ({
+    tipo,
+    etiqueta: NOMBRES_CATEGORIA[tipo],
+    subcategorias: subcategoriasPorTipo[tipo] ? [...subcategoriasPorTipo[tipo]].sort() : [],
+  }));
+}

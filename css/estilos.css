@@ -166,6 +166,91 @@ select {
 .nav-principal a[aria-current="page"]::after { right: 0; }
 .nav-principal a[aria-current="page"] { color: var(--dorado); }
 
+/* ===== Menú desplegable "Categorías" en la barra de navegación =====
+   El botón reusa el mismo look del link de al lado (mismo subrayado que
+   crece al hover/activo); el panel es una tarjeta flotante en escritorio
+   y una lista en línea dentro del menú hamburguesa en móvil. */
+.nav-categorias { position: relative; }
+.nav-cat-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+  background: none;
+  border: none;
+  padding: 4px 0;
+  font: inherit;
+  font-weight: 500;
+  color: inherit;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.nav-cat-toggle::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 100%;
+  bottom: -1px;
+  height: 2px;
+  background: var(--dorado);
+  transition: right 0.2s ease;
+}
+.nav-cat-toggle:hover { color: var(--dorado); }
+.nav-cat-toggle:hover::after,
+.nav-categorias.abierto .nav-cat-toggle::after,
+.nav-cat-toggle[aria-current="page"]::after { right: 0; }
+.nav-categorias.abierto .nav-cat-toggle,
+.nav-cat-toggle[aria-current="page"] { color: var(--dorado); }
+.nav-cat-flecha { width: 14px; height: 14px; transition: transform 0.15s ease; }
+.nav-categorias.abierto .nav-cat-flecha { transform: rotate(180deg); }
+
+.nav-cat-panel {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 0;
+  min-width: 230px;
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra-md);
+  padding: 8px;
+  z-index: 60;
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+}
+.nav-categorias.abierto .nav-cat-panel { display: flex; }
+
+.nav-cat-grupo { border-bottom: 1px solid var(--borde); padding-bottom: 4px; margin-bottom: 4px; }
+.nav-cat-grupo:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.nav-cat-categoria {
+  display: block;
+  padding: 7px 10px;
+  border-radius: var(--radio-sm);
+  font-weight: 600;
+  font-size: 0.86rem;
+  color: var(--negro);
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+.nav-cat-categoria:hover { background: rgba(184, 150, 62, 0.08); color: var(--dorado); }
+.nav-cat-todos {
+  color: var(--dorado);
+  border-bottom: 1px solid var(--borde);
+  border-radius: 0;
+  margin-bottom: 4px;
+  padding-bottom: 10px;
+}
+.nav-cat-subs { display: flex; flex-direction: column; padding-left: 8px; }
+.nav-cat-subcategoria {
+  display: block;
+  padding: 6px 10px;
+  border-radius: var(--radio-sm);
+  font-size: 0.8rem;
+  color: var(--gris);
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+.nav-cat-subcategoria:hover { background: rgba(184, 150, 62, 0.08); color: var(--dorado); }
+
 .acciones-cabecera {
   display: flex;
   align-items: center;
@@ -1707,7 +1792,11 @@ input[type="file"]::file-selector-button:hover {
     transition: max-height 0.25s ease, opacity 0.2s ease;
   }
   .nav-principal.abierto {
-    max-height: 320px;
+    /* Antes 320px fijo: con el menú de categorías desplegado adentro (más
+       las subcategorías) el contenido puede superar eso y quedaba
+       recortado sin que se notara que había más. */
+    max-height: min(80vh, 600px);
+    overflow-y: auto;
     opacity: 1;
     padding: 8px 20px 14px;
   }
@@ -1718,6 +1807,29 @@ input[type="file"]::file-selector-button:hover {
     border-radius: var(--radio-sm);
     padding-left: 10px;
   }
+
+  /* El menú de categorías, adentro del panel móvil, se ve como un ítem más
+     de la lista (con acordeón), no como la tarjeta flotante de escritorio. */
+  .nav-cat-toggle {
+    width: 100%;
+    justify-content: space-between;
+    padding: 12px 4px;
+  }
+  .nav-cat-toggle::after { display: none; }
+  .nav-cat-panel {
+    position: static;
+    display: block;
+    max-height: 0;
+    overflow: hidden;
+    background: none;
+    border: none;
+    box-shadow: none;
+    padding: 0 0 0 10px;
+    min-width: 0;
+    transition: max-height 0.2s ease;
+  }
+  .nav-categorias.abierto .nav-cat-panel { max-height: 600px; }
+  .nav-cat-categoria, .nav-cat-subcategoria { padding: 9px 10px; }
 }
 
 @media (max-width: 600px) {

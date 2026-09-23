@@ -1,15 +1,9 @@
 /**
  * Lógica del catálogo principal: filtros (categoría, subcategoría, peso),
  * búsqueda por referencia, banner administrable y render de tarjetas.
+ * NOMBRES_CATEGORIA y construirArbolCategorias() viven en productos.js
+ * (compartidos con el menú de categorías de la barra de navegación).
  */
-const NOMBRES_CATEGORIA = {
-  anillos: "Anillos",
-  dijes: "Dijes",
-  aretes: "Aretes",
-  cadenas: "Cadenas",
-  pulseras: "Pulseras",
-};
-
 let subcategoriaActual = "";
 
 function tarjetaProductoHTML(producto) {
@@ -92,29 +86,21 @@ function renderArbolCategorias() {
   const contenedor = document.getElementById("arbol-categorias");
   if (!contenedor) return;
 
-  const subcategoriasPorTipo = {};
-  for (const p of PRODUCTOS) {
-    if (!p.subcategoria) continue;
-    if (!subcategoriasPorTipo[p.tipo]) subcategoriasPorTipo[p.tipo] = new Set();
-    subcategoriasPorTipo[p.tipo].add(p.subcategoria);
-  }
-
-  const grupos = Object.keys(NOMBRES_CATEGORIA)
-    .map((tipo) => {
-      const subcats = subcategoriasPorTipo[tipo] ? [...subcategoriasPorTipo[tipo]].sort() : [];
-      const tieneSubcats = subcats.length > 0;
+  const grupos = construirArbolCategorias()
+    .map(({ tipo, etiqueta, subcategorias }) => {
+      const tieneSubcats = subcategorias.length > 0;
       return `
         <div class="categoria-grupo" data-categoria="${tipo}">
           <div class="categoria-grupo-cabecera">
             <label class="opcion-filtro">
-              <input type="radio" name="filtro-categoria" value="${tipo}"> ${NOMBRES_CATEGORIA[tipo]}
+              <input type="radio" name="filtro-categoria" value="${tipo}"> ${etiqueta}
             </label>
             ${tieneSubcats ? `<button type="button" class="btn-expandir-subcategoria" data-categoria="${tipo}">▾</button>` : ""}
           </div>
           ${
             tieneSubcats
               ? `<div class="lista-subcategorias">
-                  ${subcats
+                  ${subcategorias
                     .map(
                       (s) => `
                     <label class="opcion-subcategoria">
@@ -132,6 +118,39 @@ function renderArbolCategorias() {
     .join("");
 
   contenedor.innerHTML = grupos;
+}
+
+/**
+ * Aplica el filtro de categoría/subcategoría que venga en la URL
+ * (?categoria=anillos&subcategoria=Solitario), usado por los links del
+ * menú desplegable "Categorías" de la barra de navegación (ver
+ * js/nav-categorias.js). Si no hay params, o no coinciden con nada real,
+ * no toca el estado por defecto ("Todos").
+ */
+function aplicarFiltroDesdeUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const categoria = params.get("categoria");
+  const subcategoria = params.get("subcategoria");
+  if (!categoria || !NOMBRES_CATEGORIA[categoria]) return;
+
+  const radioCategoria = [...document.querySelectorAll('input[name="filtro-categoria"]')].find(
+    (el) => el.value === categoria
+  );
+  if (!radioCategoria) return;
+  radioCategoria.checked = true;
+
+  if (subcategoria) {
+    const radioSubcategoria = [...document.querySelectorAll('input[name="filtro-subcategoria"]')].find(
+      (el) => el.value === subcategoria && el.getAttribute("data-categoria-padre") === categoria
+    );
+    if (radioSubcategoria) {
+      radioSubcategoria.checked = true;
+      subcategoriaActual = subcategoria;
+      radioSubcategoria.closest(".categoria-grupo").classList.add("abierta");
+    }
+  }
+
+  document.querySelector(".zona-catalogo")?.scrollIntoView({ block: "start" });
 }
 
 function irAReferencia(valor) {
@@ -221,6 +240,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   await productosListos;
   renderArbolCategorias();
   ajustarRangosFiltro();
+  aplicarFiltroDesdeUrl();
   renderCatalogo();
 
   // configuracionLista no resuelve con el objeto de configuración: lo
