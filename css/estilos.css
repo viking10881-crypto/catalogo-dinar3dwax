@@ -935,6 +935,7 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
 .seccion-visor-stl { padding: 0 0 48px; }
 .ayuda-visor { color: var(--gris); font-size: 0.85rem; margin: -6px 0 14px; }
 .contenedor-visor-stl {
+  position: relative;
   width: 100%;
   height: 420px;
   background: var(--superficie);
@@ -946,6 +947,35 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
 .contenedor-visor-stl canvas { display: block; touch-action: none; }
 @media (max-width: 600px) {
   .contenedor-visor-stl { height: 300px; }
+}
+
+.visor-stl-cargando {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 24px;
+  text-align: center;
+}
+.visor-stl-barra {
+  width: min(240px, 100%);
+  height: 6px;
+  border-radius: 999px;
+  background: var(--borde);
+  overflow: hidden;
+}
+.visor-stl-relleno {
+  height: 100%;
+  background: var(--dorado);
+  border-radius: 999px;
+  transition: width 0.2s ease;
+}
+.visor-stl-texto {
+  color: var(--gris);
+  font-size: 0.85rem;
 }
 
 /* ===== Calculadora ===== */

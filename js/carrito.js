@@ -144,7 +144,7 @@ function renderizarCarrito() {
       return `
         <div class="fila-carrito">
           <div class="render-mini">
-            ${info.imagen ? `<img src="${info.imagen}" alt="${info.nombre}" onerror="this.remove()">` : ""}
+            ${info.imagen ? `<img src="${info.imagen}" alt="${info.nombre}" loading="lazy" decoding="async" onerror="this.remove()">` : ""}
           </div>
           <div class="detalle">
             <div class="ref">${info.referencia}</div>

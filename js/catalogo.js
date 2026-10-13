@@ -12,7 +12,7 @@ function tarjetaProductoHTML(producto) {
   return `
     <article class="tarjeta-producto">
       <a class="render" data-tipo="${producto.tipo}" href="producto.html?ref=${producto.referencia}">
-        ${portada ? `<img src="${portada}" alt="${producto.nombre}" onerror="this.remove()">` : ""}
+        ${portada ? `<img src="${portada}" alt="${producto.nombre}" loading="lazy" decoding="async" onerror="this.remove()">` : ""}
         <span class="badge-ref-tarjeta">${producto.referencia}</span>
         <span class="badge-material-tarjeta">Cera 3D</span>
       </a>
@@ -193,8 +193,15 @@ function iniciarBannerCatalogo(imagenes) {
   const capa = hero.querySelector(".capa-banner");
   const puntosContenedor = hero.querySelector(".puntos-banner");
 
+  // La primera es lo primero que se pinta en toda la página (LCP): va con
+  // prioridad alta. El resto no se ve hasta que el carrusel rota, pero ya
+  // están en pantalla (superpuestas, solo con opacity:0), así que
+  // loading="lazy" no cambiaría nada — iría igual de inmediato.
   capa.innerHTML = imagenes
-    .map((url, i) => `<img class="imagen-banner${i === 0 ? " activa" : ""}" src="${url}" alt="">`)
+    .map(
+      (url, i) =>
+        `<img class="imagen-banner${i === 0 ? " activa" : ""}" src="${url}" alt="" decoding="async" ${i === 0 ? 'fetchpriority="high"' : ""}>`
+    )
     .join("");
 
   if (imagenes.length === 1) return;

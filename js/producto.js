@@ -15,7 +15,7 @@ let tallaSeleccionada = null;
 function mostrarImagenPrincipal(url) {
   const render = document.getElementById("ficha-render");
   render.innerHTML = url
-    ? `<img src="${url}" alt="${productoActual ? productoActual.nombre : ""}" onerror="this.remove()">`
+    ? `<img src="${url}" alt="${productoActual ? productoActual.nombre : ""}" decoding="async" onerror="this.remove()">`
     : "";
 }
 
@@ -54,7 +54,7 @@ function renderFichaProducto() {
       .map(
         (url, i) => `
           <button type="button" class="miniatura-galeria ${i === 0 ? "activa" : ""}" data-src="${url}">
-            <img src="${url}" alt="${productoActual.nombre} ${i + 1}">
+            <img src="${url}" alt="${productoActual.nombre} ${i + 1}" loading="lazy" decoding="async">
           </button>
         `
       )
@@ -101,14 +101,49 @@ function renderFichaProducto() {
   const seccionStl = document.getElementById("seccion-visor-stl");
   if (productoActual.modeloStl) {
     seccionStl.classList.remove("oculto");
-    if (typeof window.iniciarVisorSTL === "function") {
-      window.iniciarVisorSTL("contenedor-visor-stl", productoActual.modeloStl, productoActual.material);
-    }
+    iniciarVisorSTLDiferido(productoActual.modeloStl, productoActual.material);
   } else {
     seccionStl.classList.add("oculto");
   }
 
   actualizarPrecioFicha();
+}
+
+/**
+ * El visor 3D (Three.js + el archivo STL, que puede pesar varios MB) no se
+ * carga hasta que esta sección entra en pantalla: así no compite por ancho
+ * de banda con las fotos de arriba al entrar a la página, y quien no baja
+ * hasta acá nunca llega a descargarlo.
+ */
+let visorStlIniciado = false;
+function iniciarVisorSTLDiferido(urlStl, material) {
+  const seccion = document.getElementById("seccion-visor-stl");
+  if (!seccion) return;
+  visorStlIniciado = false;
+
+  function iniciar() {
+    if (visorStlIniciado) return;
+    visorStlIniciado = true;
+    if (typeof window.iniciarVisorSTL === "function") {
+      window.iniciarVisorSTL("contenedor-visor-stl", urlStl, material);
+    }
+  }
+
+  if (!("IntersectionObserver" in window)) {
+    iniciar();
+    return;
+  }
+
+  const observador = new IntersectionObserver(
+    (entradas) => {
+      if (entradas.some((e) => e.isIntersecting)) {
+        observador.disconnect();
+        iniciar();
+      }
+    },
+    { rootMargin: "300px" }
+  );
+  observador.observe(seccion);
 }
 
 function actualizarPrecioFicha() {

@@ -208,6 +208,37 @@ function renderGaleriaImagenesAdmin() {
 }
 
 /**
+ * Las fotos de celular/cámara llegan a 3000-4000px y varios MB — muy por
+ * encima de lo que el catálogo muestra (la tarjeta más grande ronda los
+ * 600px). Eso es justo lo que hacía lenta la carga del catálogo público,
+ * así que se redimensionan y recomprimen en el propio navegador antes de
+ * subir, sin tocar el original fuera de este formulario. 1600px de lado
+ * mayor deja margen de sobra para pantallas retina sin cargar 4000px.
+ */
+const LADO_MAYOR_MAXIMO_IMAGEN = 1600;
+const CALIDAD_JPEG_IMAGEN = 0.82;
+
+async function redimensionarImagen(archivo) {
+  const bitmap = await createImageBitmap(archivo).catch(() => null);
+  if (!bitmap) return archivo; // formato no soportado por createImageBitmap: se sube tal cual
+
+  const escala = Math.min(1, LADO_MAYOR_MAXIMO_IMAGEN / Math.max(bitmap.width, bitmap.height));
+  const ancho = Math.round(bitmap.width * escala);
+  const alto = Math.round(bitmap.height * escala);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = ancho;
+  canvas.height = alto;
+  canvas.getContext("2d").drawImage(bitmap, 0, 0, ancho, alto);
+  bitmap.close();
+
+  const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", CALIDAD_JPEG_IMAGEN));
+  if (!blob || blob.size >= archivo.size) return archivo; // si no mejoró, se sube el original
+
+  return new File([blob], archivo.name.replace(/\.\w+$/, ".jpg"), { type: "image/jpeg" });
+}
+
+/**
  * Sube el archivo directo desde el navegador a Vercel Blob (sin pasar por
  * nuestra función de servidor). Vercel limita el body de una función a
  * 4.5 MB, así que el viejo flujo de JSON+base64 fallaba con 413 para
@@ -274,12 +305,17 @@ document.getElementById("archivo-imagen").addEventListener("change", async (e) =
       continue;
     }
 
-    mensaje.textContent = `Subiendo ${subidas + 1} de ${archivos.length}...`;
+    mensaje.textContent = `Optimizando ${subidas + 1} de ${archivos.length}...`;
     mensaje.className = "mensaje-admin";
 
     try {
-      const pathname = `productos/${referenciaActual}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${extension}`;
-      const url = await subirDirectoABlob(pathname, archivo, "imagen");
+      const archivoOptimizado = await redimensionarImagen(archivo);
+      const extensionFinal = EXTENSION_POR_TIPO_IMAGEN[archivoOptimizado.type] || extension;
+
+      mensaje.textContent = `Subiendo ${subidas + 1} de ${archivos.length}...`;
+
+      const pathname = `productos/${referenciaActual}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${extensionFinal}`;
+      const url = await subirDirectoABlob(pathname, archivoOptimizado, "imagen");
 
       imagenesActuales.push(url);
       renderGaleriaImagenesAdmin();

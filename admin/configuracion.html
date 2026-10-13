@@ -129,6 +129,35 @@ function renderGaleriaBanner() {
 }
 
 /**
+ * Igual que en admin/producto.html: redimensiona/recomprime en el navegador
+ * antes de subir. El banner ocupa todo el ancho de la pantalla (hasta
+ * ~1920px en monitores grandes), por eso el lado mayor permitido es más
+ * alto que el de las fotos de producto.
+ */
+const LADO_MAYOR_MAXIMO_BANNER = 1920;
+const CALIDAD_JPEG_BANNER = 0.82;
+
+async function redimensionarImagen(archivo) {
+  const bitmap = await createImageBitmap(archivo).catch(() => null);
+  if (!bitmap) return archivo;
+
+  const escala = Math.min(1, LADO_MAYOR_MAXIMO_BANNER / Math.max(bitmap.width, bitmap.height));
+  const ancho = Math.round(bitmap.width * escala);
+  const alto = Math.round(bitmap.height * escala);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = ancho;
+  canvas.height = alto;
+  canvas.getContext("2d").drawImage(bitmap, 0, 0, ancho, alto);
+  bitmap.close();
+
+  const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", CALIDAD_JPEG_BANNER));
+  if (!blob || blob.size >= archivo.size) return archivo;
+
+  return new File([blob], archivo.name.replace(/\.\w+$/, ".jpg"), { type: "image/jpeg" });
+}
+
+/**
  * Sube directo desde el navegador a Vercel Blob (ver nota igual en
  * admin/producto.html sobre por qué: el límite de body de 4.5 MB de
  * Vercel Functions rompía el flujo viejo de JSON+base64 para imágenes
@@ -194,12 +223,17 @@ document.getElementById("archivo-banner").addEventListener("change", async (e) =
       continue;
     }
 
-    mensaje.textContent = `Subiendo ${subidas + 1} de ${archivos.length}...`;
+    mensaje.textContent = `Optimizando ${subidas + 1} de ${archivos.length}...`;
     mensaje.className = "mensaje-admin";
 
     try {
-      const pathname = `banner/${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${extension}`;
-      const url = await subirDirectoABlob(pathname, archivo, "imagen");
+      const archivoOptimizado = await redimensionarImagen(archivo);
+      const extensionFinal = EXTENSION_POR_TIPO[archivoOptimizado.type] || extension;
+
+      mensaje.textContent = `Subiendo ${subidas + 1} de ${archivos.length}...`;
+
+      const pathname = `banner/${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${extensionFinal}`;
+      const url = await subirDirectoABlob(pathname, archivoOptimizado, "imagen");
 
       bannerImagenesActuales.push(url);
       renderGaleriaBanner();

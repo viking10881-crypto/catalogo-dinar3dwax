@@ -23,6 +23,19 @@ window.iniciarVisorSTL = function iniciarVisorSTL(idContenedor, urlStl, material
   if (!contenedor || !urlStl) return;
   contenedor.innerHTML = "";
 
+  // Los archivos STL de este catálogo pueden pesar varios MB (son modelos
+  // 3D densos, no una foto): sin esto, la sección se queda en blanco un
+  // buen rato y se siente "trabada" en vez de "cargando".
+  const avisoCarga = document.createElement("div");
+  avisoCarga.className = "visor-stl-cargando";
+  avisoCarga.innerHTML = `
+    <div class="visor-stl-barra"><div class="visor-stl-relleno" style="width:0%"></div></div>
+    <span class="visor-stl-texto">Cargando modelo 3D...</span>
+  `;
+  contenedor.appendChild(avisoCarga);
+  const textoCarga = avisoCarga.querySelector(".visor-stl-texto");
+  const barraCarga = avisoCarga.querySelector(".visor-stl-relleno");
+
   const ancho = contenedor.clientWidth || 600;
   const alto = contenedor.clientHeight || 420;
 
@@ -52,6 +65,8 @@ window.iniciarVisorSTL = function iniciarVisorSTL(idContenedor, urlStl, material
   cargador.load(
     urlStl,
     (geometria) => {
+      avisoCarga.remove();
+
       geometria.center();
       geometria.computeVertexNormals();
       geometria.computeBoundingSphere();
@@ -73,7 +88,16 @@ window.iniciarVisorSTL = function iniciarVisorSTL(idContenedor, urlStl, material
 
       animar();
     },
-    undefined,
+    (evento) => {
+      // event.total viene del Content-Length del archivo (Vercel Blob sí lo
+      // manda); sin eso no hay de dónde sacar un porcentaje real, así que
+      // se deja el mensaje genérico en vez de inventar un número.
+      if (evento.lengthComputable && evento.total > 0) {
+        const pct = Math.min(100, Math.round((evento.loaded / evento.total) * 100));
+        barraCarga.style.width = `${pct}%`;
+        textoCarga.textContent = `Cargando modelo 3D... ${pct}% (${(evento.total / 1024 / 1024).toFixed(1)} MB)`;
+      }
+    },
     () => {
       contenedor.innerHTML =
         '<p style="padding:20px;color:#b23b3b;">No se pudo cargar el modelo 3D.</p>';
