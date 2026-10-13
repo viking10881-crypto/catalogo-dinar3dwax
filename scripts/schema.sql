@@ -70,3 +70,41 @@ ALTER TABLE configuracion ADD COLUMN IF NOT EXISTS banco_numero_cuenta TEXT NOT 
 ALTER TABLE configuracion ADD COLUMN IF NOT EXISTS banco_titular TEXT NOT NULL DEFAULT '';
 ALTER TABLE configuracion ADD COLUMN IF NOT EXISTS banco_documento TEXT NOT NULL DEFAULT '';
 ALTER TABLE configuracion ADD COLUMN IF NOT EXISTS banner_imagenes JSONB NOT NULL DEFAULT '[]';
+
+-- Personas que trabajan para el taller (diseñadores u otro rol), para poder
+-- registrarles pagos por sus servicios.
+CREATE TABLE IF NOT EXISTS trabajadores (
+  id SERIAL PRIMARY KEY,
+  nombre TEXT NOT NULL,
+  rol TEXT NOT NULL DEFAULT 'Diseñador',
+  telefono TEXT NOT NULL DEFAULT '',
+  documento TEXT NOT NULL DEFAULT '',
+  notas TEXT NOT NULL DEFAULT '',
+  activo BOOLEAN NOT NULL DEFAULT true,
+  creado_en TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Registro de compras/consumo de materiales (cera, oro, etc.).
+CREATE TABLE IF NOT EXISTS materiales (
+  id SERIAL PRIMARY KEY,
+  nombre TEXT NOT NULL,
+  cantidad NUMERIC(12, 2) NOT NULL DEFAULT 0,
+  unidad TEXT NOT NULL DEFAULT 'g',
+  costo_total NUMERIC(12, 2) NOT NULL DEFAULT 0,
+  proveedor TEXT NOT NULL DEFAULT '',
+  fecha DATE NOT NULL DEFAULT CURRENT_DATE,
+  notas TEXT NOT NULL DEFAULT '',
+  creado_en TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Pagos hechos a un trabajador por sus servicios (p. ej. diseños entregados).
+CREATE TABLE IF NOT EXISTS pagos_trabajadores (
+  id SERIAL PRIMARY KEY,
+  trabajador_id INTEGER NOT NULL REFERENCES trabajadores(id) ON DELETE CASCADE,
+  concepto TEXT NOT NULL DEFAULT '',
+  monto NUMERIC(12, 2) NOT NULL DEFAULT 0,
+  fecha DATE NOT NULL DEFAULT CURRENT_DATE,
+  metodo_pago TEXT NOT NULL DEFAULT 'Transferencia',
+  notas TEXT NOT NULL DEFAULT '',
+  creado_en TIMESTAMPTZ NOT NULL DEFAULT now()
+);

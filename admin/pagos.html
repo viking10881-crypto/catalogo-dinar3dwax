@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pagos · Panel Dinar 3D Wax</title>
+<link rel="stylesheet" href="/css/estilos.css">
+</head>
+<body>
+
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <a href="/admin/index.html" class="admin-sidebar-marca">
+      <img src="/img/logo-dinar3dwax.png" alt="Dinar 3D Wax" class="logo-img">
+      <span class="subtitulo">Panel de administración</span>
+    </a>
+    <nav id="admin-sidebar-nav" class="admin-sidebar-nav"></nav>
+    <div class="admin-sidebar-pie">
+      <a href="/index.html" target="_blank" rel="noopener">Ver catálogo ↗</a>
+      <button type="button" id="btn-cerrar-sesion">Salir</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-cabecera-fila">
+      <h1 class="titulo-seccion" style="margin:0;">Pagos a trabajadores</h1>
+      <button type="button" id="btn-mostrar-form" class="btn btn-dorado">+ Nuevo pago</button>
+    </div>
+    <p style="color:var(--gris); font-size:0.85rem; margin-top:-6px;">
+      Pagos por servicios (diseños y demás) a las personas registradas en <a href="/admin/trabajadores.html">Trabajadores</a>.
+    </p>
+
+    <form id="form-pago" class="formulario-datos oculto" style="max-width:480px; margin-bottom:24px;">
+      <label for="pago-trabajador">Trabajador</label>
+      <select id="pago-trabajador" required></select>
+
+      <label for="pago-concepto" style="margin-top:14px;">Concepto</label>
+      <input type="text" id="pago-concepto" placeholder="Ej: Diseño anillo AN-15" required>
+
+      <label for="pago-monto" style="margin-top:14px;">Monto</label>
+      <input type="number" id="pago-monto" min="0.01" step="100" required>
+
+      <label for="pago-fecha" style="margin-top:14px;">Fecha</label>
+      <input type="date" id="pago-fecha" required>
+
+      <label for="pago-metodo" style="margin-top:14px;">Método de pago</label>
+      <select id="pago-metodo">
+        <option value="Transferencia">Transferencia</option>
+        <option value="Efectivo">Efectivo</option>
+        <option value="Otro">Otro</option>
+      </select>
+
+      <label for="pago-notas" style="margin-top:14px;">Notas</label>
+      <textarea id="pago-notas" rows="2" placeholder="Opcional"></textarea>
+
+      <div style="display:flex; gap:10px; margin-top:20px;">
+        <button type="submit" class="btn btn-dorado">Guardar</button>
+        <button type="button" id="btn-cancelar-form" class="btn btn-borde">Cancelar</button>
+      </div>
+      <p id="mensaje-formulario" class="mensaje-admin"></p>
+    </form>
+
+    <div style="overflow-x:auto;">
+      <table class="tabla-admin">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Trabajador</th>
+            <th>Concepto</th>
+            <th>Monto</th>
+            <th>Método</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="cuerpo-tabla-pagos"></tbody>
+      </table>
+    </div>
+    <p id="mensaje-tabla" class="mensaje-admin"></p>
+  </main>
+</div>
+
+<script src="/admin/js/admin.js"></script>
+<script src="/admin/js/layout.js"></script>
+<script>
+let todosLosPagos = [];
+let todosLosTrabajadores = [];
+
+function formatearFechaCorta(iso) {
+  // La API devuelve la columna DATE como timestamp completo (p. ej.
+  // "2026-10-12T05:00:00.000Z"): se toma solo la parte de fecha para no
+  // depender de a qué hora UTC cae la medianoche local.
+  return new Date(String(iso).slice(0, 10) + "T00:00:00").toLocaleDateString("es-CO", { dateStyle: "medium" });
+}
+
+function filaPagoHTML(p) {
+  return `
+    <tr>
+      <td>${formatearFechaCorta(p.fecha)}</td>
+      <td>${escaparHtml(p.trabajadorNombre)}</td>
+      <td>${escaparHtml(p.concepto)}</td>
+      <td>${formatearPrecioAdmin(p.monto)}</td>
+      <td>${escaparHtml(p.metodoPago)}</td>
+      <td>
+        <div class="acciones-fila">
+          <button type="button" class="eliminar" data-id="${p.id}">Eliminar</button>
+        </div>
+      </td>
+    </tr>
+  `;
+}
+
+function renderizarTabla() {
+  const cuerpo = document.getElementById("cuerpo-tabla-pagos");
+  if (todosLosPagos.length === 0) {
+    cuerpo.innerHTML = `<tr><td colspan="6" class="tabla-vacia">Todavía no hay pagos registrados.</td></tr>`;
+    return;
+  }
+  cuerpo.innerHTML = todosLosPagos.map(filaPagoHTML).join("");
+}
+
+function renderizarSelectTrabajadores() {
+  const select = document.getElementById("pago-trabajador");
+  if (todosLosTrabajadores.length === 0) {
+    select.innerHTML = `<option value="">No hay trabajadores registrados</option>`;
+    return;
+  }
+  select.innerHTML = todosLosTrabajadores
+    .map((t) => `<option value="${t.id}">${escaparHtml(t.nombre)}${t.activo ? "" : " (inactivo)"}</option>`)
+    .join("");
+}
+
+async function cargarTodo() {
+  const mensaje = document.getElementById("mensaje-tabla");
+  try {
+    const [rPagos, rTrabajadores] = await Promise.all([
+      fetch("/api/admin/pagos"),
+      fetch("/api/admin/trabajadores"),
+    ]);
+    if (rPagos.status === 401 || rTrabajadores.status === 401) {
+      window.location.href = "/admin/login.html";
+      return;
+    }
+    todosLosPagos = await rPagos.json();
+    todosLosTrabajadores = await rTrabajadores.json();
+    renderizarTabla();
+    renderizarSelectTrabajadores();
+  } catch (err) {
+    mensaje.textContent = "No se pudo cargar el listado de pagos.";
+    mensaje.className = "mensaje-admin error";
+  }
+}
+
+function mostrarFormulario() {
+  const form = document.getElementById("form-pago");
+  if (todosLosTrabajadores.length === 0) {
+    alert("Primero registra al menos un trabajador en la sección Trabajadores.");
+    return;
+  }
+  form.classList.remove("oculto");
+  document.getElementById("mensaje-formulario").textContent = "";
+  document.getElementById("pago-concepto").value = "";
+  document.getElementById("pago-monto").value = "";
+  document.getElementById("pago-fecha").value = new Date().toISOString().slice(0, 10);
+  document.getElementById("pago-metodo").value = "Transferencia";
+  document.getElementById("pago-notas").value = "";
+  form.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function ocultarFormulario() {
+  document.getElementById("form-pago").classList.add("oculto");
+}
+
+document.getElementById("btn-mostrar-form").addEventListener("click", mostrarFormulario);
+document.getElementById("btn-cancelar-form").addEventListener("click", ocultarFormulario);
+
+document.getElementById("form-pago").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const mensaje = document.getElementById("mensaje-formulario");
+
+  const datos = {
+    trabajadorId: Number(document.getElementById("pago-trabajador").value),
+    concepto: document.getElementById("pago-concepto").value.trim(),
+    monto: parseFloat(document.getElementById("pago-monto").value),
+    fecha: document.getElementById("pago-fecha").value,
+    metodoPago: document.getElementById("pago-metodo").value,
+    notas: document.getElementById("pago-notas").value.trim(),
+  };
+
+  try {
+    const r = await fetch("/api/admin/pagos", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(datos),
+    });
+    const resultado = await r.json();
+    if (!r.ok) throw new Error(resultado.error || "No se pudo guardar");
+
+    ocultarFormulario();
+    await cargarTodo();
+  } catch (err) {
+    mensaje.textContent = err.message;
+    mensaje.className = "mensaje-admin error";
+  }
+});
+
+document.getElementById("cuerpo-tabla-pagos").addEventListener("click", async (e) => {
+  const botonEliminar = e.target.closest("button.eliminar");
+  if (!botonEliminar) return;
+  const id = botonEliminar.getAttribute("data-id");
+  if (!confirm("¿Eliminar este pago?")) return;
+  try {
+    const r = await fetch(`/api/admin/pagos?id=${id}`, { method: "DELETE" });
+    if (!r.ok) throw new Error("fallo al eliminar");
+    cargarTodo();
+  } catch (err) {
+    alert("No se pudo eliminar el pago.");
+  }
+});
+
+renderAdminSidebar("pagos");
+cargarTodo();
+</script>
+</body>
+</html>

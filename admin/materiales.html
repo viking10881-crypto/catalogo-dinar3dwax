@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Materiales · Panel Dinar 3D Wax</title>
+<link rel="stylesheet" href="/css/estilos.css">
+</head>
+<body>
+
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <a href="/admin/index.html" class="admin-sidebar-marca">
+      <img src="/img/logo-dinar3dwax.png" alt="Dinar 3D Wax" class="logo-img">
+      <span class="subtitulo">Panel de administración</span>
+    </a>
+    <nav id="admin-sidebar-nav" class="admin-sidebar-nav"></nav>
+    <div class="admin-sidebar-pie">
+      <a href="/index.html" target="_blank" rel="noopener">Ver catálogo ↗</a>
+      <button type="button" id="btn-cerrar-sesion">Salir</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-cabecera-fila">
+      <h1 class="titulo-seccion" style="margin:0;">Materiales</h1>
+      <button type="button" id="btn-mostrar-form" class="btn btn-dorado">+ Nuevo registro</button>
+    </div>
+    <p style="color:var(--gris); font-size:0.85rem; margin-top:-6px;">
+      Registro de compras/consumo de materiales (cera, oro, etc.) para llevar el control de costos.
+    </p>
+
+    <form id="form-material" class="formulario-datos oculto" style="max-width:480px; margin-bottom:24px;">
+      <input type="hidden" id="material-id">
+      <label for="material-nombre">Material</label>
+      <input type="text" id="material-nombre" placeholder="Ej: Cera casteable rosa" required>
+
+      <div style="display:grid; grid-template-columns:2fr 1fr; gap:12px;">
+        <div>
+          <label for="material-cantidad">Cantidad</label>
+          <input type="number" id="material-cantidad" min="0.01" step="0.01" required>
+        </div>
+        <div>
+          <label for="material-unidad">Unidad</label>
+          <select id="material-unidad">
+            <option value="g">g</option>
+            <option value="kg">kg</option>
+            <option value="unidad">unidad</option>
+          </select>
+        </div>
+      </div>
+
+      <label for="material-costo" style="margin-top:14px;">Costo total</label>
+      <input type="number" id="material-costo" min="0" step="100" required>
+
+      <label for="material-proveedor" style="margin-top:14px;">Proveedor</label>
+      <input type="text" id="material-proveedor" placeholder="Opcional">
+
+      <label for="material-fecha" style="margin-top:14px;">Fecha</label>
+      <input type="date" id="material-fecha" required>
+
+      <label for="material-notas" style="margin-top:14px;">Notas</label>
+      <textarea id="material-notas" rows="2" placeholder="Opcional"></textarea>
+
+      <div style="display:flex; gap:10px; margin-top:20px;">
+        <button type="submit" class="btn btn-dorado">Guardar</button>
+        <button type="button" id="btn-cancelar-form" class="btn btn-borde">Cancelar</button>
+      </div>
+      <p id="mensaje-formulario" class="mensaje-admin"></p>
+    </form>
+
+    <div style="overflow-x:auto;">
+      <table class="tabla-admin">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Material</th>
+            <th>Cantidad</th>
+            <th>Costo total</th>
+            <th>Proveedor</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="cuerpo-tabla-materiales"></tbody>
+      </table>
+    </div>
+    <p id="mensaje-tabla" class="mensaje-admin"></p>
+  </main>
+</div>
+
+<script src="/admin/js/admin.js"></script>
+<script src="/admin/js/layout.js"></script>
+<script>
+let todosLosMateriales = [];
+
+function formatearFechaCorta(iso) {
+  // La API devuelve la columna DATE como timestamp completo (p. ej.
+  // "2026-10-12T05:00:00.000Z"): se toma solo la parte de fecha para no
+  // depender de a qué hora UTC cae la medianoche local.
+  return new Date(String(iso).slice(0, 10) + "T00:00:00").toLocaleDateString("es-CO", { dateStyle: "medium" });
+}
+
+function filaMaterialHTML(m) {
+  return `
+    <tr>
+      <td>${formatearFechaCorta(m.fecha)}</td>
+      <td>${escaparHtml(m.nombre)}</td>
+      <td>${m.cantidad} ${escaparHtml(m.unidad)}</td>
+      <td>${formatearPrecioAdmin(m.costoTotal)}</td>
+      <td>${escaparHtml(m.proveedor) || "—"}</td>
+      <td>
+        <div class="acciones-fila">
+          <button type="button" class="editar" data-id="${m.id}">Editar</button>
+          <button type="button" class="eliminar" data-id="${m.id}">Eliminar</button>
+        </div>
+      </td>
+    </tr>
+  `;
+}
+
+function renderizarTabla() {
+  const cuerpo = document.getElementById("cuerpo-tabla-materiales");
+  if (todosLosMateriales.length === 0) {
+    cuerpo.innerHTML = `<tr><td colspan="6" class="tabla-vacia">Todavía no hay materiales registrados.</td></tr>`;
+    return;
+  }
+  cuerpo.innerHTML = todosLosMateriales.map(filaMaterialHTML).join("");
+}
+
+async function cargarTabla() {
+  const mensaje = document.getElementById("mensaje-tabla");
+  try {
+    const r = await fetch("/api/admin/materiales");
+    if (r.status === 401) {
+      window.location.href = "/admin/login.html";
+      return;
+    }
+    todosLosMateriales = await r.json();
+    renderizarTabla();
+  } catch (err) {
+    mensaje.textContent = "No se pudo cargar el registro de materiales.";
+    mensaje.className = "mensaje-admin error";
+  }
+}
+
+function mostrarFormulario(material) {
+  const form = document.getElementById("form-material");
+  form.classList.remove("oculto");
+  document.getElementById("mensaje-formulario").textContent = "";
+
+  document.getElementById("material-id").value = material ? material.id : "";
+  document.getElementById("material-nombre").value = material ? material.nombre : "";
+  document.getElementById("material-cantidad").value = material ? material.cantidad : "";
+  document.getElementById("material-unidad").value = material ? material.unidad : "g";
+  document.getElementById("material-costo").value = material ? material.costoTotal : "";
+  document.getElementById("material-proveedor").value = material ? material.proveedor : "";
+  document.getElementById("material-fecha").value = material ? material.fecha.slice(0, 10) : new Date().toISOString().slice(0, 10);
+  document.getElementById("material-notas").value = material ? material.notas : "";
+
+  form.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function ocultarFormulario() {
+  document.getElementById("form-material").classList.add("oculto");
+}
+
+document.getElementById("btn-mostrar-form").addEventListener("click", () => mostrarFormulario(null));
+document.getElementById("btn-cancelar-form").addEventListener("click", ocultarFormulario);
+
+document.getElementById("form-material").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const mensaje = document.getElementById("mensaje-formulario");
+  const id = document.getElementById("material-id").value;
+
+  const datos = {
+    nombre: document.getElementById("material-nombre").value.trim(),
+    cantidad: parseFloat(document.getElementById("material-cantidad").value),
+    unidad: document.getElementById("material-unidad").value,
+    costoTotal: parseFloat(document.getElementById("material-costo").value),
+    proveedor: document.getElementById("material-proveedor").value.trim(),
+    fecha: document.getElementById("material-fecha").value,
+    notas: document.getElementById("material-notas").value.trim(),
+  };
+
+  try {
+    const r = await fetch(id ? `/api/admin/materiales?id=${id}` : "/api/admin/materiales", {
+      method: id ? "PUT" : "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(datos),
+    });
+    const resultado = await r.json();
+    if (!r.ok) throw new Error(resultado.error || "No se pudo guardar");
+
+    ocultarFormulario();
+    await cargarTabla();
+  } catch (err) {
+    mensaje.textContent = err.message;
+    mensaje.className = "mensaje-admin error";
+  }
+});
+
+document.getElementById("cuerpo-tabla-materiales").addEventListener("click", async (e) => {
+  const botonEditar = e.target.closest("button.editar");
+  if (botonEditar) {
+    const id = Number(botonEditar.getAttribute("data-id"));
+    const material = todosLosMateriales.find((m) => m.id === id);
+    if (material) mostrarFormulario(material);
+    return;
+  }
+
+  const botonEliminar = e.target.closest("button.eliminar");
+  if (botonEliminar) {
+    const id = botonEliminar.getAttribute("data-id");
+    if (!confirm("¿Eliminar este registro de material?")) return;
+    try {
+      const r = await fetch(`/api/admin/materiales?id=${id}`, { method: "DELETE" });
+      if (!r.ok) throw new Error("fallo al eliminar");
+      cargarTabla();
+    } catch (err) {
+      alert("No se pudo eliminar el registro.");
+    }
+  }
+});
+
+renderAdminSidebar("materiales");
+cargarTabla();
+</script>
+</body>
+</html>

@@ -7,6 +7,9 @@ const SECCIONES_ADMIN = [
   { id: "inicio", etiqueta: "🏠 Inicio", href: "/admin/index.html" },
   { id: "productos", etiqueta: "💍 Productos", href: "/admin/productos.html" },
   { id: "pedidos", etiqueta: "🧾 Pedidos", href: "/admin/pedidos.html" },
+  { id: "trabajadores", etiqueta: "👷 Trabajadores", href: "/admin/trabajadores.html" },
+  { id: "materiales", etiqueta: "🧱 Materiales", href: "/admin/materiales.html" },
+  { id: "pagos", etiqueta: "💵 Pagos", href: "/admin/pagos.html" },
   { id: "configuracion", etiqueta: "⚙️ Configuración", href: "/admin/configuracion.html" },
 ];
 

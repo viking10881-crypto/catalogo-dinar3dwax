@@ -24,6 +24,21 @@ import {
   guardarEstadoProduccion,
 } from "../../lib/pedidos.js";
 import { enviarAProduccion } from "../../lib/produccion.js";
+import {
+  listarTrabajadores,
+  obtenerTrabajador,
+  crearTrabajador,
+  actualizarTrabajador,
+  eliminarTrabajador,
+} from "../../lib/trabajadores.js";
+import {
+  listarMateriales,
+  obtenerMaterial,
+  crearMaterial,
+  actualizarMaterial,
+  eliminarMaterial,
+} from "../../lib/materiales.js";
+import { listarPagos, obtenerPago, crearPago, eliminarPago } from "../../lib/pagos.js";
 
 /**
  * Router único para /api/admin/:seccion. Vercel Hobby limita a 12
@@ -376,6 +391,282 @@ async function manejarPedidos(req, res) {
   }
 }
 
+function validarTrabajadorBody(body) {
+  const errores = [];
+  const datos = {};
+
+  datos.nombre = String(body.nombre || "").trim();
+  if (!datos.nombre) errores.push("El nombre es obligatorio");
+
+  datos.rol = String(body.rol || "Diseñador").trim();
+  datos.telefono = String(body.telefono || "").trim();
+  datos.documento = String(body.documento || "").trim();
+  datos.notas = String(body.notas || "").trim();
+  datos.activo = body.activo !== false;
+
+  return { datos, errores };
+}
+
+async function manejarTrabajadores(req, res) {
+  if (!requiereAdmin(req, res)) return;
+
+  const idQuery = req.query.id;
+
+  if (!idQuery) {
+    if (req.method === "GET") {
+      try {
+        res.status(200).json(await listarTrabajadores());
+      } catch (err) {
+        console.error("Error listando trabajadores:", err);
+        res.status(500).json({ error: "No se pudo cargar el listado de trabajadores" });
+      }
+      return;
+    }
+
+    if (req.method === "POST") {
+      try {
+        const { datos, errores } = validarTrabajadorBody(req.body || {});
+        if (errores.length > 0) {
+          res.status(400).json({ error: errores.join(". ") });
+          return;
+        }
+        const id = await crearTrabajador(datos);
+        res.status(201).json({ ok: true, id });
+      } catch (err) {
+        console.error("Error creando trabajador:", err);
+        res.status(500).json({ error: "No se pudo crear el trabajador" });
+      }
+      return;
+    }
+
+    res.status(405).json({ error: "Método no permitido" });
+    return;
+  }
+
+  const id = Number(idQuery);
+
+  if (req.method === "PUT") {
+    try {
+      const existente = await obtenerTrabajador(id);
+      if (!existente) {
+        res.status(404).json({ error: "Trabajador no encontrado" });
+        return;
+      }
+      const { datos, errores } = validarTrabajadorBody(req.body || {});
+      if (errores.length > 0) {
+        res.status(400).json({ error: errores.join(". ") });
+        return;
+      }
+      await actualizarTrabajador(id, datos);
+      res.status(200).json({ ok: true });
+    } catch (err) {
+      console.error("Error actualizando trabajador:", err);
+      res.status(500).json({ error: "No se pudo actualizar el trabajador" });
+    }
+    return;
+  }
+
+  if (req.method === "DELETE") {
+    try {
+      await eliminarTrabajador(id);
+      res.status(200).json({ ok: true });
+    } catch (err) {
+      console.error("Error eliminando trabajador:", err);
+      // El borrado de un trabajador con pagos ya registrados también borra
+      // esos pagos (ON DELETE CASCADE): se avisa en el propio admin, no aquí.
+      res.status(500).json({ error: "No se pudo eliminar el trabajador" });
+    }
+    return;
+  }
+
+  res.status(405).json({ error: "Método no permitido" });
+}
+
+function validarMaterialBody(body) {
+  const errores = [];
+  const datos = {};
+
+  datos.nombre = String(body.nombre || "").trim();
+  if (!datos.nombre) errores.push("El nombre del material es obligatorio");
+
+  datos.cantidad = Number(body.cantidad);
+  if (!Number.isFinite(datos.cantidad) || datos.cantidad <= 0) {
+    errores.push("La cantidad debe ser un número mayor a 0");
+  }
+
+  datos.unidad = String(body.unidad || "g").trim();
+
+  datos.costoTotal = Number(body.costoTotal);
+  if (!Number.isFinite(datos.costoTotal) || datos.costoTotal < 0) {
+    errores.push("El costo total debe ser un número mayor o igual a 0");
+  }
+
+  datos.proveedor = String(body.proveedor || "").trim();
+  datos.fecha = String(body.fecha || "").trim() || new Date().toISOString().slice(0, 10);
+  datos.notas = String(body.notas || "").trim();
+
+  return { datos, errores };
+}
+
+async function manejarMateriales(req, res) {
+  if (!requiereAdmin(req, res)) return;
+
+  const idQuery = req.query.id;
+
+  if (!idQuery) {
+    if (req.method === "GET") {
+      try {
+        res.status(200).json(await listarMateriales());
+      } catch (err) {
+        console.error("Error listando materiales:", err);
+        res.status(500).json({ error: "No se pudo cargar el registro de materiales" });
+      }
+      return;
+    }
+
+    if (req.method === "POST") {
+      try {
+        const { datos, errores } = validarMaterialBody(req.body || {});
+        if (errores.length > 0) {
+          res.status(400).json({ error: errores.join(". ") });
+          return;
+        }
+        const id = await crearMaterial(datos);
+        res.status(201).json({ ok: true, id });
+      } catch (err) {
+        console.error("Error creando registro de material:", err);
+        res.status(500).json({ error: "No se pudo registrar el material" });
+      }
+      return;
+    }
+
+    res.status(405).json({ error: "Método no permitido" });
+    return;
+  }
+
+  const id = Number(idQuery);
+
+  if (req.method === "PUT") {
+    try {
+      const existente = await obtenerMaterial(id);
+      if (!existente) {
+        res.status(404).json({ error: "Registro no encontrado" });
+        return;
+      }
+      const { datos, errores } = validarMaterialBody(req.body || {});
+      if (errores.length > 0) {
+        res.status(400).json({ error: errores.join(". ") });
+        return;
+      }
+      await actualizarMaterial(id, datos);
+      res.status(200).json({ ok: true });
+    } catch (err) {
+      console.error("Error actualizando registro de material:", err);
+      res.status(500).json({ error: "No se pudo actualizar el registro" });
+    }
+    return;
+  }
+
+  if (req.method === "DELETE") {
+    try {
+      await eliminarMaterial(id);
+      res.status(200).json({ ok: true });
+    } catch (err) {
+      console.error("Error eliminando registro de material:", err);
+      res.status(500).json({ error: "No se pudo eliminar el registro" });
+    }
+    return;
+  }
+
+  res.status(405).json({ error: "Método no permitido" });
+}
+
+function validarPagoBody(body) {
+  const errores = [];
+  const datos = {};
+
+  datos.trabajadorId = Number(body.trabajadorId);
+  if (!Number.isFinite(datos.trabajadorId) || datos.trabajadorId <= 0) {
+    errores.push("Debes seleccionar un trabajador");
+  }
+
+  datos.concepto = String(body.concepto || "").trim();
+  if (!datos.concepto) errores.push("El concepto del pago es obligatorio");
+
+  datos.monto = Number(body.monto);
+  if (!Number.isFinite(datos.monto) || datos.monto <= 0) {
+    errores.push("El monto debe ser un número mayor a 0");
+  }
+
+  datos.fecha = String(body.fecha || "").trim() || new Date().toISOString().slice(0, 10);
+  datos.metodoPago = String(body.metodoPago || "Transferencia").trim();
+  datos.notas = String(body.notas || "").trim();
+
+  return { datos, errores };
+}
+
+async function manejarPagos(req, res) {
+  if (!requiereAdmin(req, res)) return;
+
+  const idQuery = req.query.id;
+
+  if (!idQuery) {
+    if (req.method === "GET") {
+      try {
+        res.status(200).json(await listarPagos());
+      } catch (err) {
+        console.error("Error listando pagos:", err);
+        res.status(500).json({ error: "No se pudo cargar el listado de pagos" });
+      }
+      return;
+    }
+
+    if (req.method === "POST") {
+      try {
+        const { datos, errores } = validarPagoBody(req.body || {});
+        if (errores.length > 0) {
+          res.status(400).json({ error: errores.join(". ") });
+          return;
+        }
+        const existente = await obtenerTrabajador(datos.trabajadorId);
+        if (!existente) {
+          res.status(400).json({ error: "El trabajador seleccionado no existe" });
+          return;
+        }
+        const id = await crearPago(datos);
+        res.status(201).json({ ok: true, id });
+      } catch (err) {
+        console.error("Error creando pago:", err);
+        res.status(500).json({ error: "No se pudo registrar el pago" });
+      }
+      return;
+    }
+
+    res.status(405).json({ error: "Método no permitido" });
+    return;
+  }
+
+  const id = Number(idQuery);
+
+  if (req.method === "DELETE") {
+    try {
+      const existente = await obtenerPago(id);
+      if (!existente) {
+        res.status(404).json({ error: "Pago no encontrado" });
+        return;
+      }
+      await eliminarPago(id);
+      res.status(200).json({ ok: true });
+    } catch (err) {
+      console.error("Error eliminando pago:", err);
+      res.status(500).json({ error: "No se pudo eliminar el pago" });
+    }
+    return;
+  }
+
+  res.status(405).json({ error: "Método no permitido" });
+}
+
 export default async function handler(req, res) {
   const seccion = req.query.seccion;
 
@@ -394,6 +685,12 @@ export default async function handler(req, res) {
       return manejarProductos(req, res);
     case "pedidos":
       return manejarPedidos(req, res);
+    case "trabajadores":
+      return manejarTrabajadores(req, res);
+    case "materiales":
+      return manejarMateriales(req, res);
+    case "pagos":
+      return manejarPagos(req, res);
     default:
       res.status(404).json({ error: "No encontrado" });
   }

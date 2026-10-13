@@ -1079,7 +1079,7 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
 /* ===== Checkout ===== */
 .pagina-checkout { padding: 40px 0 60px; display: grid; grid-template-columns: 1fr 380px; gap: 40px; }
 .formulario-datos label { display: block; font-size: 0.82rem; color: var(--gris); margin: 14px 0 6px; }
-.formulario-datos input, .formulario-datos textarea {
+.formulario-datos input, .formulario-datos textarea, .formulario-datos select {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid var(--borde);
