@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Dinar 3D Wax · Catálogo para joyeros</title>
 <script>
 (function () {
@@ -13,12 +13,38 @@
   } catch (e) {}
 })();
 </script>
+<script>
+/* Captura "beforeinstallprompt" lo antes posible: el navegador lo dispara
+ * una sola vez y muy pronto, antes de que el script de abajo (al final del
+ * body) llegue a existir. js/pwa-instalar.js lee window.__pwaEventoInstalar. */
+(function () {
+  window.__pwaEventoInstalar = null;
+  window.addEventListener("beforeinstallprompt", function (e) {
+    e.preventDefault();
+    window.__pwaEventoInstalar = e;
+    window.dispatchEvent(new CustomEvent("pwa-instalable"));
+  });
+  window.addEventListener("appinstalled", function () {
+    window.__pwaEventoInstalar = null;
+    try { localStorage.setItem("pwa-instalada", "1"); } catch (err) {}
+    window.dispatchEvent(new CustomEvent("pwa-instalada"));
+  });
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/estilos.css">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="/apple-icon.png">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#221f19" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Dinar 3D Wax">
 </head>
-<body>
+<body class="pagina-catalogo">
 
 <div id="splash-inicio" class="splash-inicio">
   <img src="img/logo-splash.png" alt="Dinar 3D Wax" class="splash-inicio-logo" width="500" height="500">
@@ -65,7 +91,6 @@
         <div id="nav-categorias-panel" class="nav-cat-panel"></div>
       </div>
       <a href="calculadora.html">Calculadora de Pesos</a>
-      <a href="index.html#recursos">Recursos 3D</a>
       <a href="index.html#faq">Preguntas Frecuentes</a>
     </nav>
     <div class="acciones-cabecera">
@@ -96,8 +121,52 @@
   <div class="puntos-banner"></div>
 </section>
 
+<section class="seccion-comparativa">
+  <div class="contenedor">
+    <div class="panel-comparativa">
+      <div class="comparativa-cabecera">
+        <h2>La porosidad cuesta oro.<br>Nosotros la eliminamos.</h2>
+        <p>Comparativa real medida en balanza 0.001g. Cera azul genérica vs Dinar Rosa 0.025mm. Mismo modelo ID 2862.</p>
+      </div>
+      <div class="grid-comparativa">
+        <div class="tarjeta-comparativa destacada">
+          <div class="comparativa-top">
+            <span class="comparativa-icono">⚖️</span>
+            <span class="comparativa-badge">-20% ORO</span>
+          </div>
+          <h3>0.28g vs 0.35g</h3>
+          <p>Sin poros = sin retención. En un lote de 100 anillos, son 7gr de oro que no pierdes.</p>
+          <span class="comparativa-check">✓ Validado en fundición</span>
+        </div>
+        <div class="tarjeta-comparativa">
+          <div class="comparativa-top">
+            <span class="comparativa-icono">💧</span>
+            <span class="comparativa-badge">0 POROS</span>
+          </div>
+          <h3>Sin Poros = Sin Pérdida</h3>
+          <p>Microscopía 100x: cera azul llena de burbujas. Rosa: superficie vítrea continua.</p>
+          <span class="comparativa-check">✓ Validado en fundición</span>
+        </div>
+        <div class="tarjeta-comparativa oscura">
+          <div class="comparativa-top">
+            <span class="comparativa-icono">☰</span>
+            <span class="comparativa-badge">8K DETALLE</span>
+          </div>
+          <h3>0.025mm Real - MicroPavé intacto</h3>
+          <p>Uñas de 0.3mm no se rompen en soporte. Garras micropavé salen completas.</p>
+          <span class="comparativa-check">✓ Validado en fundición</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <div class="contenedor">
-  <div class="zona-catalogo" style="margin-top: 32px;">
+  <div class="eyebrow-catalogo">CATÁLOGO 2026 · <span id="total-modelos-disponibles">…</span> MODELOS DISPONIBLES</div>
+  <div class="cabecera-catalogo-grid">
+    <h2>Modelos Más Pedidos <span>— Listos para fundir</span></h2>
+  </div>
+  <div class="zona-catalogo" style="margin-top: 20px;">
     <aside class="panel-filtros">
       <h3>Categorías</h3>
       <label class="opcion-filtro">
@@ -119,64 +188,81 @@
   </div>
 </div>
 
-<section id="recursos" class="seccion-recursos">
+<section id="faq" class="seccion-specs-faq">
   <div class="contenedor">
-    <h2 class="titulo-seccion">Recursos para joyeros</h2>
-    <div class="grid-recursos">
-      <div class="tarjeta-recurso">
-        <span class="icono">📄</span>
-        <span class="titulo">Guía de tallas</span>
-        <button type="button" class="btn-ver-recurso" data-pdf="pdf/guias/guia-tallas.pdf" data-titulo="Guía de tallas">Ver documento</button>
-      </div>
-      <div class="tarjeta-recurso">
-        <span class="icono">📄</span>
-        <span class="titulo">Ficha técnica</span>
-        <button type="button" class="btn-ver-recurso" data-pdf="pdf/guias/ficha-tecnica.pdf" data-titulo="Ficha técnica">Ver documento</button>
-      </div>
-      <div class="tarjeta-recurso">
-        <span class="icono">📄</span>
-        <span class="titulo">Especificaciones STL</span>
-        <button type="button" class="btn-ver-recurso" data-pdf="pdf/guias/especificaciones-stl.pdf" data-titulo="Especificaciones STL">Ver documento</button>
-      </div>
-    </div>
-
-    <div id="modal-pdf" class="modal-pdf oculto" aria-hidden="true">
-      <div class="modal-pdf-fondo" data-cerrar-modal-pdf></div>
-      <div class="modal-pdf-panel">
-        <div class="modal-pdf-cabecera">
-          <span id="modal-pdf-titulo"></span>
-          <button type="button" class="modal-pdf-cerrar" data-cerrar-modal-pdf aria-label="Cerrar documento">✕</button>
+    <h2 class="titulo-specs-faq">Todo lo que necesita saber tu hornero.</h2>
+    <div class="grid-specs-faq">
+      <div class="panel-specs">
+        <div class="panel-specs-cabecera">
+          <h3>Especificaciones</h3>
+          <span class="pill-specs">Cera Rosa 0.025mm</span>
         </div>
-        <iframe id="modal-pdf-iframe" title="Documento" oncontextmenu="return false;"></iframe>
+        <dl class="tabla-specs-dl">
+          <div><dt>Material</dt><dd>Cera 100% pura microcristalina calcinable (no resina wax-like)</dd></div>
+          <div><dt>Tecnología</dt><dd>MJP industrial alta definición</dd></div>
+          <div><dt>Capa real</dt><dd>0.025mm (25 micras) – capa rosa uniforme</dd></div>
+          <div><dt>Resolución</dt><dd>2900 DPI – micropavé intacto</dd></div>
+          <div><dt>Ceniza</dt><dd>0.0 – 0.1% quema limpio</dd></div>
+          <div><dt>Contracción</dt><dd>&lt;0.5% compensada en archivo</dd></div>
+          <div><dt>Burnout</dt><dd>730°C estándar – sin ciclo largo</dd></div>
+          <div><dt>Curado</dt><dd>Sin curado UV</dd></div>
+          <div><dt>Soportes</dt><dd>Solubles – sin marcas en la pieza</dd></div>
+          <div><dt>Origen</dt><dd>Formulación Dinar Lab Medellín</dd></div>
+        </dl>
+        <p class="aviso-garantia-specs">🛡️ Garantía de quema limpia · Lote trazable Dinar Lab</p>
+      </div>
+
+      <div class="panel-faq-tecnico">
+        <div class="panel-faq-tecnico-cabecera">
+          <h3>Preguntas frecuentes</h3>
+          <span class="pill-specs oscura">Top 5 talleres</span>
+        </div>
+        <ol class="lista-faq-tecnico">
+          <li>
+            <span class="numero-faq">1</span>
+            <div>
+              <strong>¿Cuánto oro ahorro realmente vs cera azul?</strong>
+              <p>Entre 12% y 18% por pieza. La cera azul es porosa: absorbe revestimiento y retiene metal. Nuestra cera rosa 100% pura es sólida a 0.025mm, por eso el peso final de oro es el que calculas, no más.</p>
+            </div>
+          </li>
+          <li>
+            <span class="numero-faq">2</span>
+            <div>
+              <strong>¿Por qué esta cera no tiene poros?</strong>
+              <p>No es resina. Es cera pura microcristalina industrial MJP. Se imprime fundida capa por capa, no curada con luz. Resultado: superficie cerrada, sin micro-burbujas que generan rugosidad y pérdida de oro en el acabado.</p>
+            </div>
+          </li>
+          <li>
+            <span class="numero-faq">3</span>
+            <div>
+              <strong>¿Necesito horno o ciclo especial?</strong>
+              <p>No. Burnout estándar a 730°C, el mismo que usas para cera inyectada. 0.0% ceniza, sin expansión. No requiere horno de sinterizado ni lavado agresivo.</p>
+            </div>
+          </li>
+          <li>
+            <span class="numero-faq">4</span>
+            <div>
+              <strong>¿El micropavé y los calados finos se mantienen?</strong>
+              <p>Sí. Resolución real de 2900 DPI y capa de 25 micras. Entregamos con soportes solubles ya removidos en zonas críticas. Bordes de &lt;0.3mm no se deforman.</p>
+            </div>
+          </li>
+          <li>
+            <span class="numero-faq">5</span>
+            <div>
+              <strong>¿Tiempos y envíos en Medellín y Colombia?</strong>
+              <p>Medellín: entrega el mismo día o 24h. Resto de Colombia: 24-48h con mensajería asegurada. Modelos empacados en cápsula anti-golpe. Si necesitas, ajustamos talla en el archivo antes de imprimir.</p>
+            </div>
+          </li>
+        </ol>
+        <div class="faq-tecnico-pie">
+          <div>
+            <strong>¿Otra duda técnica?</strong>
+            <p>Responde nuestro joyero de planta, no un bot.</p>
+          </div>
+          <a id="btn-whatsapp-faq-tecnico" class="btn-whatsapp-pill" href="#" target="_blank" rel="noopener">💬 WhatsApp</a>
+        </div>
       </div>
     </div>
-  </div>
-</section>
-
-<section id="faq" class="seccion-faq">
-  <div class="contenedor">
-    <h2 class="titulo-seccion">Preguntas frecuentes</h2>
-
-    <details class="item-faq">
-      <summary>¿Cuánto tarda mi pedido?</summary>
-      <p>Los tiempos de entrega dependen de la cantidad de piezas y la complejidad del modelo. Te confirmamos el tiempo estimado al recibir tu pedido.</p>
-    </details>
-    <details class="item-faq">
-      <summary>¿Qué archivos puedo enviar?</summary>
-      <p>Aceptamos archivos STL para la fabricación de modelos personalizados.</p>
-    </details>
-    <details class="item-faq">
-      <summary>¿Qué formatos manejan?</summary>
-      <p>Trabajamos principalmente en cera casteable rosa según el tipo de pieza.</p>
-    </details>
-    <details class="item-faq">
-      <summary>¿Hacen envíos nacionales?</summary>
-      <p>Sí, realizamos envíos a nivel nacional a través de transportadoras aliadas.</p>
-    </details>
-    <details class="item-faq">
-      <summary>¿Cómo calculan el precio?</summary>
-      <p>El precio se calcula según el peso estimado de la pieza (equivalente en oro 18k). Puedes usar nuestra <a href="calculadora.html">calculadora de servicio</a> para estimarlo.</p>
-    </details>
   </div>
 </section>
 
@@ -187,10 +273,55 @@
   </svg>
 </a>
 
+<div id="tarjeta-instalar-pwa" class="tarjeta-instalar-pwa oculto">
+  <button type="button" id="btn-cerrar-instalar-pwa" class="cerrar-instalar-pwa" aria-label="Cerrar">✕</button>
+  <img src="/icons/icon-192.png" alt="" class="icono-instalar-pwa">
+  <div class="texto-instalar-pwa">
+    <strong>Instala Dinar 3D Wax</strong>
+    <p id="instrucciones-instalar-pwa">Agrégala a tu pantalla de inicio para abrirla como una app, sin el navegador.</p>
+  </div>
+  <button type="button" id="btn-instalar-pwa" class="btn btn-dorado btn-instalar-pwa oculto">Instalar</button>
+</div>
+
 <footer class="pie-pagina">
   <div class="contenedor">
-    <div>Dinar 3D Wax · Catálogo de modelos para joyeros</div>
-    <div class="creditos-dev">Desarrollado por <a href="https://www.delasoftcompany.com/" target="_blank" rel="noopener">Delasoftcompany</a></div>
+    <div class="footer-columnas">
+      <div class="footer-col-marca">
+        <div class="footer-logo-marca">
+          <span class="footer-logo-icono">D</span>
+          <span>DINAR 3D WAX</span>
+        </div>
+        <p>Cera rosa 100% pura industrial MJP. Formulación Dinar Lab Medellín. Modelos de joyería listos impresión directa 0.025mm sin poros. Sin marca de máquina. Para joyeros que no quieren perder oro.</p>
+        <div class="footer-pills">
+          <span>Medellín · El Hueco</span>
+          <span>Envíos 24-48h Colombia</span>
+          <span class="borde">100% cera pura · no resina</span>
+        </div>
+      </div>
+      <div class="footer-col-contacto">
+        <span class="footer-eyebrow">Contacto taller</span>
+        <a id="footer-whatsapp" href="#" target="_blank" rel="noopener">💬 WhatsApp: <span id="footer-whatsapp-numero">…</span></a>
+        <a href="mailto:dinar3dwax@gmail.com">✉️ dinar3dwax@gmail.com</a>
+        <span>📍 Calle 52 # 47-28, oficina 1207</span>
+        <span>🕐 8:00 a.m. – 4:00 p.m.</span>
+      </div>
+      <div class="footer-col-cotiza">
+        <span class="footer-eyebrow">Cotiza ahora</span>
+        <div class="tarjeta-footer-cotiza">
+          <strong>¿Listo para dejar de perder oro?</strong>
+          <p>Envíanos el peso de tu pieza y te decimos cuánto recuperas en 10 unidades.</p>
+          <a id="footer-btn-cotizar" class="btn-whatsapp-verde" href="#" target="_blank" rel="noopener">💬 Cotizar por WhatsApp</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-barra-inferior">
+      <span>© 2026 Dinar 3D Wax · Catálogo para Joyeros · Todos los modelos con 0.025mm reales</span>
+      <span>730°C · 0.0% ceniza · 2900 DPI</span>
+    </div>
+    <div class="creditos-dev">
+      Desarrollado por <a href="https://www.delasoftcompany.com/" target="_blank" rel="noopener">Delasoftcompany</a>
+      <button type="button" id="btn-instalar-pwa-permanente" class="btn-instalar-pwa-permanente oculto">📲 Instalar esta app</button>
+    </div>
   </div>
 </footer>
 
@@ -199,6 +330,7 @@
 <script src="js/nav-categorias.js"></script>
 <script src="js/carrito.js"></script>
 <script src="js/catalogo.js"></script>
-<script src="js/visor-recursos.js"></script>
+<script src="js/registro-sw.js"></script>
+<script src="js/pwa-instalar.js"></script>
 </body>
 </html>

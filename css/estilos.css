@@ -315,7 +315,7 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
    cargar el catálogo, se queda quieta un momento y se desvanece sola. Se
    elimina del DOM al terminar (ver script inline en index.html), así que
    no queda un overlay invisible estorbando clics ni lectores de pantalla. */
-.con-splash, .con-modal-pdf { overflow: hidden; }
+.con-splash { overflow: hidden; }
 .splash-inicio {
   position: fixed;
   inset: 0;
@@ -1155,107 +1155,6 @@ input[type="file"]::file-selector-button:hover {
 }
 .btn-whatsapp:hover { background: #1fb85a; }
 
-/* ===== Recursos / FAQ ===== */
-.seccion-recursos { padding: 40px 0; }
-.grid-recursos { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
-.tarjeta-recurso {
-  background: var(--blanco);
-  border: 1px solid var(--borde);
-  border-radius: var(--radio);
-  padding: 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  transition: box-shadow 0.15s ease, border-color 0.15s ease;
-}
-.tarjeta-recurso:hover { box-shadow: var(--sombra-md); border-color: var(--dorado-claro); }
-.tarjeta-recurso .icono { font-size: 1.4rem; }
-.tarjeta-recurso .titulo { font-weight: 600; }
-.btn-ver-recurso {
-  background: none;
-  border: none;
-  padding: 0;
-  color: var(--dorado);
-  font-size: 0.85rem;
-  font-weight: 600;
-  font-family: inherit;
-  text-align: left;
-  cursor: pointer;
-  transition: color 0.15s ease;
-}
-.btn-ver-recurso:hover { color: var(--dorado-claro); text-decoration: underline; }
-
-/* ===== Visor de PDF en modal: abre el documento dentro de la misma
-   página en vez de navegar al archivo suelto. Oculta la barra de
-   herramientas nativa del visor (incluye su botón de descarga) con
-   #toolbar=0 y bloquea el clic derecho; no es infalible, pero saca la
-   descarga de "un clic" del flujo normal. ===== */
-.modal-pdf {
-  position: fixed;
-  inset: 0;
-  z-index: 500;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-}
-.modal-pdf-fondo {
-  position: absolute;
-  inset: 0;
-  background: rgba(20, 18, 15, 0.72);
-}
-.modal-pdf-panel {
-  position: relative;
-  width: min(820px, 100%);
-  height: min(88vh, 900px);
-  background: var(--blanco);
-  border-radius: var(--radio);
-  box-shadow: var(--sombra-md);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-.modal-pdf-cabecera {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--borde);
-  font-weight: 700;
-  font-size: 0.9rem;
-}
-.modal-pdf-cerrar {
-  background: none;
-  border: none;
-  font-size: 1.1rem;
-  line-height: 1;
-  color: var(--gris);
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: var(--radio-sm);
-  transition: background-color 0.15s ease, color 0.15s ease;
-}
-.modal-pdf-cerrar:hover { background: var(--crema); color: var(--negro); }
-.modal-pdf-panel iframe { flex: 1; width: 100%; border: none; background: var(--crema); }
-
-.seccion-faq { padding: 20px 0 60px; }
-.item-faq { border-bottom: 1px solid var(--borde); }
-.item-faq summary {
-  cursor: pointer;
-  padding: 16px 4px;
-  font-weight: 600;
-  list-style: none;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  transition: color 0.15s ease;
-}
-.item-faq summary:hover { color: var(--dorado); }
-.item-faq summary::-webkit-details-marker { display: none; }
-.item-faq summary::after { content: "+"; color: var(--dorado); font-size: 1.2rem; }
-.item-faq[open] summary::after { content: "−"; }
-.item-faq p { margin: 0 4px 16px; color: var(--gris); }
-
 /* ===== Footer ===== */
 /* ===== Botón flotante de WhatsApp (solo index.html) ===== */
 .btn-whatsapp-flotante {
@@ -1876,4 +1775,608 @@ input[type="file"]::file-selector-button:hover {
   .info-tarjeta .nombre { font-size: 1rem; }
   .badge-ref-tarjeta, .badge-material-tarjeta { font-size: 0.62rem; padding: 3px 8px; }
   .btn-ver { margin: 0 10px 10px; font-size: 0.7rem; padding: 8px; }
+}
+
+/* =====================================================================
+   Rediseño 2026 del catálogo — SOLO index.html (body.pagina-catalogo)
+   ---------------------------------------------------------------------
+   En vez de reescribir cada selector, se redefinen las mismas variables
+   que ya usa todo el sitio (--dorado, --crema, --negro, --radio, etc.)
+   pero solo dentro de `body.pagina-catalogo`. Así todas las reglas de
+   arriba (tarjeta-producto, btn-ver, panel-filtros...) heredan la paleta
+   nueva en el catálogo público sin tocar su HTML/JS, y el resto de
+   páginas (carrito, checkout, ficha de producto, admin) no se enteran:
+   siguen con el dorado/crema original porque nunca llevan esta clase.
+   ===================================================================== */
+body.pagina-catalogo {
+  --negro: #1a1a1a;
+  --dorado: #b8963e;
+  --dorado-claro: #d9bd76;
+  --crema: #faf7f2;
+  --gris: #6b675f;
+  --borde: #e5dfd2;
+  --blanco: #ffffff;
+  --superficie: #f1ece1;
+  --radio: 20px;
+  --radio-sm: 12px;
+  --radio-lg: 26px;
+  --sombra: 0 1px 3px rgba(26, 26, 26, 0.08);
+  --sombra-md: 0 16px 40px rgba(26, 26, 26, 0.12);
+  --anillo-foco: 0 0 0 3px rgba(184, 150, 62, 0.35);
+}
+/* El toggle claro/oscuro sigue funcionando: se redefinen las mismas
+   variables otra vez, pero solo cuando AMBAS condiciones se cumplen
+   (data-tema="oscuro" Y body.pagina-catalogo), así no se pisa el modo
+   oscuro original de las demás páginas. */
+html[data-tema="oscuro"] body.pagina-catalogo {
+  --negro: #f2ede3;
+  --crema: #17140f;
+  --blanco: #221f19;
+  --gris: #b6b0a2;
+  --borde: #3a3428;
+  --superficie: #2b2620;
+  --sombra: 0 2px 14px rgba(0, 0, 0, 0.35);
+}
+
+/* Titulares: sans bold en vez del serif fino original, para el look más
+   "cartel" del modelo de referencia. */
+body.pagina-catalogo .hero-catalogo h1,
+body.pagina-catalogo .titulo-seccion,
+body.pagina-catalogo .info-tarjeta .nombre {
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+/* ---- Cabecera: los links activos pasan de subrayado a píldora sólida ---- */
+body.pagina-catalogo .cabecera { border-bottom: none; }
+body.pagina-catalogo .nav-principal a,
+body.pagina-catalogo .nav-cat-toggle {
+  border-radius: 999px;
+  padding: 8px 16px;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+body.pagina-catalogo .nav-principal a::after,
+body.pagina-catalogo .nav-cat-toggle::after { display: none; }
+body.pagina-catalogo .nav-principal a:hover,
+body.pagina-catalogo .nav-cat-toggle:hover {
+  background: var(--superficie);
+  color: var(--negro);
+}
+body.pagina-catalogo .nav-principal a[aria-current="page"],
+body.pagina-catalogo .nav-cat-toggle[aria-current="page"],
+body.pagina-catalogo .nav-categorias.abierto .nav-cat-toggle {
+  background: var(--negro);
+  color: var(--crema);
+}
+body.pagina-catalogo .carrito-boton,
+body.pagina-catalogo .toggle-tema,
+body.pagina-catalogo .btn-menu-movil {
+  border-radius: 999px;
+  border-color: var(--borde);
+}
+body.pagina-catalogo .carrito-boton { background: var(--negro); color: var(--crema); }
+
+/* ---- Hero: de banner full-bleed con texto encima, a dos columnas
+   (texto a la izquierda, imagen del banner como tarjeta redondeada a la
+   derecha). Sin banner configurado en el admin, la columna derecha queda
+   con un degradado decorativo en vez de verse vacía. ---- */
+body.pagina-catalogo .hero-catalogo {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  align-items: center;
+  gap: 40px;
+  min-height: 0;
+  text-align: left;
+  background: var(--crema);
+  padding: 56px 20px;
+}
+body.pagina-catalogo .hero-catalogo .capa-banner {
+  position: relative;
+  inset: auto;
+  grid-column: 2;
+  grid-row: 1;
+  display: block;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radio-lg);
+  overflow: hidden;
+  background: radial-gradient(ellipse at 30% 20%, #e9d6a8 0%, #b8963e 45%, #1a1a1a 100%);
+  box-shadow: var(--sombra-md);
+}
+body.pagina-catalogo .hero-catalogo .capa-banner::after { display: none; }
+body.pagina-catalogo .hero-catalogo .puntos-banner {
+  grid-column: 2;
+  grid-row: 1;
+  position: relative;
+  align-self: end;
+  justify-self: center;
+  margin-bottom: 16px;
+  z-index: 2;
+}
+body.pagina-catalogo .contenido-hero-catalogo {
+  grid-column: 1;
+  grid-row: 1;
+  max-width: 560px;
+}
+body.pagina-catalogo .hero-catalogo.con-banner .contenido-hero-catalogo,
+body.pagina-catalogo .hero-catalogo:not(.con-banner) .contenido-hero-catalogo {
+  color: var(--negro);
+}
+body.pagina-catalogo .pill-hero,
+body.pagina-catalogo .hero-catalogo:not(.con-banner) .pill-hero {
+  background: var(--blanco);
+  border-color: var(--borde);
+  color: var(--negro);
+  text-transform: none;
+  font-weight: 600;
+  letter-spacing: normal;
+}
+body.pagina-catalogo .hero-catalogo h1 {
+  font-size: clamp(2.1rem, 4vw, 3.1rem);
+  line-height: 1.05;
+  margin-bottom: 14px;
+}
+body.pagina-catalogo .hero-catalogo p {
+  color: var(--gris);
+  font-size: 1.05rem;
+  max-width: 460px;
+  opacity: 1;
+}
+body.pagina-catalogo .buscador-hero { margin: 0; }
+
+/* ---- Filtros, grid de productos y tarjetas ---- */
+body.pagina-catalogo .panel-filtros,
+body.pagina-catalogo .tarjeta-producto {
+  border: none;
+  border-radius: var(--radio-lg);
+  box-shadow: var(--sombra);
+}
+body.pagina-catalogo .tarjeta-producto:hover {
+  border-color: transparent;
+  box-shadow: var(--sombra-md);
+}
+body.pagina-catalogo .btn-limpiar-filtros { border-radius: 999px; }
+body.pagina-catalogo .badge-ref-tarjeta { border-radius: 999px; }
+/* La etiqueta de peso pasa de "Cera 3D" (esquina inferior derecha) a mostrar
+   el peso real, abajo a la izquierda, como en el modelo de referencia. */
+body.pagina-catalogo .badge-material-tarjeta {
+  left: 10px;
+  right: auto;
+  background: #1a1a1a;
+  color: #fff8f6;
+  border-radius: 999px;
+}
+body.pagina-catalogo .info-tarjeta-fila-nombre {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+body.pagina-catalogo .badge-peso-info {
+  flex-shrink: 0;
+  background: var(--superficie);
+  color: var(--negro);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 999px;
+  margin-top: 2px;
+}
+body.pagina-catalogo .descripcion-tarjeta {
+  margin: 2px 0 0;
+  font-size: 0.82rem;
+  color: var(--gris);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+body.pagina-catalogo .info-tarjeta-fila-precio {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 10px;
+}
+body.pagina-catalogo .etiqueta-precio {
+  display: block;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--gris);
+}
+body.pagina-catalogo .info-tarjeta .precio { margin-top: 1px; }
+body.pagina-catalogo .btn-ver {
+  flex-shrink: 0;
+  margin: 0;
+  border-radius: 999px;
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 600;
+  padding: 9px 16px;
+}
+body.pagina-catalogo .btn-ver:hover { color: var(--negro); }
+
+/* ---- Panel comparativo oscuro (entre el hero y el catálogo) ---- */
+body.pagina-catalogo .seccion-comparativa { padding: 36px 0 0; }
+body.pagina-catalogo .panel-comparativa {
+  background: #1a1a1a;
+  color: #fff8f6;
+  border-radius: var(--radio-lg);
+  padding: 40px;
+}
+body.pagina-catalogo .comparativa-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 32px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+body.pagina-catalogo .comparativa-cabecera h2 {
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-size: clamp(1.5rem, 2.6vw, 2rem);
+  line-height: 1.25;
+  margin: 0;
+  max-width: 480px;
+}
+body.pagina-catalogo .comparativa-cabecera p {
+  margin: 0;
+  color: #b6b0a2;
+  font-size: 0.88rem;
+  max-width: 320px;
+}
+body.pagina-catalogo .grid-comparativa {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+body.pagina-catalogo .tarjeta-comparativa {
+  background: #fff;
+  color: #1a1a1a;
+  border-radius: var(--radio);
+  padding: 20px;
+}
+body.pagina-catalogo .tarjeta-comparativa.destacada { background: var(--dorado); }
+body.pagina-catalogo .tarjeta-comparativa.oscura { background: #2a2a2a; color: #fff8f6; }
+body.pagina-catalogo .comparativa-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+body.pagina-catalogo .comparativa-icono { font-size: 1.2rem; }
+body.pagina-catalogo .comparativa-badge {
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+body.pagina-catalogo .tarjeta-comparativa.oscura .comparativa-badge { background: rgba(255, 255, 255, 0.12); }
+body.pagina-catalogo .tarjeta-comparativa h3 {
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  font-weight: 800;
+  font-size: 1.15rem;
+  margin: 0 0 8px;
+}
+body.pagina-catalogo .tarjeta-comparativa p {
+  font-size: 0.85rem;
+  margin: 0 0 16px;
+  opacity: 0.85;
+}
+body.pagina-catalogo .comparativa-check { font-size: 0.8rem; font-weight: 600; }
+body.pagina-catalogo .eyebrow-catalogo {
+  margin: 28px 4px 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--gris);
+}
+body.pagina-catalogo .cabecera-catalogo-grid {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin: 6px 4px 0;
+}
+body.pagina-catalogo .cabecera-catalogo-grid h2 {
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-size: clamp(1.4rem, 2.4vw, 1.9rem);
+  margin: 0;
+}
+body.pagina-catalogo .cabecera-catalogo-grid h2 span { color: var(--gris); font-weight: 400; }
+
+/* ---- Especificaciones + FAQ técnico (debajo del catálogo) ---- */
+body.pagina-catalogo .seccion-specs-faq { padding: 48px 0; }
+body.pagina-catalogo .titulo-specs-faq {
+  font-family: var(--fuente-serif);
+  font-weight: 700;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  line-height: 1.15;
+  margin: 0 0 28px;
+  max-width: 480px;
+}
+body.pagina-catalogo .grid-specs-faq {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+body.pagina-catalogo .panel-specs,
+body.pagina-catalogo .panel-faq-tecnico {
+  border-radius: var(--radio-lg);
+  padding: 28px;
+}
+body.pagina-catalogo .panel-specs { background: var(--blanco); box-shadow: var(--sombra); }
+body.pagina-catalogo .panel-faq-tecnico { background: #1a1a1a; color: #fff8f6; }
+body.pagina-catalogo .panel-specs-cabecera,
+body.pagina-catalogo .panel-faq-tecnico-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+body.pagina-catalogo .panel-specs-cabecera h3,
+body.pagina-catalogo .panel-faq-tecnico-cabecera h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+}
+body.pagina-catalogo .pill-specs {
+  background: var(--superficie);
+  color: var(--negro);
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+body.pagina-catalogo .pill-specs.oscura { background: rgba(255, 255, 255, 0.12); color: #fff8f6; }
+body.pagina-catalogo .tabla-specs-dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--borde);
+}
+body.pagina-catalogo .tabla-specs-dl > div:last-child { border-bottom: none; }
+body.pagina-catalogo .tabla-specs-dl dt {
+  flex-shrink: 0;
+  width: 120px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--gris);
+}
+body.pagina-catalogo .tabla-specs-dl dd { margin: 0; font-size: 0.9rem; text-align: right; }
+body.pagina-catalogo .aviso-garantia-specs {
+  margin: 16px 0 0;
+  padding: 10px 14px;
+  background: var(--superficie);
+  border-radius: var(--radio-sm);
+  font-size: 0.8rem;
+  color: var(--gris);
+}
+body.pagina-catalogo .lista-faq-tecnico { margin: 16px 0 0; padding: 0; list-style: none; }
+body.pagina-catalogo .lista-faq-tecnico li {
+  display: flex;
+  gap: 14px;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+body.pagina-catalogo .lista-faq-tecnico li:last-child { border-bottom: none; }
+body.pagina-catalogo .numero-faq {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--dorado);
+  color: var(--negro);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+body.pagina-catalogo .lista-faq-tecnico strong { display: block; margin-bottom: 4px; font-size: 0.95rem; }
+body.pagina-catalogo .lista-faq-tecnico p { margin: 0; font-size: 0.85rem; color: #b6b0a2; }
+body.pagina-catalogo .faq-tecnico-pie {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin-top: 16px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+body.pagina-catalogo .faq-tecnico-pie strong { display: block; font-size: 0.9rem; }
+body.pagina-catalogo .faq-tecnico-pie p { margin: 2px 0 0; font-size: 0.8rem; color: #b6b0a2; }
+body.pagina-catalogo .btn-whatsapp-pill {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff8f6;
+  color: #1a1a1a;
+  border-radius: 999px;
+  padding: 10px 18px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  body.pagina-catalogo .grid-specs-faq { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 900px) {
+  body.pagina-catalogo .grid-comparativa { grid-template-columns: 1fr; }
+  body.pagina-catalogo .panel-comparativa { padding: 28px 22px; }
+}
+
+/* ---- Footer de 3 columnas ---- */
+body.pagina-catalogo .pie-pagina { text-align: left; padding: 48px 0 24px; }
+body.pagina-catalogo .footer-columnas {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 32px;
+  align-items: start;
+}
+body.pagina-catalogo .footer-logo-marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: #fff8f6;
+  margin-bottom: 12px;
+}
+body.pagina-catalogo .footer-logo-icono {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: var(--dorado);
+  color: #1a1a1a;
+  font-weight: 800;
+}
+body.pagina-catalogo .footer-col-marca p { margin: 0 0 16px; font-size: 0.85rem; line-height: 1.6; }
+body.pagina-catalogo .footer-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+body.pagina-catalogo .footer-pills span {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.72rem;
+}
+body.pagina-catalogo .footer-pills span.borde { border: 1px solid rgba(255, 255, 255, 0.25); background: none; }
+body.pagina-catalogo .footer-eyebrow {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #8a8580;
+  margin-bottom: 14px;
+}
+body.pagina-catalogo .footer-col-contacto { display: flex; flex-direction: column; gap: 10px; font-size: 0.85rem; }
+body.pagina-catalogo .footer-col-contacto a:hover { color: var(--dorado-claro); }
+body.pagina-catalogo .tarjeta-footer-cotiza {
+  background: #fff8f6;
+  color: #1a1a1a;
+  border-radius: var(--radio);
+  padding: 18px;
+}
+body.pagina-catalogo .tarjeta-footer-cotiza strong { display: block; font-size: 0.92rem; margin-bottom: 4px; }
+body.pagina-catalogo .tarjeta-footer-cotiza p { margin: 0 0 14px; font-size: 0.8rem; color: #6b675f; }
+body.pagina-catalogo .btn-whatsapp-verde {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  justify-content: center;
+  background: #25d366;
+  color: #fff;
+  border-radius: 999px;
+  padding: 11px;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+body.pagina-catalogo .btn-whatsapp-verde:hover { background: #1fb85a; }
+body.pagina-catalogo .footer-barra-inferior {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.75rem;
+}
+body.pagina-catalogo .creditos-dev {
+  text-align: left;
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+/* ---- Tarjeta de instalación PWA (solo index.html, solo móvil) ---- */
+.tarjeta-instalar-pwa {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  z-index: 400;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--blanco);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra-md);
+  padding: 14px;
+  animation: aparecer-tarjeta 0.3s ease both;
+}
+@media (min-width: 641px) {
+  .tarjeta-instalar-pwa { display: none !important; }
+}
+.icono-instalar-pwa { width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0; }
+.texto-instalar-pwa { flex: 1; min-width: 0; }
+.texto-instalar-pwa strong { display: block; font-size: 0.9rem; }
+.texto-instalar-pwa p { margin: 2px 0 0; font-size: 0.78rem; color: var(--gris); line-height: 1.35; }
+.cerrar-instalar-pwa {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  background: none;
+  border: none;
+  color: var(--gris);
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 4px;
+}
+.btn-instalar-pwa {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  font-size: 0.8rem;
+  border-radius: 999px;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.btn-instalar-pwa-permanente {
+  background: none;
+  border: 1px solid var(--borde);
+  color: inherit;
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+.btn-instalar-pwa-permanente:hover { border-color: var(--dorado-claro); color: var(--dorado-claro); }
+
+@media (max-width: 760px) {
+  body.pagina-catalogo .footer-columnas { grid-template-columns: 1fr; gap: 28px; }
+}
+
+@media (max-width: 900px) {
+  body.pagina-catalogo .hero-catalogo { grid-template-columns: 1fr; }
+  body.pagina-catalogo .hero-catalogo .capa-banner,
+  body.pagina-catalogo .hero-catalogo .puntos-banner,
+  body.pagina-catalogo .contenido-hero-catalogo { grid-column: 1; }
+  body.pagina-catalogo .hero-catalogo .capa-banner { grid-row: 2; aspect-ratio: 16 / 9; margin-top: 28px; }
+  body.pagina-catalogo .contenido-hero-catalogo { grid-row: 1; text-align: center; margin: 0 auto; }
+  body.pagina-catalogo .hero-catalogo p { margin-left: auto; margin-right: auto; }
+  body.pagina-catalogo .buscador-hero { margin: 0 auto; }
 }

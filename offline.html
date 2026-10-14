@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Sin conexión · Dinar 3D Wax</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: #faf7f2;
+    color: #14120f;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+  }
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    text-align: center;
+  }
+  .tarjeta {
+    max-width: 360px;
+  }
+  img {
+    width: 72px;
+    height: 72px;
+    border-radius: 18px;
+    margin-bottom: 20px;
+  }
+  h1 {
+    font-size: 1.3rem;
+    margin: 0 0 10px;
+  }
+  p {
+    color: #6b675f;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin: 0 0 24px;
+  }
+  button {
+    background: #b8963e;
+    color: #14120f;
+    border: none;
+    border-radius: 999px;
+    padding: 12px 28px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  button:active { transform: scale(0.97); }
+  @media (prefers-color-scheme: dark) {
+    html, body { background: #17140f; color: #f2ede3; }
+    p { color: #b6b0a2; }
+  }
+</style>
+</head>
+<body>
+  <div class="tarjeta">
+    <img src="/icons/icon-192.png" alt="Dinar 3D Wax" onerror="this.remove()">
+    <h1>Sin conexión</h1>
+    <p>No se pudo cargar esta página porque tu dispositivo está sin internet. El catálogo y el carrito necesitan conexión para mostrar datos al día.</p>
+    <button type="button" onclick="location.reload()">Reintentar</button>
+  </div>
+  <script>
+    window.addEventListener("online", () => location.reload());
+  </script>
+</body>
+</html>

@@ -14,15 +14,22 @@ function tarjetaProductoHTML(producto) {
       <a class="render" data-tipo="${producto.tipo}" href="producto.html?ref=${producto.referencia}">
         ${portada ? `<img src="${portada}" alt="${producto.nombre}" loading="lazy" decoding="async" onerror="this.remove()">` : ""}
         <span class="badge-ref-tarjeta">${producto.referencia}</span>
-        <span class="badge-material-tarjeta">Cera 3D</span>
+        <span class="badge-material-tarjeta">${producto.peso} g</span>
       </a>
       <div class="info-tarjeta">
-        <span class="categoria-eyebrow">${eyebrow}</span>
-        <span class="nombre">${producto.nombre}</span>
-        <span class="peso">${producto.peso} g</span>
-        <span class="precio">${formatearPrecio(producto.precioBase)}</span>
+        <div class="info-tarjeta-fila-nombre">
+          <span class="nombre">${producto.nombre}</span>
+          <span class="badge-peso-info">${producto.peso} g</span>
+        </div>
+        <p class="descripcion-tarjeta">${producto.descripcion || eyebrow}</p>
+        <div class="info-tarjeta-fila-precio">
+          <div class="info-tarjeta-precio-bloque">
+            <span class="etiqueta-precio">Estimado COP</span>
+            <span class="precio">${formatearPrecio(producto.precioBase)}</span>
+          </div>
+          <a class="btn-ver" href="producto.html?ref=${producto.referencia}">Pedir este modelo ↗</a>
+        </div>
       </div>
-      <a class="btn-ver" href="producto.html?ref=${producto.referencia}">Ver modelo</a>
     </article>
   `;
 }
@@ -243,6 +250,42 @@ function configurarBotonWhatsapp() {
   boton.href = `https://wa.me/${CONFIG.whatsappNumero}?text=${mensaje}`;
 }
 
+function configurarBotonWhatsappFaqTecnico() {
+  const boton = document.getElementById("btn-whatsapp-faq-tecnico");
+  if (!boton) return;
+  const mensaje = encodeURIComponent("Hola, tengo una duda técnica sobre la cera rosa 0.025mm.");
+  boton.href = `https://wa.me/${CONFIG.whatsappNumero}?text=${mensaje}`;
+}
+
+/**
+ * "+57 302 843 2867" en vez del número pegado: solo sirve para mostrarlo en
+ * el footer (el link wa.me sigue usando el número sin formato).
+ */
+function formatearNumeroWhatsapp(numero) {
+  const n = String(numero || "");
+  if (n.length !== 12) return n; // formato inesperado: se muestra tal cual, sin adivinar
+  return `+${n.slice(0, 2)} ${n.slice(2, 5)} ${n.slice(5, 8)} ${n.slice(8, 12)}`;
+}
+
+function configurarFooterContacto() {
+  const spanNumero = document.getElementById("footer-whatsapp-numero");
+  if (spanNumero) spanNumero.textContent = formatearNumeroWhatsapp(CONFIG.whatsappNumero);
+
+  const linkWhatsapp = document.getElementById("footer-whatsapp");
+  if (linkWhatsapp) {
+    const mensaje = encodeURIComponent("Hola Dinar 3D Wax, quisiera más información.");
+    linkWhatsapp.href = `https://wa.me/${CONFIG.whatsappNumero}?text=${mensaje}`;
+  }
+
+  const btnCotizar = document.getElementById("footer-btn-cotizar");
+  if (btnCotizar) {
+    const mensaje = encodeURIComponent(
+      "Hola Dinar 3D Wax, quiero cotizar cuánto oro recupero con la cera rosa 0.025mm."
+    );
+    btnCotizar.href = `https://wa.me/${CONFIG.whatsappNumero}?text=${mensaje}`;
+  }
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
   await productosListos;
   renderArbolCategorias();
@@ -250,11 +293,27 @@ document.addEventListener("DOMContentLoaded", async () => {
   aplicarFiltroDesdeUrl();
   renderCatalogo();
 
+  // El "147 modelos disponibles" del mockup es el conteo real del
+  // catálogo, no un número fijo: así no queda desactualizado cuando se
+  // agreguen o quiten productos desde el admin.
+  const totalModelos = document.getElementById("total-modelos-disponibles");
+  if (totalModelos) totalModelos.textContent = PRODUCTOS.length;
+
+  // Acceso directo "Buscar por referencia" del ícono de la PWA
+  // (manifest.webmanifest): llega con ?buscar=1, enfoca el buscador del
+  // hero y limpia la URL para que no quede pegado si se comparte el link.
+  if (new URLSearchParams(window.location.search).has("buscar")) {
+    document.getElementById("campo-busqueda-hero")?.focus();
+    window.history.replaceState({}, "", window.location.pathname);
+  }
+
   // configuracionLista no resuelve con el objeto de configuración: lo
   // mezcla dentro de CONFIG (ver js/productos.js) y no retorna nada.
   await configuracionLista.catch(() => null);
   iniciarBannerCatalogo(CONFIG.bannerImagenes);
   configurarBotonWhatsapp();
+  configurarBotonWhatsappFaqTecnico();
+  configurarFooterContacto();
 
   // Delegado en todo el panel (no solo #arbol-categorias) para que también
   // cubra el radio "Todos", que vive fuera del árbol generado dinámicamente.

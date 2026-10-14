@@ -9,10 +9,14 @@
   },
   "scripts": {
     "start": "vercel dev",
-    "db:migrate": "node scripts/migrar-db.js"
+    "db:migrate": "node scripts/migrar-db.js",
+    "icons:generate": "node scripts/generate-icons.mjs"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
     "@vercel/blob": "^2.8.0"
+  },
+  "devDependencies": {
+    "sharp": "^0.35.5"
   }
 }
