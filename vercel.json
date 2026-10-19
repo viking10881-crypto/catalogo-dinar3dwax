@@ -1,4 +1,7 @@
 {
+  "redirects": [
+    { "source": "/admin/trabajadores.html", "destination": "/admin/colaboradores.html", "permanent": true }
+  ],
   "headers": [
     {
       "source": "/sw.js",
