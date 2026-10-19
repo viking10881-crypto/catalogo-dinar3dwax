@@ -183,7 +183,7 @@ document.getElementById("btn-enviar-correo").addEventListener("click", async () 
   const boton = document.getElementById("btn-enviar-correo");
   const mensajeCorreo = document.getElementById("mensaje-correo");
   if (!pagoActual) return;
-  if (!confirm(`¿Enviar este comprobante a ${pagoActual.trabajadorCorreo} desde dinar3dwax@gmail.com?`)) return;
+  if (!confirm(`¿Enviar este comprobante a ${pagoActual.trabajadorCorreo}? Las respuestas llegan a dinar3dwax@gmail.com.`)) return;
 
   boton.disabled = true;
   mensajeCorreo.textContent = "Enviando...";
