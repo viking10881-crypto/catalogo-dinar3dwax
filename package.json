@@ -14,7 +14,8 @@
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
-    "@vercel/blob": "^2.8.0"
+    "@vercel/blob": "^2.8.0",
+    "nodemailer": "^10.1.7"
   },
   "devDependencies": {
     "sharp": "^0.35.5"
