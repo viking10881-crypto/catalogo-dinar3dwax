@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s -o /dev/null -w *)",
+      "Bash(vercel dev*)",
+      "Bash(node --check *)",
+      "Bash(npm run dev)",
+      "Bash(npm run lint)",
+      "Bash(npm run start)",
+      "Bash(git fetch *)",
+      "Bash(npm run typecheck)",
+      "Bash(git check-ignore *)",
+      "mcp__claude_ai_Claude_Docs__read"
+    ]
+  }
+}
