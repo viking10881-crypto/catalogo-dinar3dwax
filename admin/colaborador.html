@@ -114,7 +114,7 @@ function renderizarEncabezado(c) {
         </div>
         ${c.notas ? `<p style="margin:10px 0 0; color:var(--gris); font-size:0.85rem;">${escaparHtml(c.notas)}</p>` : ""}
       </div>
-      <a href="/admin/colaboradores.html" class="btn btn-borde" style="align-self:flex-start;">Editar en Colaboradores</a>
+      <a href="/admin/colaboradores.html?editar=${c.id}" class="btn btn-borde" style="align-self:flex-start;">Editar perfil</a>
     </div>
   `;
 }

@@ -46,6 +46,8 @@
       <label for="colaborador-rol" style="margin-top:14px;">Rol</label>
       <select id="colaborador-rol">
         <option value="Diseñador">Diseñador</option>
+        <option value="Programador">Programador</option>
+        <option value="Colaborador administrativo">Colaborador administrativo</option>
         <option value="Otro">Otro</option>
       </select>
 
@@ -116,6 +118,7 @@
 <script>
 let todosLosColaboradores = [];
 let fotoSubidaUrl = "";
+const idEditarDesdeUrl = new URLSearchParams(window.location.search).get("editar");
 
 function iniciales(nombre) {
   return String(nombre || "?")
@@ -128,11 +131,14 @@ function iniciales(nombre) {
 
 function tarjetaColaboradorHTML(c) {
   return `
-    <a href="/admin/colaborador.html?id=${c.id}" class="tarjeta-colaborador ${c.activo ? "" : "inactivo"}" style="text-decoration:none; color:inherit;">
-      ${c.fotoUrl ? `<img src="${c.fotoUrl}" alt="${escaparHtml(c.nombre)}" class="foto-colaborador">` : `<div class="foto-colaborador">${iniciales(c.nombre)}</div>`}
-      <span class="nombre">${escaparHtml(c.nombre)}</span>
-      <span class="rol-colaborador">${escaparHtml(c.rol)}${c.activo ? "" : " · Inactivo"}</span>
-    </a>
+    <div class="tarjeta-colaborador ${c.activo ? "" : "inactivo"}">
+      <button type="button" class="btn-editar-colaborador" data-id="${c.id}" title="Editar colaborador">✎</button>
+      <a href="/admin/colaborador.html?id=${c.id}" class="enlace-tarjeta-colaborador">
+        ${c.fotoUrl ? `<img src="${c.fotoUrl}" alt="${escaparHtml(c.nombre)}" class="foto-colaborador">` : `<div class="foto-colaborador">${iniciales(c.nombre)}</div>`}
+        <span class="nombre">${escaparHtml(c.nombre)}</span>
+        <span class="rol-colaborador">${escaparHtml(c.rol)}${c.activo ? "" : " · Inactivo"}</span>
+      </a>
+    </div>
   `;
 }
 
@@ -155,6 +161,11 @@ async function cargarColaboradores() {
     }
     todosLosColaboradores = await r.json();
     renderizarGrid();
+
+    if (idEditarDesdeUrl) {
+      const colaborador = todosLosColaboradores.find((c) => c.id === Number(idEditarDesdeUrl));
+      if (colaborador) mostrarFormulario(colaborador);
+    }
   } catch (err) {
     mensaje.textContent = "No se pudo cargar el listado de colaboradores.";
     mensaje.className = "mensaje-admin error";
@@ -258,6 +269,15 @@ function ocultarFormulario() {
 
 document.getElementById("btn-mostrar-form").addEventListener("click", () => mostrarFormulario(null));
 document.getElementById("btn-cancelar-form").addEventListener("click", ocultarFormulario);
+
+document.getElementById("grid-colaboradores").addEventListener("click", (e) => {
+  const boton = e.target.closest(".btn-editar-colaborador");
+  if (!boton) return;
+  e.preventDefault();
+  const id = Number(boton.getAttribute("data-id"));
+  const colaborador = todosLosColaboradores.find((c) => c.id === id);
+  if (colaborador) mostrarFormulario(colaborador);
+});
 
 document.getElementById("form-colaborador").addEventListener("submit", async (e) => {
   e.preventDefault();

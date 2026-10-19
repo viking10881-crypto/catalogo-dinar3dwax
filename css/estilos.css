@@ -1439,20 +1439,40 @@ input[type="file"]::file-selector-button:hover {
 /* ===== Tarjetas de colaborador (admin/colaboradores.html) ===== */
 .grid-colaboradores { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
 .tarjeta-colaborador {
+  position: relative;
   background: var(--blanco);
   border: 1px solid var(--borde);
   border-radius: var(--radio);
   padding: 20px;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.tarjeta-colaborador:hover { box-shadow: var(--sombra-md); border-color: var(--dorado-claro); }
+.tarjeta-colaborador.inactivo { opacity: 0.55; }
+.enlace-tarjeta-colaborador {
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   gap: 6px;
+  text-decoration: none;
+  color: inherit;
   cursor: pointer;
-  transition: box-shadow 0.15s ease, border-color 0.15s ease;
 }
-.tarjeta-colaborador:hover { box-shadow: var(--sombra-md); border-color: var(--dorado-claro); }
-.tarjeta-colaborador.inactivo { opacity: 0.55; }
+.btn-editar-colaborador {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--borde);
+  background: var(--superficie);
+  color: var(--gris);
+  font-size: 0.85rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.btn-editar-colaborador:hover { border-color: var(--dorado-claro); color: var(--dorado); }
 .foto-colaborador {
   width: 84px;
   height: 84px;
