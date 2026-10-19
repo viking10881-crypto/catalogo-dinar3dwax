@@ -24,6 +24,7 @@ import {
   guardarEstadoProduccion,
 } from "../../lib/pedidos.js";
 import { enviarAProduccion } from "../../lib/produccion.js";
+import { urlAccesoTaller } from "../../lib/accesoTaller.js";
 import {
   listarTrabajadores,
   obtenerTrabajador,
@@ -667,6 +668,20 @@ async function manejarPagos(req, res) {
   res.status(405).json({ error: "Método no permitido" });
 }
 
+async function manejarAccesoTaller(req, res) {
+  if (!requiereAdmin(req, res)) return;
+  if (req.method !== "GET") {
+    res.status(405).json({ error: "Método no permitido" });
+    return;
+  }
+  try {
+    res.status(200).json({ url: urlAccesoTaller() });
+  } catch (err) {
+    console.error("Error generando acceso al taller:", err);
+    res.status(500).json({ error: "No se pudo generar el acceso al taller" });
+  }
+}
+
 export default async function handler(req, res) {
   const seccion = req.query.seccion;
 
@@ -691,6 +706,8 @@ export default async function handler(req, res) {
       return manejarMateriales(req, res);
     case "pagos":
       return manejarPagos(req, res);
+    case "acceso-taller":
+      return manejarAccesoTaller(req, res);
     default:
       res.status(404).json({ error: "No encontrado" });
   }
