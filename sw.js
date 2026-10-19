@@ -4,7 +4,7 @@
  * usuario (carrito, pedidos, config del admin). Solo cachea archivos
  * estáticos propios (css/js/imágenes/íconos) y la página offline.
  */
-const VERSION = "v1";
+const VERSION = "v2";
 const CACHE_ESTATICOS = `dinar3dwax-estaticos-${VERSION}`;
 const CACHE_PAGINAS = `dinar3dwax-offline-${VERSION}`;
 const MAX_ENTRADAS_ESTATICOS = 80;
@@ -99,6 +99,12 @@ self.addEventListener("fetch", (event) => {
 
   // Nunca cachear /api/*: son datos (productos, pedidos, config), no estáticos.
   if (url.pathname.startsWith("/api/")) return;
+
+  // Nunca cachear /admin/*: el SW tiene scope de origen completo ("/") aunque
+  // solo se registra desde las páginas públicas, así que sin esta exclusión
+  // interceptaba igual css/js del panel (ver /admin/js/layout.js) y los
+  // servía viejos desde caché para siempre, sin importar los deploys nuevos.
+  if (url.pathname.startsWith("/admin/")) return;
 
   if (request.mode === "navigate") {
     event.respondWith(responderNavegacion(request));
