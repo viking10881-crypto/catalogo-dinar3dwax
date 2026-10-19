@@ -113,6 +113,35 @@
       <p id="ultimos-pedidos-vacio" class="tabla-ultimos-pedidos-vacia oculto">Todavía no hay pedidos.</p>
     </div>
 
+    <h2 class="titulo-seccion" style="font-size:0.95rem;">Estadísticas del taller</h2>
+    <p style="color:var(--gris); margin-top:-8px;">Producción, cobros y ganancia — traídas en vivo desde dinar-3dwax.</p>
+    <p id="taller-stats-mensaje" class="mensaje-admin"></p>
+    <div id="grid-stats-taller" class="grid-stats"></div>
+    <div id="grid-stats-taller-estados" class="grid-stats" style="margin-top:12px;"></div>
+
+    <div class="grid-graficas fila-ancha" id="contenedor-graficas-taller" style="display:none; margin-top:20px;">
+      <div class="tarjeta-grafica">
+        <div class="tarjeta-grafica-cabecera">
+          <span class="icono-grafica">💵</span>
+          <div>
+            <p class="titulo-grafica">Ingresos y ganancia del taller</p>
+            <p class="subtitulo-grafica">Últimos 12 meses</p>
+          </div>
+        </div>
+        <div id="grafica-taller-ingresos" class="lienzo-grafica"></div>
+      </div>
+      <div class="tarjeta-grafica">
+        <div class="tarjeta-grafica-cabecera">
+          <span class="icono-grafica">🥇</span>
+          <div>
+            <p class="titulo-grafica">Top clientes y servicios del taller</p>
+            <p class="subtitulo-grafica">Por facturación, todo el histórico</p>
+          </div>
+        </div>
+        <div id="tablas-taller-top"></div>
+      </div>
+    </div>
+
     <h2 class="titulo-seccion" style="font-size:0.95rem;">Secciones</h2>
     <div class="grid-accesos">
       <a href="/admin/productos.html" class="tarjeta-acceso" style="text-decoration:none; color:inherit;">
@@ -191,8 +220,71 @@ async function cargarStats() {
   }
 }
 
+async function cargarStatsTaller() {
+  const mensaje = document.getElementById("taller-stats-mensaje");
+  const grid = document.getElementById("grid-stats-taller");
+  const gridEstados = document.getElementById("grid-stats-taller-estados");
+
+  const ETIQUETA_ESTADO_TALLER = {
+    pendiente: "Pendiente",
+    en_impresion: "En impresión",
+    empacado: "Empacado",
+    entregado: "Entregado",
+  };
+
+  try {
+    const r = await fetch("/api/admin/estadisticas-taller");
+    if (r.status === 401) {
+      window.location.href = "/admin/login.html";
+      return;
+    }
+    const datos = await r.json();
+    if (!r.ok) throw new Error(datos.error || "No se pudo cargar");
+
+    const tarjetas = [
+      { valor: formatearPrecioAdmin(datos.ingresosMesActual), etiqueta: "Ingresos del mes (taller)", icono: "💵" },
+      { valor: formatearPrecioAdmin(datos.gananciaMesActual), etiqueta: "Ganancia del mes (taller)", icono: "📈" },
+      { valor: datos.pedidosMesActual, etiqueta: "Pedidos del mes (taller)", icono: "🧾" },
+      {
+        valor: formatearPrecioAdmin(datos.saldoPendienteTotal),
+        etiqueta: "Saldo por cobrar",
+        icono: "⏳",
+        alerta: datos.saldoPendienteTotal > 0,
+      },
+    ];
+    grid.innerHTML = tarjetas
+      .map(
+        (t) => `
+        <div class="tarjeta-stat ${t.alerta ? "icono-alerta" : ""}">
+          <div class="tarjeta-stat-cabecera"><span class="icono-stat">${t.icono}</span></div>
+          <div class="valor">${t.valor}</div>
+          <div class="etiqueta">${t.etiqueta}</div>
+        </div>`
+      )
+      .join("");
+
+    gridEstados.innerHTML = Object.entries(datos.porEstado || {})
+      .map(
+        ([estado, cantidad]) => `
+        <div class="tarjeta-stat">
+          <div class="valor">${cantidad}</div>
+          <div class="etiqueta">${ETIQUETA_ESTADO_TALLER[estado] || estado}</div>
+        </div>`
+      )
+      .join("");
+
+    document.getElementById("contenedor-graficas-taller").style.display = "";
+    renderGraficaTaller(datos.meses || []);
+    renderTopTallerTablas(datos.topClientes || [], datos.topServicios || []);
+  } catch (err) {
+    mensaje.textContent = "No se pudo conectar con el taller (dinar-3dwax) para traer sus estadísticas.";
+    mensaje.className = "mensaje-admin error";
+  }
+}
+
 renderAdminSidebar("inicio");
 cargarStats();
+cargarStatsTaller();
 </script>
 </body>
 </html>

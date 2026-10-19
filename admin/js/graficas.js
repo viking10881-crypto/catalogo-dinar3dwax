@@ -499,3 +499,71 @@ function renderGraficas(productos, pedidos) {
   renderTopProductos(pedidos, productos);
   renderUltimosPedidos(pedidos);
 }
+
+/* ===== Estadísticas del taller (dinar-3dwax), llamadas desde
+   cargarStatsTaller() en admin/index.html ===== */
+function renderGraficaTaller(meses) {
+  const chart = obtenerInstancia("grafica-taller-ingresos");
+  if (!chart) return;
+
+  chart.setOption({
+    tooltip: { ...tooltipBase(), trigger: "axis" },
+    legend: { data: ["Ingresos", "Ganancia"], top: 0, textStyle: EJE_TEXTO },
+    grid: { left: 55, right: 16, top: 36, bottom: 28 },
+    xAxis: {
+      type: "category",
+      data: meses.map((m) => m.etiqueta),
+      axisLabel: EJE_TEXTO,
+      axisLine: LINEA_GRILLA,
+    },
+    yAxis: { type: "value", axisLabel: EJE_TEXTO, splitLine: LINEA_GRILLA },
+    series: [
+      {
+        name: "Ingresos",
+        type: "bar",
+        data: meses.map((m) => m.ingresos),
+        itemStyle: { color: COLOR_ORO_GRAFICA },
+      },
+      {
+        name: "Ganancia",
+        type: "line",
+        smooth: true,
+        data: meses.map((m) => m.ganancia),
+        itemStyle: { color: COLOR_VERDE_GRAFICA },
+      },
+    ],
+  });
+}
+
+function renderTopTallerTablas(topClientes, topServicios) {
+  const el = document.getElementById("tablas-taller-top");
+  if (!el) return;
+
+  const listaClientes = topClientes.length
+    ? topClientes
+        .map(
+          (c) =>
+            `<li>${escaparTextoGrafica(c.nombre)} — ${formatearPrecioAdmin(c.totalFacturado)} (${c.numPedidos} pedido${c.numPedidos === 1 ? "" : "s"})</li>`
+        )
+        .join("")
+    : '<li style="list-style:none; color:var(--gris);">Sin datos todavía</li>';
+
+  const listaServicios = topServicios.length
+    ? topServicios
+        .map((s) => `<li>${escaparTextoGrafica(s.nombre)} — ${formatearPrecioAdmin(s.ingresos)}</li>`)
+        .join("")
+    : '<li style="list-style:none; color:var(--gris);">Sin datos todavía</li>';
+
+  el.innerHTML = `
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; font-size:0.85rem;">
+      <div>
+        <p style="font-weight:600; font-size:0.82rem; margin:0 0 8px;">Top clientes</p>
+        <ol style="margin:0; padding-left:18px;">${listaClientes}</ol>
+      </div>
+      <div>
+        <p style="font-weight:600; font-size:0.82rem; margin:0 0 8px;">Top servicios</p>
+        <ol style="margin:0; padding-left:18px;">${listaServicios}</ol>
+      </div>
+    </div>
+  `;
+}

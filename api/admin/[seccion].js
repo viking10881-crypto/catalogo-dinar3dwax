@@ -682,6 +682,38 @@ async function manejarAccesoTaller(req, res) {
   }
 }
 
+/**
+ * Trae las estadísticas del taller (dinar-3dwax) para mostrarlas en el
+ * dashboard del admin junto a las del catálogo. Mismo secreto compartido
+ * que ya usa lib/produccion.js para enviar pedidos→OT, aquí en sentido
+ * contrario (lectura).
+ */
+async function manejarEstadisticasTaller(req, res) {
+  if (!requiereAdmin(req, res)) return;
+  if (req.method !== "GET") {
+    res.status(405).json({ error: "Método no permitido" });
+    return;
+  }
+  if (!process.env.DINAR3DWAX_API_URL || !process.env.CATALOGO_INTEGRACION_SECRET) {
+    res.status(500).json({ error: "La integración con el taller no está configurada" });
+    return;
+  }
+  try {
+    const respuesta = await fetch(`${process.env.DINAR3DWAX_API_URL}/api/estadisticas-externas`, {
+      headers: { "x-integracion-secret": process.env.CATALOGO_INTEGRACION_SECRET },
+    });
+    const datos = await respuesta.json().catch(() => ({}));
+    if (!respuesta.ok) {
+      res.status(502).json({ error: datos.error || "El taller respondió con un error" });
+      return;
+    }
+    res.status(200).json(datos);
+  } catch (err) {
+    console.error("Error obteniendo estadísticas del taller:", err);
+    res.status(502).json({ error: "No se pudo contactar al taller (dinar-3dwax)" });
+  }
+}
+
 export default async function handler(req, res) {
   const seccion = req.query.seccion;
 
@@ -708,6 +740,8 @@ export default async function handler(req, res) {
       return manejarPagos(req, res);
     case "acceso-taller":
       return manejarAccesoTaller(req, res);
+    case "estadisticas-taller":
+      return manejarEstadisticasTaller(req, res);
     default:
       res.status(404).json({ error: "No encontrado" });
   }
