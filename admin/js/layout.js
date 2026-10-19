@@ -11,7 +11,7 @@ const SECCIONES_ADMIN = [
   // solo uso (ver api/admin/[seccion].js → acceso-taller) para entrar
   // directo a dinar-3dwax sin volver a escribir su contraseña.
   { id: "taller", etiqueta: "🏭 Taller", href: "#", accesoDinamico: "acceso-taller" },
-  { id: "trabajadores", etiqueta: "👷 Trabajadores", href: "/admin/trabajadores.html" },
+  { id: "colaboradores", etiqueta: "🧑‍🤝‍🧑 Colaboradores", href: "/admin/colaboradores.html" },
   { id: "materiales", etiqueta: "🧱 Materiales", href: "/admin/materiales.html" },
   { id: "pagos", etiqueta: "💵 Pagos", href: "/admin/pagos.html" },
   { id: "configuracion", etiqueta: "⚙️ Configuración", href: "/admin/configuracion.html" },

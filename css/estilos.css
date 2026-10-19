@@ -1436,6 +1436,64 @@ input[type="file"]::file-selector-button:hover {
 .tarjeta-acceso .descripcion { font-size: 0.85rem; color: var(--gris); flex: 1; }
 .tarjeta-acceso.proximamente { opacity: 0.55; }
 
+/* ===== Tarjetas de colaborador (admin/colaboradores.html) ===== */
+.grid-colaboradores { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+.tarjeta-colaborador {
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.tarjeta-colaborador:hover { box-shadow: var(--sombra-md); border-color: var(--dorado-claro); }
+.tarjeta-colaborador.inactivo { opacity: 0.55; }
+.foto-colaborador {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--superficie);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  color: var(--gris);
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.tarjeta-colaborador .nombre { font-weight: 700; }
+.tarjeta-colaborador .rol-colaborador { font-size: 0.78rem; color: var(--gris); }
+
+/* ===== Perfil de colaborador (admin/colaborador.html) ===== */
+.encabezado-perfil-colaborador {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  padding: 24px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.encabezado-perfil-colaborador .foto-colaborador { width: 96px; height: 96px; font-size: 2rem; margin-bottom: 0; flex-shrink: 0; }
+.datos-perfil-colaborador { flex: 1; min-width: 220px; }
+.datos-perfil-colaborador h1 { margin: 0 0 4px; }
+.lista-datos-perfil {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 6px 20px;
+  margin-top: 10px;
+  font-size: 0.85rem;
+}
+.lista-datos-perfil span { color: var(--gris); }
+
 .admin-shell { padding: 0 0 40px; }
 .admin-cabecera-fila {
   display: flex;

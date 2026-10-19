@@ -25,6 +25,7 @@ import {
 } from "../../lib/pedidos.js";
 import { enviarAProduccion } from "../../lib/produccion.js";
 import { urlAccesoTaller } from "../../lib/accesoTaller.js";
+import { enviarComprobantePago } from "../../lib/correo.js";
 import {
   listarTrabajadores,
   obtenerTrabajador,
@@ -39,7 +40,13 @@ import {
   actualizarMaterial,
   eliminarMaterial,
 } from "../../lib/materiales.js";
-import { listarPagos, obtenerPago, crearPago, eliminarPago } from "../../lib/pagos.js";
+import {
+  listarPagos,
+  listarPagosDeTrabajador,
+  obtenerPago,
+  crearPago,
+  eliminarPago,
+} from "../../lib/pagos.js";
 
 /**
  * Router único para /api/admin/:seccion. Vercel Hobby limita a 12
@@ -401,7 +408,14 @@ function validarTrabajadorBody(body) {
 
   datos.rol = String(body.rol || "Diseñador").trim();
   datos.telefono = String(body.telefono || "").trim();
+  datos.tipoDocumento = String(body.tipoDocumento || "CC").trim();
   datos.documento = String(body.documento || "").trim();
+  datos.correo = String(body.correo || "").trim();
+  datos.direccion = String(body.direccion || "").trim();
+  datos.fotoUrl = String(body.fotoUrl || "").trim();
+  datos.bancoNombre = String(body.bancoNombre || "").trim();
+  datos.bancoNumeroCuenta = String(body.bancoNumeroCuenta || "").trim();
+  datos.bancoTipoCuenta = String(body.bancoTipoCuenta || "Ahorros").trim();
   datos.notas = String(body.notas || "").trim();
   datos.activo = body.activo !== false;
 
@@ -446,6 +460,21 @@ async function manejarTrabajadores(req, res) {
 
   const id = Number(idQuery);
 
+  if (req.method === "GET") {
+    try {
+      const trabajador = await obtenerTrabajador(id);
+      if (!trabajador) {
+        res.status(404).json({ error: "Trabajador no encontrado" });
+        return;
+      }
+      res.status(200).json(trabajador);
+    } catch (err) {
+      console.error("Error obteniendo trabajador:", err);
+      res.status(500).json({ error: "No se pudo cargar el colaborador" });
+    }
+    return;
+  }
+
   if (req.method === "PUT") {
     try {
       const existente = await obtenerTrabajador(id);
@@ -459,6 +488,11 @@ async function manejarTrabajadores(req, res) {
         return;
       }
       await actualizarTrabajador(id, datos);
+
+      // Se reemplazó la foto: la anterior queda huérfana en Blob si no se borra.
+      if (existente.fotoUrl && existente.fotoUrl !== datos.fotoUrl && esUrlDeNuestroBlob(existente.fotoUrl)) {
+        del(existente.fotoUrl).catch((err) => console.error("No se pudo borrar foto anterior:", existente.fotoUrl, err));
+      }
       res.status(200).json({ ok: true });
     } catch (err) {
       console.error("Error actualizando trabajador:", err);
@@ -469,7 +503,15 @@ async function manejarTrabajadores(req, res) {
 
   if (req.method === "DELETE") {
     try {
+      const trabajador = await obtenerTrabajador(id);
       await eliminarTrabajador(id);
+
+      // Igual que con las imágenes de producto: nunca debe bloquear la
+      // respuesta si falla el borrado del archivo en Blob.
+      if (trabajador?.fotoUrl && esUrlDeNuestroBlob(trabajador.fotoUrl)) {
+        del(trabajador.fotoUrl).catch((err) => console.error("No se pudo borrar foto:", trabajador.fotoUrl, err));
+      }
+
       res.status(200).json({ ok: true });
     } catch (err) {
       console.error("Error eliminando trabajador:", err);
@@ -614,7 +656,13 @@ async function manejarPagos(req, res) {
   if (!idQuery) {
     if (req.method === "GET") {
       try {
-        res.status(200).json(await listarPagos());
+        // ?trabajadorId= filtra al historial de un solo colaborador (su
+        // perfil); sin el param, es el listado completo de /admin/pagos.
+        const trabajadorIdQuery = req.query.trabajadorId;
+        const pagos = trabajadorIdQuery
+          ? await listarPagosDeTrabajador(Number(trabajadorIdQuery))
+          : await listarPagos();
+        res.status(200).json(pagos);
       } catch (err) {
         console.error("Error listando pagos:", err);
         res.status(500).json({ error: "No se pudo cargar el listado de pagos" });
@@ -648,6 +696,21 @@ async function manejarPagos(req, res) {
   }
 
   const id = Number(idQuery);
+
+  if (req.method === "GET") {
+    try {
+      const pago = await obtenerPago(id);
+      if (!pago) {
+        res.status(404).json({ error: "Pago no encontrado" });
+        return;
+      }
+      res.status(200).json(pago);
+    } catch (err) {
+      console.error("Error obteniendo pago:", err);
+      res.status(500).json({ error: "No se pudo cargar el pago" });
+    }
+    return;
+  }
 
   if (req.method === "DELETE") {
     try {
@@ -714,6 +777,36 @@ async function manejarEstadisticasTaller(req, res) {
   }
 }
 
+/**
+ * Envío del comprobante por correo: es una acción puntual que el admin
+ * dispara a mano desde el comprobante (no automática al crear el pago),
+ * para que decida caso a caso si el colaborador lo necesita por correo.
+ */
+async function manejarEnviarComprobante(req, res) {
+  if (!requiereAdmin(req, res)) return;
+  if (req.method !== "POST") {
+    res.status(405).json({ error: "Método no permitido" });
+    return;
+  }
+  try {
+    const pagoId = Number((req.body || {}).pagoId);
+    if (!pagoId) {
+      res.status(400).json({ error: "Falta indicar el pago a enviar" });
+      return;
+    }
+    const pago = await obtenerPago(pagoId);
+    if (!pago) {
+      res.status(404).json({ error: "Pago no encontrado" });
+      return;
+    }
+    await enviarComprobantePago(pago);
+    res.status(200).json({ ok: true });
+  } catch (err) {
+    console.error("Error enviando comprobante por correo:", err);
+    res.status(500).json({ error: err.message || "No se pudo enviar el comprobante" });
+  }
+}
+
 export default async function handler(req, res) {
   const seccion = req.query.seccion;
 
@@ -742,6 +835,8 @@ export default async function handler(req, res) {
       return manejarAccesoTaller(req, res);
     case "estadisticas-taller":
       return manejarEstadisticasTaller(req, res);
+    case "enviar-comprobante":
+      return manejarEnviarComprobante(req, res);
     default:
       res.status(404).json({ error: "No encontrado" });
   }

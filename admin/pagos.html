@@ -23,22 +23,22 @@
 
   <main class="admin-main">
     <div class="admin-cabecera-fila">
-      <h1 class="titulo-seccion" style="margin:0;">Pagos a trabajadores</h1>
+      <h1 class="titulo-seccion" style="margin:0;">Pagos a colaboradores</h1>
       <button type="button" id="btn-mostrar-form" class="btn btn-dorado">+ Nuevo pago</button>
     </div>
     <p style="color:var(--gris); font-size:0.85rem; margin-top:-6px;">
-      Pagos por servicios (diseños y demás) a las personas registradas en <a href="/admin/trabajadores.html">Trabajadores</a>.
+      Pagos por servicios (diseños y demás) a las personas registradas en <a href="/admin/colaboradores.html">Colaboradores</a>. También puedes registrarlos desde el perfil de cada colaborador.
     </p>
 
     <form id="form-pago" class="formulario-datos oculto" style="max-width:480px; margin-bottom:24px;">
-      <label for="pago-trabajador">Trabajador</label>
+      <label for="pago-trabajador">Colaborador</label>
       <select id="pago-trabajador" required></select>
 
       <label for="pago-concepto" style="margin-top:14px;">Concepto</label>
       <input type="text" id="pago-concepto" placeholder="Ej: Diseño anillo AN-15" required>
 
       <label for="pago-monto" style="margin-top:14px;">Monto</label>
-      <input type="number" id="pago-monto" min="0.01" step="100" required>
+      <input type="number" id="pago-monto" min="1" step="1" required>
 
       <label for="pago-fecha" style="margin-top:14px;">Fecha</label>
       <input type="date" id="pago-fecha" required>
@@ -65,7 +65,7 @@
         <thead>
           <tr>
             <th>Fecha</th>
-            <th>Trabajador</th>
+            <th>Colaborador</th>
             <th>Concepto</th>
             <th>Monto</th>
             <th>Método</th>
@@ -121,7 +121,7 @@ function renderizarTabla() {
 function renderizarSelectTrabajadores() {
   const select = document.getElementById("pago-trabajador");
   if (todosLosTrabajadores.length === 0) {
-    select.innerHTML = `<option value="">No hay trabajadores registrados</option>`;
+    select.innerHTML = `<option value="">No hay colaboradores registrados</option>`;
     return;
   }
   select.innerHTML = todosLosTrabajadores
@@ -153,7 +153,7 @@ async function cargarTodo() {
 function mostrarFormulario() {
   const form = document.getElementById("form-pago");
   if (todosLosTrabajadores.length === 0) {
-    alert("Primero registra al menos un trabajador en la sección Trabajadores.");
+    alert("Primero registra al menos un colaborador en la sección Colaboradores.");
     return;
   }
   form.classList.remove("oculto");

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comprobante de pago · Dinar 3D Wax</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    background: #f1ece1;
+    color: #14120f;
+    padding: 24px;
+  }
+  .barra-acciones {
+    max-width: 640px;
+    margin: 0 auto 16px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+  .barra-acciones button, .barra-acciones a {
+    background: #b8963e;
+    color: #14120f;
+    border: none;
+    border-radius: 999px;
+    padding: 10px 20px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .comprobante {
+    max-width: 640px;
+    margin: 0 auto;
+    background: #ffffff;
+    border: 1px solid #e5dfd2;
+    border-radius: 10px;
+    padding: 36px;
+  }
+  .cabecera-comprobante {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 2px solid #14120f;
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+  }
+  .cabecera-comprobante img { height: 48px; }
+  .cabecera-comprobante .titulo { text-align: right; }
+  .cabecera-comprobante .titulo h1 { margin: 0; font-size: 1.1rem; }
+  .cabecera-comprobante .titulo p { margin: 2px 0 0; color: #6b675f; font-size: 0.8rem; }
+  .fila-dato { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.9rem; border-bottom: 1px solid #f1ece1; }
+  .fila-dato span:first-child { color: #6b675f; }
+  .fila-dato span:last-child { font-weight: 600; text-align: right; }
+  .bloque { margin-bottom: 22px; }
+  .bloque h2 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #6b675f; margin: 0 0 8px; }
+  .monto-total {
+    background: #f1ece1;
+    border-radius: 8px;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+  }
+  .monto-total .valor { font-size: 1.6rem; font-weight: 800; }
+  .pie-firma { margin-top: 48px; padding-top: 16px; border-top: 1px dashed #6b675f; font-size: 0.8rem; color: #6b675f; text-align: center; }
+  #mensaje { max-width: 640px; margin: 40px auto; text-align: center; color: #6b675f; }
+  .barra-acciones button:disabled { opacity: 0.6; cursor: not-allowed; }
+  #btn-enviar-correo { background: #1a1a1a; color: #fff8f6; }
+  #mensaje-correo { max-width: 640px; margin: 0 auto 16px; text-align: right; font-size: 0.85rem; }
+  #mensaje-correo.error { color: #b23b3b; }
+  #mensaje-correo.ok { color: #0ca30c; }
+  @media print {
+    body { background: #fff; padding: 0; }
+    .barra-acciones, #mensaje-correo { display: none; }
+    .comprobante { border: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="barra-acciones">
+  <a href="#" id="link-volver">← Volver al perfil</a>
+  <button type="button" id="btn-enviar-correo">📧 Enviar por correo</button>
+  <button type="button" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+</div>
+<p id="mensaje-correo"></p>
+
+<div id="comprobante" class="comprobante" style="display:none;">
+  <div class="cabecera-comprobante">
+    <img src="/img/logo-dinar3dwax.png" alt="Dinar 3D Wax">
+    <div class="titulo">
+      <h1>Comprobante de pago</h1>
+      <p id="numero-comprobante"></p>
+      <p id="fecha-emision"></p>
+    </div>
+  </div>
+
+  <div class="bloque">
+    <h2>Pagado a</h2>
+    <div class="fila-dato"><span>Nombre</span><span id="dato-nombre"></span></div>
+    <div class="fila-dato"><span>Documento</span><span id="dato-documento"></span></div>
+    <div class="fila-dato"><span>Banco</span><span id="dato-banco"></span></div>
+  </div>
+
+  <div class="bloque">
+    <h2>Detalle del pago</h2>
+    <div class="fila-dato"><span>Concepto</span><span id="dato-concepto"></span></div>
+    <div class="fila-dato"><span>Fecha del pago</span><span id="dato-fecha"></span></div>
+    <div class="fila-dato"><span>Método</span><span id="dato-metodo"></span></div>
+    <div class="monto-total">
+      <span>Total pagado</span>
+      <span class="valor" id="dato-monto"></span>
+    </div>
+  </div>
+
+  <div class="pie-firma">
+    Comprobante generado por el panel de administración de Dinar 3D Wax · dinar3dwax.joyasdinar.com
+  </div>
+</div>
+
+<p id="mensaje"></p>
+
+<script src="/admin/js/admin.js"></script>
+<script>
+const idPago = new URLSearchParams(window.location.search).get("id");
+let pagoActual = null;
+
+function formatearFechaCorta(iso) {
+  return new Date(String(iso).slice(0, 10) + "T00:00:00").toLocaleDateString("es-CO", { dateStyle: "long" });
+}
+
+async function cargar() {
+  const mensaje = document.getElementById("mensaje");
+  if (!idPago) {
+    mensaje.textContent = "Falta indicar qué pago mostrar.";
+    return;
+  }
+  try {
+    const r = await fetch(`/api/admin/pagos?id=${idPago}`);
+    if (r.status === 401) {
+      window.location.href = "/admin/login.html";
+      return;
+    }
+    if (r.status === 404) {
+      mensaje.textContent = "Este pago no existe o fue eliminado.";
+      return;
+    }
+    const pago = await r.json();
+    if (!r.ok) throw new Error(pago.error || "No se pudo cargar");
+    pagoActual = pago;
+
+    const btnCorreo = document.getElementById("btn-enviar-correo");
+    if (!pago.trabajadorCorreo) {
+      btnCorreo.disabled = true;
+      btnCorreo.title = "Este colaborador no tiene correo registrado";
+    }
+
+    document.getElementById("link-volver").href = `/admin/colaborador.html?id=${pago.trabajadorId}`;
+    document.getElementById("numero-comprobante").textContent = `N.° CP-${String(pago.id).padStart(5, "0")}`;
+    document.getElementById("fecha-emision").textContent = `Emitido: ${formatearFechaCorta(new Date().toISOString())}`;
+    document.getElementById("dato-nombre").textContent = pago.trabajadorNombre || "—";
+    document.getElementById("dato-documento").textContent =
+      [pago.trabajadorTipoDocumento, pago.trabajadorDocumento].filter(Boolean).join(" ") || "—";
+    document.getElementById("dato-banco").textContent = pago.trabajadorBancoNombre
+      ? `${pago.trabajadorBancoNombre} · ${pago.trabajadorBancoTipoCuenta || ""} ${pago.trabajadorBancoNumeroCuenta || ""}`
+      : "—";
+    document.getElementById("dato-concepto").textContent = pago.concepto || "—";
+    document.getElementById("dato-fecha").textContent = formatearFechaCorta(pago.fecha);
+    document.getElementById("dato-metodo").textContent = pago.metodoPago || "—";
+    document.getElementById("dato-monto").textContent = formatearPrecioAdmin(pago.monto);
+
+    document.getElementById("comprobante").style.display = "";
+  } catch (err) {
+    mensaje.textContent = "No se pudo cargar el comprobante.";
+  }
+}
+
+document.getElementById("btn-enviar-correo").addEventListener("click", async () => {
+  const boton = document.getElementById("btn-enviar-correo");
+  const mensajeCorreo = document.getElementById("mensaje-correo");
+  if (!pagoActual) return;
+  if (!confirm(`¿Enviar este comprobante a ${pagoActual.trabajadorCorreo} desde dinar3dwax@gmail.com?`)) return;
+
+  boton.disabled = true;
+  mensajeCorreo.textContent = "Enviando...";
+  mensajeCorreo.className = "";
+  try {
+    const r = await fetch("/api/admin/enviar-comprobante", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pagoId: pagoActual.id }),
+    });
+    const resultado = await r.json();
+    if (!r.ok) throw new Error(resultado.error || "No se pudo enviar");
+    mensajeCorreo.textContent = `✓ Comprobante enviado a ${pagoActual.trabajadorCorreo}.`;
+    mensajeCorreo.className = "ok";
+  } catch (err) {
+    mensajeCorreo.textContent = err.message;
+    mensajeCorreo.className = "error";
+  } finally {
+    boton.disabled = !pagoActual.trabajadorCorreo ? true : false;
+  }
+});
+
+cargar();
+</script>
+</body>
+</html>

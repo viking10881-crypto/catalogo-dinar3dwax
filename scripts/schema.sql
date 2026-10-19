@@ -72,7 +72,10 @@ ALTER TABLE configuracion ADD COLUMN IF NOT EXISTS banco_documento TEXT NOT NULL
 ALTER TABLE configuracion ADD COLUMN IF NOT EXISTS banner_imagenes JSONB NOT NULL DEFAULT '[]';
 
 -- Personas que trabajan para el taller (diseñadores u otro rol), para poder
--- registrarles pagos por sus servicios.
+-- registrarles pagos por sus servicios. Se muestran como "Colaborador" en
+-- el admin (pedido del cliente) pero la tabla/columnas se quedan con el
+-- nombre original: renombrarlas es una migración de datos aparte que no
+-- aporta nada visible, solo riesgo.
 CREATE TABLE IF NOT EXISTS trabajadores (
   id SERIAL PRIMARY KEY,
   nombre TEXT NOT NULL,
@@ -83,6 +86,14 @@ CREATE TABLE IF NOT EXISTS trabajadores (
   activo BOOLEAN NOT NULL DEFAULT true,
   creado_en TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+ALTER TABLE trabajadores ADD COLUMN IF NOT EXISTS tipo_documento TEXT NOT NULL DEFAULT 'CC';
+ALTER TABLE trabajadores ADD COLUMN IF NOT EXISTS correo TEXT NOT NULL DEFAULT '';
+ALTER TABLE trabajadores ADD COLUMN IF NOT EXISTS direccion TEXT NOT NULL DEFAULT '';
+ALTER TABLE trabajadores ADD COLUMN IF NOT EXISTS foto_url TEXT NOT NULL DEFAULT '';
+ALTER TABLE trabajadores ADD COLUMN IF NOT EXISTS banco_nombre TEXT NOT NULL DEFAULT '';
+ALTER TABLE trabajadores ADD COLUMN IF NOT EXISTS banco_numero_cuenta TEXT NOT NULL DEFAULT '';
+ALTER TABLE trabajadores ADD COLUMN IF NOT EXISTS banco_tipo_cuenta TEXT NOT NULL DEFAULT 'Ahorros';
 
 -- Registro de compras/consumo de materiales (cera, oro, etc.).
 CREATE TABLE IF NOT EXISTS materiales (

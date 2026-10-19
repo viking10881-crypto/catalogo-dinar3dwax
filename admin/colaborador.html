@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perfil de colaborador · Panel Dinar 3D Wax</title>
+<link rel="stylesheet" href="/css/estilos.css">
+</head>
+<body>
+
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <a href="/admin/index.html" class="admin-sidebar-marca">
+      <img src="/img/logo-dinar3dwax.png" alt="Dinar 3D Wax" class="logo-img">
+      <span class="subtitulo">Panel de administración</span>
+    </a>
+    <nav id="admin-sidebar-nav" class="admin-sidebar-nav"></nav>
+    <div class="admin-sidebar-pie">
+      <a href="/index.html" target="_blank" rel="noopener">Ver catálogo ↗</a>
+      <button type="button" id="btn-cerrar-sesion">Salir</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <p style="margin-top:0;"><a href="/admin/colaboradores.html">← Volver a colaboradores</a></p>
+
+    <div id="encabezado-colaborador"></div>
+    <p id="mensaje-perfil" class="mensaje-admin"></p>
+
+    <div class="admin-cabecera-fila">
+      <h2 class="titulo-seccion" style="margin:0;">Historial de pagos</h2>
+      <button type="button" id="btn-mostrar-form-pago" class="btn btn-dorado">+ Registrar pago</button>
+    </div>
+
+    <form id="form-pago-perfil" class="formulario-datos oculto" style="max-width:480px; margin-bottom:24px;">
+      <label for="pago-concepto">Concepto</label>
+      <input type="text" id="pago-concepto" placeholder="Ej: Diseño anillo AN-15" required>
+
+      <label for="pago-monto" style="margin-top:14px;">Monto</label>
+      <input type="number" id="pago-monto" min="1" step="1" required>
+
+      <label for="pago-fecha" style="margin-top:14px;">Fecha</label>
+      <input type="date" id="pago-fecha" required>
+
+      <label for="pago-metodo" style="margin-top:14px;">Método de pago</label>
+      <select id="pago-metodo">
+        <option value="Transferencia">Transferencia</option>
+        <option value="Efectivo">Efectivo</option>
+        <option value="Otro">Otro</option>
+      </select>
+
+      <label for="pago-notas" style="margin-top:14px;">Notas</label>
+      <textarea id="pago-notas" rows="2" placeholder="Opcional"></textarea>
+
+      <div style="display:flex; gap:10px; margin-top:20px;">
+        <button type="submit" class="btn btn-dorado">Guardar</button>
+        <button type="button" id="btn-cancelar-form-pago" class="btn btn-borde">Cancelar</button>
+      </div>
+      <p id="mensaje-formulario-pago" class="mensaje-admin"></p>
+    </form>
+
+    <div style="overflow-x:auto;">
+      <table class="tabla-admin">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Concepto</th>
+            <th>Monto</th>
+            <th>Método</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="cuerpo-tabla-pagos-perfil"></tbody>
+      </table>
+    </div>
+    <p id="mensaje-tabla-pagos" class="mensaje-admin"></p>
+  </main>
+</div>
+
+<script src="/admin/js/admin.js"></script>
+<script src="/admin/js/layout.js"></script>
+<script>
+const idColaborador = new URLSearchParams(window.location.search).get("id");
+let colaboradorActual = null;
+
+function iniciales(nombre) {
+  return String(nombre || "?")
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase() || "")
+    .join("") || "?";
+}
+
+function formatearFechaCorta(iso) {
+  return new Date(String(iso).slice(0, 10) + "T00:00:00").toLocaleDateString("es-CO", { dateStyle: "medium" });
+}
+
+function renderizarEncabezado(c) {
+  document.title = `${c.nombre} · Panel Dinar 3D Wax`;
+  document.getElementById("encabezado-colaborador").innerHTML = `
+    <div class="encabezado-perfil-colaborador">
+      ${c.fotoUrl ? `<img src="${c.fotoUrl}" alt="${escaparHtml(c.nombre)}" class="foto-colaborador">` : `<div class="foto-colaborador">${iniciales(c.nombre)}</div>`}
+      <div class="datos-perfil-colaborador">
+        <h1>${escaparHtml(c.nombre)} ${c.activo ? "" : '<span style="color:var(--gris); font-size:0.9rem;">(Inactivo)</span>'}</h1>
+        <span class="badge-tipo">${escaparHtml(c.rol)}</span>
+        <div class="lista-datos-perfil">
+          <div><span>Documento:</span> ${escaparHtml(c.tipoDocumento)} ${escaparHtml(c.documento) || "—"}</div>
+          <div><span>Teléfono:</span> ${escaparHtml(c.telefono) || "—"}</div>
+          <div><span>Correo:</span> ${escaparHtml(c.correo) || "—"}</div>
+          <div><span>Dirección:</span> ${escaparHtml(c.direccion) || "—"}</div>
+          <div><span>Banco:</span> ${escaparHtml(c.bancoNombre) || "—"}</div>
+          <div><span>Cuenta:</span> ${escaparHtml(c.bancoTipoCuenta) || "—"} ${escaparHtml(c.bancoNumeroCuenta) || "—"}</div>
+        </div>
+        ${c.notas ? `<p style="margin:10px 0 0; color:var(--gris); font-size:0.85rem;">${escaparHtml(c.notas)}</p>` : ""}
+      </div>
+      <a href="/admin/colaboradores.html" class="btn btn-borde" style="align-self:flex-start;">Editar en Colaboradores</a>
+    </div>
+  `;
+}
+
+function filaPagoHTML(p) {
+  return `
+    <tr>
+      <td>${formatearFechaCorta(p.fecha)}</td>
+      <td>${escaparHtml(p.concepto)}</td>
+      <td>${formatearPrecioAdmin(p.monto)}</td>
+      <td>${escaparHtml(p.metodoPago)}</td>
+      <td>
+        <div class="acciones-fila">
+          <a href="/admin/comprobante-pago.html?id=${p.id}" target="_blank" rel="noopener">Comprobante</a>
+          <button type="button" class="eliminar" data-id="${p.id}">Eliminar</button>
+        </div>
+      </td>
+    </tr>
+  `;
+}
+
+async function cargarPerfil() {
+  const mensaje = document.getElementById("mensaje-perfil");
+  if (!idColaborador) {
+    mensaje.textContent = "Falta indicar qué colaborador mostrar.";
+    mensaje.className = "mensaje-admin error";
+    return;
+  }
+  try {
+    const r = await fetch(`/api/admin/trabajadores?id=${idColaborador}`);
+    if (r.status === 401) {
+      window.location.href = "/admin/login.html";
+      return;
+    }
+    if (r.status === 404) {
+      mensaje.textContent = "Este colaborador no existe o fue eliminado.";
+      mensaje.className = "mensaje-admin error";
+      return;
+    }
+    colaboradorActual = await r.json();
+    if (!r.ok) throw new Error(colaboradorActual.error || "No se pudo cargar");
+    renderizarEncabezado(colaboradorActual);
+  } catch (err) {
+    mensaje.textContent = "No se pudo cargar el perfil del colaborador.";
+    mensaje.className = "mensaje-admin error";
+  }
+}
+
+async function cargarPagos() {
+  const cuerpo = document.getElementById("cuerpo-tabla-pagos-perfil");
+  const mensaje = document.getElementById("mensaje-tabla-pagos");
+  try {
+    const r = await fetch(`/api/admin/pagos?trabajadorId=${idColaborador}`);
+    if (r.status === 401) {
+      window.location.href = "/admin/login.html";
+      return;
+    }
+    const pagos = await r.json();
+    if (!r.ok) throw new Error(pagos.error || "No se pudo cargar");
+    cuerpo.innerHTML = pagos.length
+      ? pagos.map(filaPagoHTML).join("")
+      : `<tr><td colspan="5" class="tabla-vacia">Todavía no hay pagos registrados para este colaborador.</td></tr>`;
+  } catch (err) {
+    mensaje.textContent = "No se pudo cargar el historial de pagos.";
+    mensaje.className = "mensaje-admin error";
+  }
+}
+
+function mostrarFormularioPago() {
+  const form = document.getElementById("form-pago-perfil");
+  form.classList.remove("oculto");
+  document.getElementById("mensaje-formulario-pago").textContent = "";
+  document.getElementById("pago-concepto").value = "";
+  document.getElementById("pago-monto").value = "";
+  document.getElementById("pago-fecha").value = new Date().toISOString().slice(0, 10);
+  document.getElementById("pago-metodo").value = "Transferencia";
+  document.getElementById("pago-notas").value = "";
+  form.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function ocultarFormularioPago() {
+  document.getElementById("form-pago-perfil").classList.add("oculto");
+}
+
+document.getElementById("btn-mostrar-form-pago").addEventListener("click", mostrarFormularioPago);
+document.getElementById("btn-cancelar-form-pago").addEventListener("click", ocultarFormularioPago);
+
+document.getElementById("form-pago-perfil").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const mensaje = document.getElementById("mensaje-formulario-pago");
+
+  const datos = {
+    trabajadorId: Number(idColaborador),
+    concepto: document.getElementById("pago-concepto").value.trim(),
+    monto: parseFloat(document.getElementById("pago-monto").value),
+    fecha: document.getElementById("pago-fecha").value,
+    metodoPago: document.getElementById("pago-metodo").value,
+    notas: document.getElementById("pago-notas").value.trim(),
+  };
+
+  try {
+    const r = await fetch("/api/admin/pagos", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(datos),
+    });
+    const resultado = await r.json();
+    if (!r.ok) throw new Error(resultado.error || "No se pudo guardar");
+
+    ocultarFormularioPago();
+    await cargarPagos();
+  } catch (err) {
+    mensaje.textContent = err.message;
+    mensaje.className = "mensaje-admin error";
+  }
+});
+
+document.getElementById("cuerpo-tabla-pagos-perfil").addEventListener("click", async (e) => {
+  const botonEliminar = e.target.closest("button.eliminar");
+  if (!botonEliminar) return;
+  const id = botonEliminar.getAttribute("data-id");
+  if (!confirm("¿Eliminar este pago?")) return;
+  try {
+    const r = await fetch(`/api/admin/pagos?id=${id}`, { method: "DELETE" });
+    if (!r.ok) throw new Error("fallo al eliminar");
+    cargarPagos();
+  } catch (err) {
+    alert("No se pudo eliminar el pago.");
+  }
+});
+
+renderAdminSidebar("colaboradores");
+cargarPerfil();
+cargarPagos();
+</script>
+</body>
+</html>
