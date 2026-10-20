@@ -2460,19 +2460,18 @@ body.pagina-catalogo .creditos-dev {
 }
 
 /* ===== Personalizados (personalizados.html): solicitud de diseño 3D =====
-   La sección principal es siempre oscura (como el .hero del sitio y la
-   referencia de diseño), así que usa sus propias variables --pers-* en vez
-   de --negro/--crema: esas cambian con el toggle claro/oscuro y aquí no
-   deben. Cabecera y pie siguen el tema normal. Todo va bajo
-   body.pagina-personalizados para no afectar ninguna otra página. */
+   Sigue el tema claro/oscuro del sitio como las demás páginas: las
+   variables --pers-* son solo alias de --crema/--blanco/--negro/etc., que
+   el toggle ya redefine. Todo va bajo body.pagina-personalizados para no
+   afectar ninguna otra página. */
 body.pagina-personalizados {
-  --pers-fondo: #0b0a09;
-  --pers-tarjeta: #151412;
-  --pers-campo: #0f0e0d;
-  --pers-borde: #2a2723;
-  --pers-texto: #f2ede3;
-  --pers-gris: #8e897f;
-  --pers-dorado: #c9a86a;
+  --pers-fondo: var(--crema);
+  --pers-tarjeta: var(--blanco);
+  --pers-campo: var(--crema);
+  --pers-borde: var(--borde);
+  --pers-texto: var(--negro);
+  --pers-gris: var(--gris);
+  --pers-dorado: var(--dorado);
   --pers-serif: "Cormorant Garamond", "Instrument Serif", Georgia, serif;
 }
 
@@ -2509,7 +2508,7 @@ body.pagina-personalizados .pers-titulo {
 body.pagina-personalizados .pers-intro {
   margin: 0 0 28px;
   max-width: 520px;
-  color: #b9b3a7;
+  color: var(--pers-gris);
   font-size: 0.98rem;
   line-height: 1.6;
 }
@@ -2549,7 +2548,7 @@ body.pagina-personalizados .pers-caracteristica span {
 }
 
 body.pagina-personalizados .pers-tiempo {
-  background: var(--pers-dorado);
+  background: #c9a86a;
   color: #14120f;
   border-radius: 16px;
   padding: 22px 24px;
@@ -2578,6 +2577,7 @@ body.pagina-personalizados .pers-tarjeta-form {
   border: 1px solid var(--pers-borde);
   border-radius: 24px;
   padding: 40px;
+  box-shadow: var(--sombra);
 }
 
 body.pagina-personalizados .pers-form-cabecera {
@@ -2597,7 +2597,7 @@ body.pagina-personalizados .pers-exito h2 {
 }
 body.pagina-personalizados .pers-badge {
   background: var(--pers-texto);
-  color: #14120f;
+  color: var(--pers-fondo);
   border-radius: 999px;
   padding: 6px 14px;
   font-size: 0.72rem;
@@ -2639,10 +2639,10 @@ body.pagina-personalizados .pers-campo textarea {
 }
 body.pagina-personalizados .pers-campo textarea { resize: vertical; min-height: 140px; }
 body.pagina-personalizados .pers-campo input::placeholder,
-body.pagina-personalizados .pers-campo textarea::placeholder { color: #6f6a61; }
+body.pagina-personalizados .pers-campo textarea::placeholder { color: var(--pers-gris); opacity: 0.75; }
 body.pagina-personalizados .pers-campo input:hover,
 body.pagina-personalizados .pers-campo select:hover,
-body.pagina-personalizados .pers-campo textarea:hover { border-color: #3d3932; }
+body.pagina-personalizados .pers-campo textarea:hover { border-color: var(--dorado-claro); }
 body.pagina-personalizados .pers-campo input:focus-visible,
 body.pagina-personalizados .pers-campo select:focus-visible,
 body.pagina-personalizados .pers-campo textarea:focus-visible { border-color: var(--pers-dorado); }
@@ -2664,7 +2664,7 @@ body.pagina-personalizados .pers-dropzone {
   transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 body.pagina-personalizados .pers-dropzone:hover,
-body.pagina-personalizados .pers-dropzone.arrastrando { border-color: var(--pers-dorado); background: #1a1916; }
+body.pagina-personalizados .pers-dropzone.arrastrando { border-color: var(--pers-dorado); background: var(--superficie); }
 body.pagina-personalizados .pers-dropzone.con-archivo { border-style: solid; color: var(--pers-texto); }
 body.pagina-personalizados .pers-dropzone:focus-within { box-shadow: var(--anillo-foco); }
 body.pagina-personalizados .pers-dropzone u {
@@ -2681,7 +2681,7 @@ body.pagina-personalizados .pers-dropzone-icono {
   height: 44px;
   border-radius: 10px;
   background: var(--pers-texto);
-  color: #14120f;
+  color: var(--pers-fondo);
 }
 body.pagina-personalizados .pers-dropzone-icono svg { width: 20px; height: 20px; }
 body.pagina-personalizados .pers-input-archivo {
@@ -2720,7 +2720,7 @@ body.pagina-personalizados .pers-mensaje {
   font-size: 0.88rem;
   color: var(--pers-gris);
 }
-body.pagina-personalizados .pers-mensaje.error { color: #e07a6e; }
+body.pagina-personalizados .pers-mensaje.error { color: #c4473a; }
 
 body.pagina-personalizados .pers-btn-enviar,
 body.pagina-personalizados .pers-btn-secundario {
@@ -2741,15 +2741,15 @@ body.pagina-personalizados .pers-btn-enviar {
   width: 100%;
   padding: 18px;
   background: var(--pers-texto);
-  color: #14120f;
+  color: var(--pers-fondo);
 }
 body.pagina-personalizados .pers-btn-enviar svg { width: 16px; height: 16px; }
-body.pagina-personalizados .pers-btn-enviar:hover { background: #ffffff; }
+body.pagina-personalizados .pers-btn-enviar:hover { opacity: 0.88; }
 body.pagina-personalizados .pers-btn-enviar:active { transform: scale(0.99); }
 body.pagina-personalizados .pers-btn-enviar:disabled { opacity: 0.6; cursor: wait; }
 
 body.pagina-personalizados .pers-exito p {
-  color: #b9b3a7;
+  color: var(--pers-gris);
   line-height: 1.6;
   margin: 14px 0 26px;
 }
@@ -2926,4 +2926,18 @@ tr.fila-solicitud:hover td { background: var(--superficie); }
 
 @media (max-width: 1000px) {
   .sol-grid { grid-template-columns: 1fr; }
+}
+.contador-sidebar {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  margin-left: 4px;
+  border-radius: 999px;
+  background: #d03b3b;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  vertical-align: middle;
 }

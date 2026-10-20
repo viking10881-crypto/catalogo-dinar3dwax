@@ -28,6 +28,8 @@ function renderAdminSidebar(seccionActiva) {
       }>${s.etiqueta}</a>`
   ).join("");
 
+  marcarSolicitudesNuevas(nav);
+
   nav.querySelectorAll("[data-acceso-dinamico]").forEach((enlace) => {
     enlace.addEventListener("click", async (e) => {
       e.preventDefault();
@@ -48,4 +50,24 @@ function renderAdminSidebar(seccionActiva) {
       }
     });
   });
+}
+
+/**
+ * Contador de solicitudes de diseño en estado "nueva" junto a su entrada del
+ * menú, para que se noten desde cualquier sección del panel. Si falla (sin
+ * sesión, sin red) simplemente no se muestra.
+ */
+async function marcarSolicitudesNuevas(nav) {
+  const enlace = nav.querySelector('a[href="/admin/solicitudes.html"]');
+  if (!enlace) return;
+  try {
+    const r = await fetch("/api/admin/solicitudes");
+    if (!r.ok) return;
+    const nuevas = (await r.json()).filter((s) => s.estado === "nueva").length;
+    if (nuevas > 0) {
+      enlace.insertAdjacentHTML("beforeend", ` <span class="contador-sidebar" title="Solicitudes nuevas">${nuevas}</span>`);
+    }
+  } catch (err) {
+    // No es crítico: el menú funciona igual sin el contador.
+  }
 }
