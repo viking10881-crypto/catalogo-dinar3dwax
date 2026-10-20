@@ -47,6 +47,13 @@ import {
   crearPago,
   eliminarPago,
 } from "../../lib/pagos.js";
+import {
+  listarSolicitudesDiseno,
+  obtenerSolicitudDiseno,
+  actualizarSolicitudDiseno,
+  eliminarSolicitudDiseno,
+  ESTADOS_SOLICITUD,
+} from "../../lib/solicitudesDiseno.js";
 
 /**
  * Router único para /api/admin/:seccion. Vercel Hobby limita a 12
@@ -807,6 +814,67 @@ async function manejarEnviarComprobante(req, res) {
   }
 }
 
+async function manejarSolicitudes(req, res) {
+  if (!requiereAdmin(req, res)) return;
+
+  const idQuery = req.query.id;
+
+  if (!idQuery) {
+    if (req.method === "GET") {
+      try {
+        res.status(200).json(await listarSolicitudesDiseno());
+      } catch (err) {
+        console.error("Error listando solicitudes de diseño:", err);
+        res.status(500).json({ error: "No se pudieron cargar las solicitudes" });
+      }
+      return;
+    }
+    res.status(405).json({ error: "Método no permitido" });
+    return;
+  }
+
+  const id = Number(idQuery);
+
+  try {
+    const existente = await obtenerSolicitudDiseno(id);
+    if (!existente) {
+      res.status(404).json({ error: "Solicitud no encontrada" });
+      return;
+    }
+
+    if (req.method === "PUT") {
+      const body = req.body || {};
+      const estado = body.estado ?? existente.estado;
+      if (!ESTADOS_SOLICITUD.includes(estado)) {
+        res.status(400).json({ error: "Estado inválido" });
+        return;
+      }
+      const notas = String(body.notas ?? existente.notas).slice(0, 4000);
+      await actualizarSolicitudDiseno(id, { estado, notas });
+      res.status(200).json({ ok: true });
+      return;
+    }
+
+    if (req.method === "DELETE") {
+      await eliminarSolicitudDiseno(id);
+      if (esUrlDeNuestroBlob(existente.archivoUrl)) {
+        try {
+          await del(existente.archivoUrl);
+        } catch (err) {
+          console.error("Solicitud eliminada pero no se pudo borrar su archivo de Blob:", err);
+        }
+      }
+      res.status(200).json({ ok: true });
+      return;
+    }
+
+    res.status(405).json({ error: "Método no permitido" });
+  } catch (err) {
+    console.error("Error gestionando solicitud de diseño:", err);
+    res.status(500).json({ error: "No se pudo completar la acción" });
+  }
+}
+
 export default async function handler(req, res) {
   const seccion = req.query.seccion;
 
@@ -837,6 +905,8 @@ export default async function handler(req, res) {
       return manejarEstadisticasTaller(req, res);
     case "enviar-comprobante":
       return manejarEnviarComprobante(req, res);
+    case "solicitudes":
+      return manejarSolicitudes(req, res);
     default:
       res.status(404).json({ error: "No encontrado" });
   }

@@ -2458,3 +2458,332 @@ body.pagina-catalogo .creditos-dev {
   body.pagina-catalogo .hero-catalogo p { margin-left: auto; margin-right: auto; }
   body.pagina-catalogo .buscador-hero { margin: 0 auto; }
 }
+
+/* ===== Personalizados (personalizados.html): solicitud de diseño 3D =====
+   La sección principal es siempre oscura (como el .hero del sitio y la
+   referencia de diseño), así que usa sus propias variables --pers-* en vez
+   de --negro/--crema: esas cambian con el toggle claro/oscuro y aquí no
+   deben. Cabecera y pie siguen el tema normal. Todo va bajo
+   body.pagina-personalizados para no afectar ninguna otra página. */
+body.pagina-personalizados {
+  --pers-fondo: #0b0a09;
+  --pers-tarjeta: #151412;
+  --pers-campo: #0f0e0d;
+  --pers-borde: #2a2723;
+  --pers-texto: #f2ede3;
+  --pers-gris: #8e897f;
+  --pers-dorado: #c9a86a;
+  --pers-serif: "Cormorant Garamond", "Instrument Serif", Georgia, serif;
+}
+
+body.pagina-personalizados .seccion-personalizados {
+  background: var(--pers-fondo);
+  color: var(--pers-texto);
+  padding: 56px 0 72px;
+}
+
+body.pagina-personalizados .personalizados-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: 56px;
+  align-items: start;
+}
+
+body.pagina-personalizados .pers-eyebrow {
+  margin: 0 0 14px;
+  color: var(--pers-dorado);
+  font-size: 0.78rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+body.pagina-personalizados .pers-titulo {
+  margin: 0 0 22px;
+  font-family: var(--pers-serif);
+  font-weight: 400;
+  font-size: clamp(2.6rem, 5vw, 4rem);
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+}
+
+body.pagina-personalizados .pers-intro {
+  margin: 0 0 28px;
+  max-width: 520px;
+  color: #b9b3a7;
+  font-size: 0.98rem;
+  line-height: 1.6;
+}
+
+body.pagina-personalizados .pers-caracteristicas {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+body.pagina-personalizados .pers-caracteristica {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px 22px;
+  background: var(--pers-tarjeta);
+  border: 1px solid var(--pers-borde);
+  border-radius: 14px;
+}
+body.pagina-personalizados .pers-caracteristica svg {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  color: var(--pers-dorado);
+}
+body.pagina-personalizados .pers-caracteristica strong {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+body.pagina-personalizados .pers-caracteristica span {
+  color: var(--pers-gris);
+  font-size: 0.85rem;
+}
+
+body.pagina-personalizados .pers-tiempo {
+  background: var(--pers-dorado);
+  color: #14120f;
+  border-radius: 16px;
+  padding: 22px 24px;
+}
+body.pagina-personalizados .pers-tiempo p { margin: 0; }
+body.pagina-personalizados .pers-tiempo-etiqueta {
+  font-size: 0.74rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+body.pagina-personalizados .pers-tiempo .pers-tiempo-titulo {
+  font-family: var(--pers-serif);
+  font-size: 1.6rem;
+  line-height: 1.2;
+  margin: 6px 0 4px;
+}
+body.pagina-personalizados .pers-tiempo-nota {
+  font-size: 0.85rem;
+  color: #3d352a;
+}
+
+/* ---- Tarjeta del formulario ---- */
+body.pagina-personalizados .pers-tarjeta-form {
+  background: var(--pers-tarjeta);
+  border: 1px solid var(--pers-borde);
+  border-radius: 24px;
+  padding: 40px;
+}
+
+body.pagina-personalizados .pers-form-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+body.pagina-personalizados .pers-form-cabecera h2,
+body.pagina-personalizados .pers-exito h2 {
+  margin: 0;
+  font-family: var(--pers-serif);
+  font-weight: 500;
+  font-size: 1.85rem;
+}
+body.pagina-personalizados .pers-badge {
+  background: var(--pers-texto);
+  color: #14120f;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+body.pagina-personalizados .pers-fila {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+body.pagina-personalizados .pers-campo { margin-bottom: 24px; }
+
+body.pagina-personalizados .pers-campo label:not(.pers-dropzone),
+body.pagina-personalizados .pers-etiqueta {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--pers-gris);
+  font-size: 0.74rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+body.pagina-personalizados .pers-campo input,
+body.pagina-personalizados .pers-campo select,
+body.pagina-personalizados .pers-campo textarea {
+  width: 100%;
+  background: var(--pers-campo);
+  color: var(--pers-texto);
+  border: 1px solid var(--pers-borde);
+  border-radius: 12px;
+  padding: 15px 18px;
+  font: inherit;
+  font-size: 1rem;
+  transition: border-color 0.15s ease;
+}
+body.pagina-personalizados .pers-campo textarea { resize: vertical; min-height: 140px; }
+body.pagina-personalizados .pers-campo input::placeholder,
+body.pagina-personalizados .pers-campo textarea::placeholder { color: #6f6a61; }
+body.pagina-personalizados .pers-campo input:hover,
+body.pagina-personalizados .pers-campo select:hover,
+body.pagina-personalizados .pers-campo textarea:hover { border-color: #3d3932; }
+body.pagina-personalizados .pers-campo input:focus-visible,
+body.pagina-personalizados .pers-campo select:focus-visible,
+body.pagina-personalizados .pers-campo textarea:focus-visible { border-color: var(--pers-dorado); }
+body.pagina-personalizados .pers-campo select option { background: var(--pers-tarjeta); color: var(--pers-texto); }
+
+/* ---- Zona para adjuntar ---- */
+body.pagina-personalizados .pers-dropzone {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  border: 1px dashed var(--pers-borde);
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 0.92rem;
+  color: var(--pers-gris);
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+body.pagina-personalizados .pers-dropzone:hover,
+body.pagina-personalizados .pers-dropzone.arrastrando { border-color: var(--pers-dorado); background: #1a1916; }
+body.pagina-personalizados .pers-dropzone.con-archivo { border-style: solid; color: var(--pers-texto); }
+body.pagina-personalizados .pers-dropzone:focus-within { box-shadow: var(--anillo-foco); }
+body.pagina-personalizados .pers-dropzone u {
+  color: var(--pers-texto);
+  text-decoration-color: var(--pers-gris);
+  text-underline-offset: 4px;
+}
+body.pagina-personalizados .pers-dropzone-texto { min-width: 0; overflow-wrap: anywhere; }
+body.pagina-personalizados .pers-dropzone-icono {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: var(--pers-texto);
+  color: #14120f;
+}
+body.pagina-personalizados .pers-dropzone-icono svg { width: 20px; height: 20px; }
+body.pagina-personalizados .pers-input-archivo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+body.pagina-personalizados .pers-quitar-archivo {
+  margin-top: 8px;
+  background: none;
+  border: none;
+  padding: 4px 0;
+  color: var(--pers-gris);
+  font: inherit;
+  font-size: 0.82rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+body.pagina-personalizados .pers-quitar-archivo:hover { color: var(--pers-texto); }
+
+body.pagina-personalizados .pers-trampa {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+body.pagina-personalizados .pers-mensaje {
+  min-height: 1.2em;
+  margin: 0 0 12px;
+  font-size: 0.88rem;
+  color: var(--pers-gris);
+}
+body.pagina-personalizados .pers-mensaje.error { color: #e07a6e; }
+
+body.pagina-personalizados .pers-btn-enviar,
+body.pagina-personalizados .pers-btn-secundario {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: none;
+  border-radius: 14px;
+  font: inherit;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+body.pagina-personalizados .pers-btn-enviar {
+  width: 100%;
+  padding: 18px;
+  background: var(--pers-texto);
+  color: #14120f;
+}
+body.pagina-personalizados .pers-btn-enviar svg { width: 16px; height: 16px; }
+body.pagina-personalizados .pers-btn-enviar:hover { background: #ffffff; }
+body.pagina-personalizados .pers-btn-enviar:active { transform: scale(0.99); }
+body.pagina-personalizados .pers-btn-enviar:disabled { opacity: 0.6; cursor: wait; }
+
+body.pagina-personalizados .pers-exito p {
+  color: #b9b3a7;
+  line-height: 1.6;
+  margin: 14px 0 26px;
+}
+body.pagina-personalizados .pers-btn-secundario {
+  padding: 14px 22px;
+  background: transparent;
+  color: var(--pers-texto);
+  border: 1px solid var(--pers-borde);
+  font-size: 0.82rem;
+}
+body.pagina-personalizados .pers-btn-secundario:hover { border-color: var(--pers-dorado); }
+
+@media (max-width: 900px) {
+  body.pagina-personalizados .personalizados-grid { grid-template-columns: 1fr; gap: 40px; }
+}
+@media (max-width: 600px) {
+  body.pagina-personalizados .seccion-personalizados { padding: 36px 0 48px; }
+  body.pagina-personalizados .pers-tarjeta-form { padding: 24px 18px; border-radius: 18px; }
+  body.pagina-personalizados .pers-fila { grid-template-columns: 1fr; gap: 0; }
+  body.pagina-personalizados .pers-caracteristica { padding: 16px 18px; }
+}
+
+/* ===== Admin: solicitudes de diseño ===== */
+.estado-solicitud {
+  font: inherit;
+  font-size: 0.82rem;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--borde);
+  background: var(--blanco);
+  color: var(--negro);
+}
+.estado-solicitud[data-estado="nueva"] { background: #fff6e0; color: #a67c00; border-color: #f0dca5; }
+.estado-solicitud[data-estado="en_proceso"] { background: #e8f0fb; color: #2f5f9e; border-color: #c4d6ef; }
+.estado-solicitud[data-estado="respondida"] { background: #e7f6ec; color: #2f9e52; border-color: #bfe3cb; }
+.estado-solicitud[data-estado="descartada"] { background: #f1efeb; color: #6b675f; }
+.descripcion-solicitud { max-width: 340px; white-space: pre-wrap; font-size: 0.85rem; }

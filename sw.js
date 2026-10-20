@@ -4,7 +4,7 @@
  * usuario (carrito, pedidos, config del admin). Solo cachea archivos
  * estáticos propios (css/js/imágenes/íconos) y la página offline.
  */
-const VERSION = "v2";
+const VERSION = "v3";
 const CACHE_ESTATICOS = `dinar3dwax-estaticos-${VERSION}`;
 const CACHE_PAGINAS = `dinar3dwax-offline-${VERSION}`;
 const MAX_ENTRADAS_ESTATICOS = 80;
@@ -23,6 +23,7 @@ const PRECARGA_ESTATICOS = [
   "/js/calculadora.js",
   "/js/checkout.js",
   "/js/confirmacion.js",
+  "/js/personalizados.js",
   "/img/logo-dinar3dwax.png",
   "/img/logo-splash.png",
   "/icons/icon-192.png",

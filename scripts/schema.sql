@@ -119,3 +119,21 @@ CREATE TABLE IF NOT EXISTS pagos_trabajadores (
   notas TEXT NOT NULL DEFAULT '',
   creado_en TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Solicitudes de diseño personalizado (página pública personalizados.html):
+-- el cliente describe la joya que quiere y opcionalmente adjunta una
+-- referencia (imagen/boceto/PDF, subida directo a Blob). Se gestionan desde
+-- /admin/solicitudes.html, y cada solicitud nueva también avisa por correo.
+CREATE TABLE IF NOT EXISTS solicitudes_diseno (
+  id SERIAL PRIMARY KEY,
+  nombre TEXT NOT NULL,
+  whatsapp TEXT NOT NULL,
+  tipo_joya TEXT NOT NULL DEFAULT '',
+  presupuesto TEXT NOT NULL DEFAULT '',
+  descripcion TEXT NOT NULL DEFAULT '',
+  archivo_url TEXT NOT NULL DEFAULT '',
+  archivo_nombre TEXT NOT NULL DEFAULT '',
+  estado TEXT NOT NULL DEFAULT 'nueva',
+  notas TEXT NOT NULL DEFAULT '',
+  creado_en TIMESTAMPTZ NOT NULL DEFAULT now()
+);

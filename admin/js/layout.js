@@ -7,6 +7,7 @@ const SECCIONES_ADMIN = [
   { id: "inicio", etiqueta: "🏠 Inicio", href: "/admin/index.html" },
   { id: "productos", etiqueta: "💍 Productos", href: "/admin/productos.html" },
   { id: "pedidos", etiqueta: "🧾 Pedidos", href: "/admin/pedidos.html" },
+  { id: "solicitudes", etiqueta: "✏️ Solicitudes de diseño", href: "/admin/solicitudes.html" },
   // "Taller" no es un link fijo: cada clic pide un acceso firmado de un
   // solo uso (ver api/admin/[seccion].js → acceso-taller) para entrar
   // directo a dinar-3dwax sin volver a escribir su contraseña.
