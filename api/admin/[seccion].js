@@ -52,7 +52,7 @@ import {
   obtenerSolicitudDiseno,
   actualizarSolicitudDiseno,
   eliminarSolicitudDiseno,
-  ESTADOS_SOLICITUD,
+  validarCambioSolicitud,
 } from "../../lib/solicitudesDiseno.js";
 
 /**
@@ -226,6 +226,17 @@ async function manejarUploadToken(req, res) {
         if (contexto === "stl") {
           if (!/\.stl$/i.test(pathname)) throw new Error("El archivo debe tener extensión .stl");
           return { maximumSizeInBytes: 200 * 1024 * 1024 };
+        }
+
+        // Archivos terminados de una solicitud de diseño (página
+        // admin/solicitud.html): STL/3DM no tienen un content-type fijo
+        // entre navegadores, así que se valida por extensión.
+        if (contexto === "entregable") {
+          if (!/^solicitudes-diseno\/entregables\//.test(pathname)) throw new Error("Ruta de destino inválida");
+          if (!/\.(stl|3dm|obj|jpe?g|png|webp|pdf|mp4|mov|zip)$/i.test(pathname)) {
+            throw new Error("Formato no permitido (usa STL, 3DM, OBJ, JPG, PNG, WEBP, PDF, MP4, MOV o ZIP)");
+          }
+          return { maximumSizeInBytes: 200 * 1024 * 1024, addRandomSuffix: true };
         }
 
         return {
@@ -835,6 +846,19 @@ async function manejarSolicitudes(req, res) {
 
   const id = Number(idQuery);
 
+  // Borra de Blob archivos que ya no usa ninguna solicitud. Si falla no se
+  // revierte el cambio en la base: solo queda un archivo huérfano.
+  async function borrarDeBlob(urls) {
+    for (const url of urls) {
+      if (!esUrlDeNuestroBlob(url)) continue;
+      try {
+        await del(url);
+      } catch (err) {
+        console.error("No se pudo borrar un archivo de solicitud de Blob:", url, err);
+      }
+    }
+  }
+
   try {
     const existente = await obtenerSolicitudDiseno(id);
     if (!existente) {
@@ -842,28 +866,27 @@ async function manejarSolicitudes(req, res) {
       return;
     }
 
+    if (req.method === "GET") {
+      res.status(200).json(existente);
+      return;
+    }
+
     if (req.method === "PUT") {
-      const body = req.body || {};
-      const estado = body.estado ?? existente.estado;
-      if (!ESTADOS_SOLICITUD.includes(estado)) {
-        res.status(400).json({ error: "Estado inválido" });
+      const { datos, errores } = validarCambioSolicitud(req.body || {}, existente);
+      if (errores.length > 0) {
+        res.status(400).json({ error: errores.join(". ") });
         return;
       }
-      const notas = String(body.notas ?? existente.notas).slice(0, 4000);
-      await actualizarSolicitudDiseno(id, { estado, notas });
-      res.status(200).json({ ok: true });
+      await actualizarSolicitudDiseno(id, datos);
+      const urlsNuevas = new Set(datos.entregables.map((e) => e.url));
+      await borrarDeBlob(existente.entregables.map((e) => e.url).filter((url) => !urlsNuevas.has(url)));
+      res.status(200).json(await obtenerSolicitudDiseno(id));
       return;
     }
 
     if (req.method === "DELETE") {
       await eliminarSolicitudDiseno(id);
-      if (esUrlDeNuestroBlob(existente.archivoUrl)) {
-        try {
-          await del(existente.archivoUrl);
-        } catch (err) {
-          console.error("Solicitud eliminada pero no se pudo borrar su archivo de Blob:", err);
-        }
-      }
+      await borrarDeBlob([existente.archivoUrl, ...existente.entregables.map((e) => e.url)]);
       res.status(200).json({ ok: true });
       return;
     }

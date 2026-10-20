@@ -137,3 +137,11 @@ CREATE TABLE IF NOT EXISTS solicitudes_diseno (
   notas TEXT NOT NULL DEFAULT '',
   creado_en TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Cotización y entrega de la solicitud (página de detalle del admin):
+-- precio y tiempo que se le cotizan al cliente, y los archivos terminados
+-- (STL, 3DM, renders, video) como lista JSON de { url, nombre }.
+ALTER TABLE solicitudes_diseno ADD COLUMN IF NOT EXISTS precio_cotizado NUMERIC(12, 2);
+ALTER TABLE solicitudes_diseno ADD COLUMN IF NOT EXISTS tiempo_entrega TEXT NOT NULL DEFAULT '';
+ALTER TABLE solicitudes_diseno ADD COLUMN IF NOT EXISTS entregables JSONB NOT NULL DEFAULT '[]';
+ALTER TABLE solicitudes_diseno ADD COLUMN IF NOT EXISTS actualizado_en TIMESTAMPTZ NOT NULL DEFAULT now();

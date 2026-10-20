@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solicitud de diseño · Panel Dinar 3D Wax</title>
+<link rel="stylesheet" href="/css/estilos.css">
+</head>
+<body>
+
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <a href="/admin/index.html" class="admin-sidebar-marca">
+      <img src="/img/logo-dinar3dwax.png" alt="Dinar 3D Wax" class="logo-img">
+      <span class="subtitulo">Panel de administración</span>
+    </a>
+    <nav id="admin-sidebar-nav" class="admin-sidebar-nav"></nav>
+    <div class="admin-sidebar-pie">
+      <a href="/index.html" target="_blank" rel="noopener">Ver catálogo ↗</a>
+      <button type="button" id="btn-cerrar-sesion">Salir</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <a href="/admin/solicitudes.html" class="sol-volver">← Solicitudes de diseño</a>
+    <p id="mensaje-carga" class="mensaje-admin">Cargando solicitud...</p>
+
+    <div id="sol-contenido" class="oculto">
+      <div class="admin-cabecera-fila">
+        <h1 class="titulo-seccion" style="margin:0;" id="sol-titulo"></h1>
+        <span class="estado-solicitud" id="sol-estado-badge"></span>
+      </div>
+      <p class="sol-subtitulo" id="sol-subtitulo"></p>
+
+      <!-- Pasos del flujo: clic en uno para mover la solicitud a ese estado. -->
+      <ol class="sol-pasos" id="sol-pasos" aria-label="Estado de la solicitud"></ol>
+      <div class="sol-acciones-estado">
+        <button type="button" id="btn-descartar" class="btn btn-borde">Descartar solicitud</button>
+        <span id="mensaje-estado" class="mensaje-admin"></span>
+      </div>
+
+      <div class="sol-grid">
+        <div class="sol-columna">
+          <section class="sol-tarjeta">
+            <h2>Cliente</h2>
+            <dl class="sol-datos">
+              <dt>Nombre</dt><dd id="sol-nombre"></dd>
+              <dt>WhatsApp</dt><dd id="sol-whatsapp"></dd>
+              <dt>Tipo de joya</dt><dd id="sol-tipo"></dd>
+              <dt>Presupuesto</dt><dd id="sol-presupuesto"></dd>
+            </dl>
+          </section>
+
+          <section class="sol-tarjeta">
+            <h2>Idea del cliente</h2>
+            <p class="sol-descripcion" id="sol-descripcion"></p>
+            <div id="sol-referencia"></div>
+          </section>
+
+          <section class="sol-tarjeta">
+            <h2>Entregables</h2>
+            <p class="sol-ayuda">Los archivos terminados para el cliente: STL, 3DM, renders, video 360°, PDF o ZIP (máx. 200 MB cada uno).</p>
+            <ul class="sol-entregables" id="sol-entregables"></ul>
+            <label class="btn btn-borde sol-btn-subir">
+              + Subir archivos
+              <input type="file" id="input-entregables" multiple accept=".stl,.3dm,.obj,.jpg,.jpeg,.png,.webp,.pdf,.mp4,.mov,.zip">
+            </label>
+            <p id="mensaje-entregables" class="mensaje-admin"></p>
+          </section>
+        </div>
+
+        <div class="sol-columna">
+          <form class="sol-tarjeta formulario-datos" id="form-cotizacion">
+            <h2>Cotización</h2>
+            <label for="cot-precio">Valor del diseño (COP)</label>
+            <input type="number" id="cot-precio" min="0" step="1000" placeholder="Ej: 120000">
+            <label for="cot-tiempo">Tiempo de entrega</label>
+            <input type="text" id="cot-tiempo" maxlength="80" placeholder="Ej: 24 horas">
+            <button type="submit" class="btn btn-dorado" style="margin-top:16px;">Guardar cotización</button>
+            <p id="mensaje-cotizacion" class="mensaje-admin"></p>
+          </form>
+
+          <section class="sol-tarjeta formulario-datos">
+            <h2>Mensaje al cliente</h2>
+            <div class="sol-plantillas" role="group" aria-label="Plantilla de mensaje">
+              <button type="button" data-plantilla="cotizacion">Cotización</button>
+              <button type="button" data-plantilla="entrega">Entrega</button>
+              <button type="button" data-plantilla="libre">Libre</button>
+            </div>
+            <label for="msg-texto">Mensaje (puedes editarlo antes de enviarlo)</label>
+            <textarea id="msg-texto" rows="9"></textarea>
+            <a id="btn-abrir-whatsapp" class="btn btn-whatsapp btn-full sol-btn-whatsapp" href="#" target="_blank" rel="noopener">Abrir en WhatsApp</a>
+            <p id="mensaje-whatsapp" class="mensaje-admin"></p>
+          </section>
+
+          <form class="sol-tarjeta formulario-datos" id="form-notas">
+            <h2>Notas internas</h2>
+            <label for="sol-notas">Solo las ve el equipo (diseñador asignado, acuerdos, cambios pedidos...)</label>
+            <textarea id="sol-notas" rows="4" maxlength="4000"></textarea>
+            <button type="submit" class="btn btn-borde" style="margin-top:12px;">Guardar notas</button>
+            <p id="mensaje-notas" class="mensaje-admin"></p>
+          </form>
+
+          <button type="button" id="btn-eliminar" class="sol-btn-eliminar">Eliminar solicitud y sus archivos</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/admin/js/admin.js"></script>
+<script src="/admin/js/layout.js"></script>
+<script>
+const idSolicitud = Number(new URLSearchParams(location.search).get("id"));
+const PASOS = ESTADOS_SOLICITUD.filter((e) => e.valor !== "descartada");
+let solicitud = null;
+let plantillaActual = "cotizacion";
+
+function primerNombre(nombre) {
+  return String(nombre || "").trim().split(/\s+/)[0] || "";
+}
+
+function esImagen(url) {
+  return /\.(jpe?g|png|webp)(\?|$)/i.test(url);
+}
+
+async function guardar(cambios) {
+  const r = await fetch(`/api/admin/solicitudes?id=${idSolicitud}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(cambios),
+  });
+  if (r.status === 401) {
+    window.location.href = "/admin/login.html";
+    throw new Error("Sesión vencida");
+  }
+  const datos = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(datos.error || "No se pudo guardar");
+  solicitud = datos;
+  return datos;
+}
+
+function mostrar(idMensaje, texto, tipo) {
+  const el = document.getElementById(idMensaje);
+  el.textContent = texto;
+  el.className = "mensaje-admin" + (tipo ? " " + tipo : "");
+}
+
+// ---- Render ----
+
+function renderEstado() {
+  const badge = document.getElementById("sol-estado-badge");
+  badge.textContent = etiquetaEstadoSolicitud(solicitud.estado);
+  badge.setAttribute("data-estado", solicitud.estado);
+
+  const descartada = solicitud.estado === "descartada";
+  const indiceActual = PASOS.findIndex((p) => p.valor === solicitud.estado);
+  document.getElementById("sol-pasos").innerHTML = PASOS.map((p, i) => {
+    const clase = descartada ? "" : i < indiceActual ? "hecho" : i === indiceActual ? "actual" : "";
+    return `<li class="${clase}"><button type="button" data-estado="${p.valor}"${
+      i === indiceActual ? ' aria-current="step"' : ""
+    }><span class="sol-paso-num">${i + 1}</span>${p.etiqueta}</button></li>`;
+  }).join("");
+  document.getElementById("sol-pasos").classList.toggle("descartada", descartada);
+  document.getElementById("btn-descartar").textContent = descartada ? "Reabrir solicitud" : "Descartar solicitud";
+}
+
+function renderEntregables() {
+  const lista = document.getElementById("sol-entregables");
+  if (solicitud.entregables.length === 0) {
+    lista.innerHTML = `<li class="sol-vacio">Todavía no hay archivos entregados.</li>`;
+    return;
+  }
+  lista.innerHTML = solicitud.entregables
+    .map(
+      (e, i) => `
+      <li>
+        <a href="${escaparHtml(e.url)}" target="_blank" rel="noopener">${escaparHtml(e.nombre || "Archivo")} ↗</a>
+        <button type="button" class="sol-quitar" data-indice="${i}">Quitar</button>
+      </li>`
+    )
+    .join("");
+}
+
+function renderTodo() {
+  const s = solicitud;
+  document.title = `Solicitud #${s.id} · Panel Dinar 3D Wax`;
+  document.getElementById("sol-titulo").textContent = `Solicitud #${s.id}`;
+  document.getElementById("sol-subtitulo").textContent = `Recibida el ${new Date(s.creadoEn).toLocaleString("es-CO", {
+    dateStyle: "long",
+    timeStyle: "short",
+    timeZone: "America/Bogota",
+  })}`;
+
+  document.getElementById("sol-nombre").textContent = s.nombre;
+  document.getElementById("sol-whatsapp").innerHTML = `<a href="https://wa.me/${numeroWhatsapp(s.whatsapp)}" target="_blank" rel="noopener">${escaparHtml(s.whatsapp)} ↗</a>`;
+  document.getElementById("sol-tipo").textContent = s.tipoJoya;
+  document.getElementById("sol-presupuesto").textContent = s.presupuesto;
+  document.getElementById("sol-descripcion").textContent = s.descripcion;
+
+  const ref = document.getElementById("sol-referencia");
+  if (!s.archivoUrl) {
+    ref.innerHTML = `<p class="sol-vacio">El cliente no adjuntó referencia.</p>`;
+  } else if (esImagen(s.archivoUrl)) {
+    ref.innerHTML = `
+      <a href="${escaparHtml(s.archivoUrl)}" target="_blank" rel="noopener" class="sol-referencia-img">
+        <img src="${escaparHtml(s.archivoUrl)}" alt="Referencia enviada por el cliente">
+      </a>
+      <p class="sol-ayuda">${escaparHtml(s.archivoNombre)} · clic para ver en grande</p>`;
+  } else {
+    ref.innerHTML = `<a href="${escaparHtml(s.archivoUrl)}" target="_blank" rel="noopener" class="btn btn-borde">Abrir ${escaparHtml(s.archivoNombre || "archivo")} ↗</a>`;
+  }
+
+  document.getElementById("cot-precio").value = s.precioCotizado ?? "";
+  document.getElementById("cot-tiempo").value = s.tiempoEntrega;
+  document.getElementById("sol-notas").value = s.notas;
+
+  renderEstado();
+  renderEntregables();
+  aplicarPlantilla(plantillaActual);
+}
+
+// ---- Mensajes de WhatsApp ----
+
+function textoPlantilla(tipo) {
+  const s = solicitud;
+  const saludo = `Hola ${primerNombre(s.nombre)}, te saludamos de Dinar 3D Wax.`;
+  if (tipo === "cotizacion") {
+    const precio = s.precioCotizado != null ? formatearPrecioAdmin(s.precioCotizado) : "[guarda el valor en Cotización]";
+    const tiempo = s.tiempoEntrega || "[guarda el tiempo en Cotización]";
+    return `${saludo} Revisamos tu idea de ${s.tipoJoya.toLowerCase()} y esta es la cotización del diseño 3D:
+
+• Valor: ${precio}
+• Entrega del primer boceto: ${tiempo}
+
+Incluye revisiones hasta aprobar medidas. ¿Te parece bien para empezar?`;
+  }
+  if (tipo === "entrega") {
+    const archivos = s.entregables.length
+      ? s.entregables.map((e) => `• ${e.nombre}: ${e.url}`).join("\n")
+      : "[sube los archivos en Entregables]";
+    return `${saludo} ¡Tu diseño está listo! Aquí puedes descargar los archivos:
+
+${archivos}
+
+Si quieres algún ajuste, nos cuentas por aquí.`;
+  }
+  return `${saludo} `;
+}
+
+function actualizarLinkWhatsapp() {
+  const texto = document.getElementById("msg-texto").value;
+  document.getElementById("btn-abrir-whatsapp").href = `https://wa.me/${numeroWhatsapp(solicitud.whatsapp)}?text=${encodeURIComponent(texto)}`;
+}
+
+function aplicarPlantilla(tipo) {
+  plantillaActual = tipo;
+  document.querySelectorAll(".sol-plantillas button").forEach((b) => {
+    b.classList.toggle("activa", b.getAttribute("data-plantilla") === tipo);
+  });
+  document.getElementById("msg-texto").value = textoPlantilla(tipo);
+  actualizarLinkWhatsapp();
+}
+
+document.querySelector(".sol-plantillas").addEventListener("click", (e) => {
+  const boton = e.target.closest("button[data-plantilla]");
+  if (boton) aplicarPlantilla(boton.getAttribute("data-plantilla"));
+});
+document.getElementById("msg-texto").addEventListener("input", actualizarLinkWhatsapp);
+
+// Al mandar la cotización o la entrega, la solicitud avanza sola al estado
+// que corresponde (sin retroceder si ya iba más adelante).
+document.getElementById("btn-abrir-whatsapp").addEventListener("click", async () => {
+  const destino = { cotizacion: "cotizada", entrega: "entregada" }[plantillaActual];
+  if (!destino) return;
+  const orden = PASOS.map((p) => p.valor);
+  if (solicitud.estado === "descartada" || orden.indexOf(solicitud.estado) >= orden.indexOf(destino)) return;
+  try {
+    await guardar({ estado: destino });
+    renderEstado();
+    mostrar("mensaje-whatsapp", `Estado cambiado a "${etiquetaEstadoSolicitud(destino)}".`, "ok");
+  } catch (err) {
+    mostrar("mensaje-whatsapp", err.message, "error");
+  }
+});
+
+// ---- Estado ----
+
+document.getElementById("sol-pasos").addEventListener("click", async (e) => {
+  const boton = e.target.closest("button[data-estado]");
+  if (!boton || boton.getAttribute("data-estado") === solicitud.estado) return;
+  try {
+    await guardar({ estado: boton.getAttribute("data-estado") });
+    renderEstado();
+    mostrar("mensaje-estado", "");
+  } catch (err) {
+    mostrar("mensaje-estado", err.message, "error");
+  }
+});
+
+document.getElementById("btn-descartar").addEventListener("click", async () => {
+  const reabrir = solicitud.estado === "descartada";
+  if (!reabrir && !confirm("¿Descartar esta solicitud? Puedes reabrirla después.")) return;
+  try {
+    await guardar({ estado: reabrir ? "nueva" : "descartada" });
+    renderEstado();
+  } catch (err) {
+    mostrar("mensaje-estado", err.message, "error");
+  }
+});
+
+// ---- Cotización y notas ----
+
+document.getElementById("form-cotizacion").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  try {
+    await guardar({
+      precioCotizado: document.getElementById("cot-precio").value,
+      tiempoEntrega: document.getElementById("cot-tiempo").value,
+    });
+    if (plantillaActual === "cotizacion") aplicarPlantilla("cotizacion");
+    mostrar("mensaje-cotizacion", "Cotización guardada.", "ok");
+  } catch (err) {
+    mostrar("mensaje-cotizacion", err.message, "error");
+  }
+});
+
+document.getElementById("form-notas").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  try {
+    await guardar({ notas: document.getElementById("sol-notas").value });
+    mostrar("mensaje-notas", "Notas guardadas.", "ok");
+  } catch (err) {
+    mostrar("mensaje-notas", err.message, "error");
+  }
+});
+
+// ---- Entregables ----
+
+async function subirEntregable(archivo, alProgreso) {
+  const { upload } = await import("https://esm.sh/@vercel/blob@2.8.0/client");
+  const nombreLimpio = archivo.name
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-zA-Z0-9._-]+/g, "-")
+    .slice(-80);
+  const blob = await upload(`solicitudes-diseno/entregables/${idSolicitud}/${nombreLimpio}`, archivo, {
+    access: "public",
+    handleUploadUrl: "/api/admin/upload-token",
+    clientPayload: JSON.stringify({ contexto: "entregable" }),
+    multipart: archivo.size > 20 * 1024 * 1024,
+    onUploadProgress: (p) => alProgreso(Math.round(p.percentage)),
+  });
+  return blob.url;
+}
+
+document.getElementById("input-entregables").addEventListener("change", async (e) => {
+  const archivos = [...e.target.files];
+  e.target.value = "";
+  for (const [i, archivo] of archivos.entries()) {
+    const prefijo = archivos.length > 1 ? `(${i + 1}/${archivos.length}) ` : "";
+    try {
+      const url = await subirEntregable(archivo, (pct) => mostrar("mensaje-entregables", `${prefijo}Subiendo ${archivo.name}... ${pct}%`));
+      await guardar({ entregables: [...solicitud.entregables, { url, nombre: archivo.name }] });
+      renderEntregables();
+      if (plantillaActual === "entrega") aplicarPlantilla("entrega");
+    } catch (err) {
+      mostrar("mensaje-entregables", `No se pudo subir ${archivo.name}: ${err.message}`, "error");
+      return;
+    }
+  }
+  mostrar("mensaje-entregables", archivos.length > 1 ? "Archivos subidos." : "Archivo subido.", "ok");
+});
+
+document.getElementById("sol-entregables").addEventListener("click", async (e) => {
+  const boton = e.target.closest("button.sol-quitar");
+  if (!boton) return;
+  const indice = Number(boton.getAttribute("data-indice"));
+  const archivo = solicitud.entregables[indice];
+  if (!confirm(`¿Quitar "${archivo.nombre}"? El archivo se borra y el link deja de funcionar.`)) return;
+  try {
+    await guardar({ entregables: solicitud.entregables.filter((_, i) => i !== indice) });
+    renderEntregables();
+    if (plantillaActual === "entrega") aplicarPlantilla("entrega");
+    mostrar("mensaje-entregables", "Archivo quitado.", "ok");
+  } catch (err) {
+    mostrar("mensaje-entregables", err.message, "error");
+  }
+});
+
+// ---- Eliminar ----
+
+document.getElementById("btn-eliminar").addEventListener("click", async () => {
+  if (!confirm("¿Eliminar esta solicitud con su referencia y entregables? No se puede deshacer.")) return;
+  try {
+    const r = await fetch(`/api/admin/solicitudes?id=${idSolicitud}`, { method: "DELETE" });
+    if (!r.ok) throw new Error();
+    window.location.href = "/admin/solicitudes.html";
+  } catch (err) {
+    alert("No se pudo eliminar la solicitud.");
+  }
+});
+
+// ---- Carga ----
+
+async function cargar() {
+  const mensaje = document.getElementById("mensaje-carga");
+  if (!idSolicitud) {
+    mensaje.textContent = "Falta el número de la solicitud.";
+    mensaje.className = "mensaje-admin error";
+    return;
+  }
+  try {
+    const r = await fetch(`/api/admin/solicitudes?id=${idSolicitud}`);
+    if (r.status === 401) {
+      window.location.href = "/admin/login.html";
+      return;
+    }
+    if (r.status === 404) throw new Error("Esta solicitud no existe (puede que la hayan eliminado).");
+    if (!r.ok) throw new Error("No se pudo cargar la solicitud.");
+    solicitud = await r.json();
+    mensaje.classList.add("oculto");
+    document.getElementById("sol-contenido").classList.remove("oculto");
+    renderTodo();
+  } catch (err) {
+    mensaje.textContent = err.message;
+    mensaje.className = "mensaje-admin error";
+  }
+}
+
+renderAdminSidebar("solicitudes");
+cargar();
+</script>
+</body>
+</html>

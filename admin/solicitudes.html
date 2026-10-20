@@ -26,10 +26,6 @@
       <h1 class="titulo-seccion" style="margin:0;">Solicitudes de diseño</h1>
       <select id="filtro-estado" class="estado-solicitud" aria-label="Filtrar por estado">
         <option value="">Todas</option>
-        <option value="nueva">Nuevas</option>
-        <option value="en_proceso">En proceso</option>
-        <option value="respondida">Respondidas</option>
-        <option value="descartada">Descartadas</option>
       </select>
     </div>
     <p style="color:var(--gris); font-size:0.85rem; margin-top:-6px;">
@@ -59,13 +55,6 @@
 <script src="/admin/js/admin.js"></script>
 <script src="/admin/js/layout.js"></script>
 <script>
-const ESTADOS_SOLICITUD = [
-  { valor: "nueva", etiqueta: "Nueva" },
-  { valor: "en_proceso", etiqueta: "En proceso" },
-  { valor: "respondida", etiqueta: "Respondida" },
-  { valor: "descartada", etiqueta: "Descartada" },
-];
-
 let todasLasSolicitudes = [];
 
 function formatearFechaHora(iso) {
@@ -73,17 +62,14 @@ function formatearFechaHora(iso) {
 }
 
 function linkWhatsapp(s) {
-  const digitos = s.whatsapp.replace(/\D/g, "");
+  const digitos = numeroWhatsapp(s.whatsapp);
   const texto = `Hola ${s.nombre}, te escribimos de Dinar 3D Wax por tu solicitud de diseño (${s.tipoJoya}).`;
   return `https://wa.me/${digitos}?text=${encodeURIComponent(texto)}`;
 }
 
 function filaSolicitudHTML(s) {
-  const opciones = ESTADOS_SOLICITUD.map(
-    (e) => `<option value="${e.valor}"${e.valor === s.estado ? " selected" : ""}>${e.etiqueta}</option>`
-  ).join("");
   return `
-    <tr>
+    <tr class="fila-solicitud" data-id="${s.id}">
       <td>${formatearFechaHora(s.creadoEn)}</td>
       <td>
         <strong>${escaparHtml(s.nombre)}</strong><br>
@@ -96,10 +82,12 @@ function filaSolicitudHTML(s) {
           ? `<a href="${escaparHtml(s.archivoUrl)}" target="_blank" rel="noopener" style="color:var(--dorado);">${escaparHtml(s.archivoNombre || "Ver archivo")} ↗</a>`
           : "—"
       }</td>
-      <td><select class="estado-solicitud" data-id="${s.id}" data-estado="${s.estado}" aria-label="Estado">${opciones}</select></td>
+      <td><span class="estado-solicitud" data-estado="${s.estado}">${etiquetaEstadoSolicitud(s.estado)}</span>${
+        s.precioCotizado != null ? `<br><span style="color:var(--gris); font-size:0.82rem;">${formatearPrecioAdmin(s.precioCotizado)}</span>` : ""
+      }</td>
       <td>
         <div class="acciones-fila">
-          <button type="button" class="eliminar" data-id="${s.id}">Eliminar</button>
+          <a href="/admin/solicitud.html?id=${s.id}" class="btn-ver-pedido">Abrir</a>
         </div>
       </td>
     </tr>
@@ -137,41 +125,18 @@ async function cargarTabla() {
   }
 }
 
-document.getElementById("filtro-estado").addEventListener("change", renderizarTabla);
+const filtroEstado = document.getElementById("filtro-estado");
+filtroEstado.insertAdjacentHTML(
+  "beforeend",
+  ESTADOS_SOLICITUD.map((e) => `<option value="${e.valor}">${e.etiqueta}</option>`).join("")
+);
+filtroEstado.addEventListener("change", renderizarTabla);
 
-document.getElementById("cuerpo-tabla-solicitudes").addEventListener("change", async (e) => {
-  const select = e.target.closest("select.estado-solicitud");
-  if (!select) return;
-  const id = Number(select.getAttribute("data-id"));
-  const anterior = select.getAttribute("data-estado");
-  try {
-    const r = await fetch(`/api/admin/solicitudes?id=${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ estado: select.value }),
-    });
-    if (!r.ok) throw new Error();
-    const solicitud = todasLasSolicitudes.find((s) => s.id === id);
-    if (solicitud) solicitud.estado = select.value;
-    select.setAttribute("data-estado", select.value);
-  } catch (err) {
-    select.value = anterior;
-    alert("No se pudo cambiar el estado.");
-  }
-});
-
-document.getElementById("cuerpo-tabla-solicitudes").addEventListener("click", async (e) => {
-  const botonEliminar = e.target.closest("button.eliminar");
-  if (!botonEliminar) return;
-  const id = botonEliminar.getAttribute("data-id");
-  if (!confirm("¿Eliminar esta solicitud y su archivo adjunto?")) return;
-  try {
-    const r = await fetch(`/api/admin/solicitudes?id=${id}`, { method: "DELETE" });
-    if (!r.ok) throw new Error();
-    cargarTabla();
-  } catch (err) {
-    alert("No se pudo eliminar la solicitud.");
-  }
+// Toda la fila abre el detalle, salvo los links propios (WhatsApp, archivo).
+document.getElementById("cuerpo-tabla-solicitudes").addEventListener("click", (e) => {
+  const fila = e.target.closest("tr.fila-solicitud");
+  if (!fila || e.target.closest("a")) return;
+  window.location.href = `/admin/solicitud.html?id=${fila.getAttribute("data-id")}`;
 });
 
 renderAdminSidebar("solicitudes");

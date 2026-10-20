@@ -9,7 +9,7 @@
   },
   "scripts": {
     "start": "vercel dev",
-    "db:migrate": "node scripts/migrar-db.js",
+    "db:migrate": "node --env-file-if-exists=.env.local scripts/migrar-db.js",
     "icons:generate": "node scripts/generate-icons.mjs"
   },
   "dependencies": {

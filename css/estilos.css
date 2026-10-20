@@ -2783,7 +2783,147 @@ body.pagina-personalizados .pers-btn-secundario:hover { border-color: var(--pers
   color: var(--negro);
 }
 .estado-solicitud[data-estado="nueva"] { background: #fff6e0; color: #a67c00; border-color: #f0dca5; }
-.estado-solicitud[data-estado="en_proceso"] { background: #e8f0fb; color: #2f5f9e; border-color: #c4d6ef; }
-.estado-solicitud[data-estado="respondida"] { background: #e7f6ec; color: #2f9e52; border-color: #bfe3cb; }
+.estado-solicitud[data-estado="cotizada"] { background: #e8f0fb; color: #2f5f9e; border-color: #c4d6ef; }
+.estado-solicitud[data-estado="aprobada"] { background: #efe9fb; color: #6741b0; border-color: #d6cbf0; }
+.estado-solicitud[data-estado="en_diseno"] { background: #fdeee2; color: #b4571a; border-color: #f3d2b8; }
+.estado-solicitud[data-estado="entregada"] { background: #e7f6ec; color: #2f9e52; border-color: #bfe3cb; }
 .estado-solicitud[data-estado="descartada"] { background: #f1efeb; color: #6b675f; }
 .descripcion-solicitud { max-width: 340px; white-space: pre-wrap; font-size: 0.85rem; }
+tr.fila-solicitud { cursor: pointer; }
+tr.fila-solicitud:hover td { background: var(--superficie); }
+
+/* ---- Detalle de una solicitud (admin/solicitud.html) ---- */
+.sol-volver { display: inline-block; margin-bottom: 14px; color: var(--gris); font-size: 0.88rem; }
+.sol-volver:hover { color: var(--dorado); }
+.sol-subtitulo { color: var(--gris); font-size: 0.85rem; margin: -6px 0 20px; }
+
+.sol-pasos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+}
+.sol-pasos button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px 8px 8px;
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+  background: var(--blanco);
+  color: var(--gris);
+  font: inherit;
+  font-size: 0.86rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.sol-pasos button:hover { border-color: var(--dorado); color: var(--negro); }
+.sol-paso-num {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--superficie);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.sol-pasos li.hecho button { color: var(--negro); }
+.sol-pasos li.hecho .sol-paso-num { background: var(--dorado-claro); color: var(--texto-sobre-dorado); }
+.sol-pasos li.actual button { border-color: var(--dorado); color: var(--negro); font-weight: 600; }
+.sol-pasos li.actual .sol-paso-num { background: var(--dorado); color: var(--texto-sobre-dorado); }
+.sol-pasos.descartada { opacity: 0.5; }
+
+.sol-acciones-estado { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
+
+.sol-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+.sol-columna { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.sol-tarjeta {
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-lg);
+  padding: 20px 22px;
+}
+.sol-tarjeta h2 { margin: 0 0 14px; font-size: 1rem; }
+.sol-tarjeta.formulario-datos label:first-of-type { margin-top: 0; }
+
+.sol-datos {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 18px;
+  margin: 0;
+  font-size: 0.9rem;
+}
+.sol-datos dt { color: var(--gris); }
+.sol-datos dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+.sol-datos a, .sol-entregables a { color: var(--dorado); }
+
+.sol-descripcion { margin: 0 0 16px; white-space: pre-wrap; line-height: 1.6; font-size: 0.92rem; }
+.sol-referencia-img img {
+  max-height: 340px;
+  width: auto;
+  border-radius: var(--radio);
+  border: 1px solid var(--borde);
+}
+.sol-ayuda, .sol-vacio { color: var(--gris); font-size: 0.82rem; margin: 8px 0 0; }
+.sol-tarjeta > .sol-ayuda:first-of-type { margin: -6px 0 12px; }
+
+.sol-entregables { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.sol-entregables li:not(.sol-vacio) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-sm);
+  font-size: 0.88rem;
+}
+.sol-entregables li a { overflow-wrap: anywhere; }
+.sol-quitar, .sol-btn-eliminar {
+  background: none;
+  border: none;
+  color: #b23b3b;
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+  padding: 4px;
+}
+.sol-quitar:hover, .sol-btn-eliminar:hover { text-decoration: underline; }
+.sol-btn-eliminar { align-self: flex-start; }
+
+.sol-btn-subir { position: relative; overflow: hidden; cursor: pointer; }
+.sol-btn-subir input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+.sol-btn-subir:focus-within { box-shadow: var(--anillo-foco); }
+
+.sol-plantillas { display: flex; gap: 6px; margin-bottom: 4px; flex-wrap: wrap; }
+.sol-plantillas button {
+  padding: 6px 14px;
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+  background: var(--blanco);
+  color: var(--gris);
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+.sol-plantillas button.activa { background: var(--negro); border-color: var(--negro); color: var(--crema); }
+.sol-btn-whatsapp { margin-top: 12px; text-align: center; }
+
+@media (max-width: 1000px) {
+  .sol-grid { grid-template-columns: 1fr; }
+}

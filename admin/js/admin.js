@@ -9,6 +9,31 @@ const TIPOS_PRODUCTO = [
   { valor: "pulseras", etiqueta: "Pulseras" },
 ];
 
+// Estados de una solicitud de diseño (personalizados.html), en el orden
+// del flujo. "descartada" va aparte: no es un paso, se sale del flujo.
+const ESTADOS_SOLICITUD = [
+  { valor: "nueva", etiqueta: "Nueva" },
+  { valor: "cotizada", etiqueta: "Cotizada" },
+  { valor: "aprobada", etiqueta: "Aprobada" },
+  { valor: "en_diseno", etiqueta: "En diseño" },
+  { valor: "entregada", etiqueta: "Entregada" },
+  { valor: "descartada", etiqueta: "Descartada" },
+];
+
+/**
+ * Número para links wa.me (solo dígitos, con indicativo). Los clientes
+ * suelen escribir el celular colombiano sin el 57 (ej. "3001234567"), y sin
+ * indicativo wa.me abre otro número: en ese caso se le antepone el 57.
+ */
+function numeroWhatsapp(texto) {
+  const digitos = String(texto || "").replace(/\D/g, "");
+  return /^3\d{9}$/.test(digitos) ? "57" + digitos : digitos;
+}
+
+function etiquetaEstadoSolicitud(valor) {
+  return (ESTADOS_SOLICITUD.find((e) => e.valor === valor) || { etiqueta: valor }).etiqueta;
+}
+
 function formatearPrecioAdmin(numero) {
   return "$" + Math.round(numero).toLocaleString("es-CO");
 }
