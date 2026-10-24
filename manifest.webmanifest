@@ -23,9 +23,9 @@
       "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     },
     {
-      "name": "Calculadora de pesos",
-      "short_name": "Calculadora",
-      "url": "/calculadora.html",
+      "name": "Cotizar impresión STL",
+      "short_name": "Imprimir STL",
+      "url": "/index.html#impresion-stl",
       "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     },
     {

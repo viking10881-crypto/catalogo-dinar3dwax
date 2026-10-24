@@ -145,3 +145,10 @@ ALTER TABLE solicitudes_diseno ADD COLUMN IF NOT EXISTS precio_cotizado NUMERIC(
 ALTER TABLE solicitudes_diseno ADD COLUMN IF NOT EXISTS tiempo_entrega TEXT NOT NULL DEFAULT '';
 ALTER TABLE solicitudes_diseno ADD COLUMN IF NOT EXISTS entregables JSONB NOT NULL DEFAULT '[]';
 ALTER TABLE solicitudes_diseno ADD COLUMN IF NOT EXISTS actualizado_en TIMESTAMPTZ NOT NULL DEFAULT now();
+
+-- La misma tabla recibe también las solicitudes de impresión de un STL
+-- que ya trae el cliente (sección "Impresión STL" de index.html): se
+-- distinguen por tipo_solicitud ('diseno' | 'impresion'), y "cantidad" es
+-- cuántas piezas en cera pide de ese archivo.
+ALTER TABLE solicitudes_diseno ADD COLUMN IF NOT EXISTS tipo_solicitud TEXT NOT NULL DEFAULT 'diseno';
+ALTER TABLE solicitudes_diseno ADD COLUMN IF NOT EXISTS cantidad INTEGER NOT NULL DEFAULT 1;

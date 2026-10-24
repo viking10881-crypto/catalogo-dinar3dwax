@@ -3,12 +3,14 @@ import { validarSolicitudPublica, crearSolicitudDiseno } from "../lib/solicitude
 import { enviarAvisoSolicitudDiseno } from "../lib/correo.js";
 
 /**
- * Endpoint público (sin login) del formulario de personalizados.html. Una
- * sola función atiende dos cosas, para no gastar otra de las 12 que permite
- * el plan Hobby de Vercel:
- *  - el token de subida directa a Blob del archivo de referencia (el body
- *    trae `type: "blob.generate-client-token"`, lo manda @vercel/blob/client)
- *  - crear la solicitud con los datos del formulario
+ * Endpoint público (sin login) de los formularios "Solicita tu diseño" y
+ * "Cotizar impresión" de index.html. Una sola función atiende dos cosas,
+ * para no gastar otra de las 12 que permite el plan Hobby de Vercel:
+ *  - el token de subida directa a Blob del archivo (referencia de diseño o
+ *    STL para imprimir; el body trae `type: "blob.generate-client-token"`,
+ *    lo manda @vercel/blob/client)
+ *  - crear la solicitud con los datos del formulario (de diseño o de
+ *    impresión, según body.tipoSolicitud)
  */
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -26,6 +28,15 @@ export default async function handler(req, res) {
         onBeforeGenerateToken: async (pathname) => {
           if (!/^solicitudes-diseno\//.test(pathname)) {
             throw new Error("Ruta de destino inválida");
+          }
+          // Archivos para "Impresión STL": STL/3DM/OBJ/3MF no tienen un
+          // content-type fijo entre navegadores, así que se valida por
+          // extensión (y se aceptan ZIP para mandar varias piezas juntas).
+          if (/^solicitudes-diseno\/stl\//.test(pathname)) {
+            if (!/\.(stl|3dm|obj|3mf|zip)$/i.test(pathname)) {
+              throw new Error("El archivo debe ser STL, 3DM, OBJ, 3MF o ZIP");
+            }
+            return { maximumSizeInBytes: 100 * 1024 * 1024, addRandomSuffix: true };
           }
           return {
             allowedContentTypes: ["image/jpeg", "image/png", "application/pdf"],

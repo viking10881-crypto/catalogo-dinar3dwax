@@ -1,6 +1,7 @@
 {
   "redirects": [
-    { "source": "/admin/trabajadores.html", "destination": "/admin/colaboradores.html", "permanent": true }
+    { "source": "/admin/trabajadores.html", "destination": "/admin/colaboradores.html", "permanent": true },
+    { "source": "/calculadora.html", "destination": "/", "permanent": false }
   ],
   "headers": [
     {

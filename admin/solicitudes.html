@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Solicitudes de diseño · Panel Dinar 3D Wax</title>
+<title>Solicitudes · Panel Dinar 3D Wax</title>
 <link rel="stylesheet" href="/css/estilos.css">
 </head>
 <body>
@@ -23,13 +23,13 @@
 
   <main class="admin-main">
     <div class="admin-cabecera-fila">
-      <h1 class="titulo-seccion" style="margin:0;">Solicitudes de diseño</h1>
+      <h1 class="titulo-seccion" style="margin:0;">Solicitudes</h1>
       <select id="filtro-estado" class="estado-solicitud" aria-label="Filtrar por estado">
         <option value="">Todas</option>
       </select>
     </div>
     <p style="color:var(--gris); font-size:0.85rem; margin-top:-6px;">
-      Lo que los clientes envían desde la página <a href="/personalizados.html" target="_blank" rel="noopener" style="color:var(--dorado);">Personalizados ↗</a>. Cada solicitud nueva también llega por correo.
+      Lo que los clientes envían desde <a href="/#servicios-3d" target="_blank" rel="noopener" style="color:var(--dorado);">Servicios 3D ↗</a> e <a href="/#impresion-stl" target="_blank" rel="noopener" style="color:var(--dorado);">Impresión STL ↗</a>. Cada solicitud nueva también llega por correo.
     </p>
 
     <div style="overflow-x:auto;">
@@ -38,7 +38,7 @@
           <tr>
             <th>Fecha</th>
             <th>Cliente</th>
-            <th>Joya / presupuesto</th>
+            <th>Servicio</th>
             <th>Idea</th>
             <th>Referencia</th>
             <th>Estado</th>
@@ -63,7 +63,9 @@ function formatearFechaHora(iso) {
 
 function linkWhatsapp(s) {
   const digitos = numeroWhatsapp(s.whatsapp);
-  const texto = `Hola ${s.nombre}, te escribimos de Dinar 3D Wax por tu solicitud de diseño (${s.tipoJoya}).`;
+  const texto = s.tipoSolicitud === "impresion"
+    ? `Hola ${s.nombre}, te escribimos de Dinar 3D Wax por tu solicitud de impresión (${s.archivoNombre}).`
+    : `Hola ${s.nombre}, te escribimos de Dinar 3D Wax por tu solicitud de diseño (${s.tipoJoya}).`;
   return `https://wa.me/${digitos}?text=${encodeURIComponent(texto)}`;
 }
 
@@ -75,7 +77,11 @@ function filaSolicitudHTML(s) {
         <strong>${escaparHtml(s.nombre)}</strong><br>
         <a href="${linkWhatsapp(s)}" target="_blank" rel="noopener" style="color:var(--dorado);">${escaparHtml(s.whatsapp)} ↗</a>
       </td>
-      <td>${escaparHtml(s.tipoJoya)}<br><span style="color:var(--gris); font-size:0.82rem;">${escaparHtml(s.presupuesto)}</span></td>
+      <td>${
+        s.tipoSolicitud === "impresion"
+          ? `<strong>Impresión STL</strong><br><span style="color:var(--gris); font-size:0.82rem;">${s.cantidad} pieza${s.cantidad === 1 ? "" : "s"}</span>`
+          : `${escaparHtml(s.tipoJoya)}<br><span style="color:var(--gris); font-size:0.82rem;">${escaparHtml(s.presupuesto)}</span>`
+      }</td>
       <td><div class="descripcion-solicitud">${escaparHtml(s.descripcion)}</div></td>
       <td>${
         s.archivoUrl

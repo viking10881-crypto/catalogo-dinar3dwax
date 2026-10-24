@@ -9,7 +9,7 @@ const TIPOS_PRODUCTO = [
   { valor: "pulseras", etiqueta: "Pulseras" },
 ];
 
-// Estados de una solicitud de diseño (personalizados.html), en el orden
+// Estados de una solicitud (Servicios 3D / Impresión STL de index.html), en el orden
 // del flujo. "descartada" va aparte: no es un paso, se sale del flujo.
 const ESTADOS_SOLICITUD = [
   { valor: "nueva", etiqueta: "Nueva" },

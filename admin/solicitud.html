@@ -22,7 +22,7 @@
   </aside>
 
   <main class="admin-main">
-    <a href="/admin/solicitudes.html" class="sol-volver">← Solicitudes de diseño</a>
+    <a href="/admin/solicitudes.html" class="sol-volver">← Solicitudes</a>
     <p id="mensaje-carga" class="mensaje-admin">Cargando solicitud...</p>
 
     <div id="sol-contenido" class="oculto">
@@ -46,13 +46,14 @@
             <dl class="sol-datos">
               <dt>Nombre</dt><dd id="sol-nombre"></dd>
               <dt>WhatsApp</dt><dd id="sol-whatsapp"></dd>
-              <dt>Tipo de joya</dt><dd id="sol-tipo"></dd>
-              <dt>Presupuesto</dt><dd id="sol-presupuesto"></dd>
+              <dt>Servicio</dt><dd id="sol-servicio"></dd>
+              <dt id="sol-tipo-etiqueta">Tipo de joya</dt><dd id="sol-tipo"></dd>
+              <dt id="sol-presupuesto-etiqueta">Presupuesto</dt><dd id="sol-presupuesto"></dd>
             </dl>
           </section>
 
           <section class="sol-tarjeta">
-            <h2>Idea del cliente</h2>
+            <h2 id="sol-titulo-idea">Idea del cliente</h2>
             <p class="sol-descripcion" id="sol-descripcion"></p>
             <div id="sol-referencia"></div>
           </section>
@@ -194,9 +195,17 @@ function renderTodo() {
 
   document.getElementById("sol-nombre").textContent = s.nombre;
   document.getElementById("sol-whatsapp").innerHTML = `<a href="https://wa.me/${numeroWhatsapp(s.whatsapp)}" target="_blank" rel="noopener">${escaparHtml(s.whatsapp)} ↗</a>`;
-  document.getElementById("sol-tipo").textContent = s.tipoJoya;
+  // Impresión STL: el cliente ya trae el archivo; no hay tipo de joya ni
+  // presupuesto, pero sí cantidad de piezas.
+  const esImpresion = s.tipoSolicitud === "impresion";
+  document.getElementById("sol-servicio").textContent = esImpresion ? "Impresión de STL en cera" : "Diseño 3D";
+  document.getElementById("sol-tipo-etiqueta").textContent = esImpresion ? "Cantidad" : "Tipo de joya";
+  document.getElementById("sol-tipo").textContent = esImpresion ? `${s.cantidad} pieza${s.cantidad === 1 ? "" : "s"}` : s.tipoJoya;
+  document.getElementById("sol-presupuesto-etiqueta").classList.toggle("oculto", esImpresion);
+  document.getElementById("sol-presupuesto").classList.toggle("oculto", esImpresion);
   document.getElementById("sol-presupuesto").textContent = s.presupuesto;
-  document.getElementById("sol-descripcion").textContent = s.descripcion;
+  document.getElementById("sol-titulo-idea").textContent = esImpresion ? "Archivo y notas del cliente" : "Idea del cliente";
+  document.getElementById("sol-descripcion").textContent = s.descripcion || (esImpresion ? "Sin notas." : "");
 
   const ref = document.getElementById("sol-referencia");
   if (!s.archivoUrl) {
@@ -228,12 +237,23 @@ function textoPlantilla(tipo) {
   if (tipo === "cotizacion") {
     const precio = s.precioCotizado != null ? formatearPrecioAdmin(s.precioCotizado) : "[guarda el valor en Cotización]";
     const tiempo = s.tiempoEntrega || "[guarda el tiempo en Cotización]";
+    if (s.tipoSolicitud === "impresion") {
+      return `${saludo} Revisamos tu archivo ${s.archivoNombre} y esta es la cotización de la impresión en cera rosa (${s.cantidad} pieza${s.cantidad === 1 ? "" : "s"}):
+
+• Valor: ${precio}
+• Entrega: ${tiempo}
+
+Incluye soportes solubles y empaque en cápsula anti-golpe. ¿Te parece bien para empezar?`;
+    }
     return `${saludo} Revisamos tu idea de ${s.tipoJoya.toLowerCase()} y esta es la cotización del diseño 3D:
 
 • Valor: ${precio}
 • Entrega del primer boceto: ${tiempo}
 
 Incluye revisiones hasta aprobar medidas. ¿Te parece bien para empezar?`;
+  }
+  if (tipo === "entrega" && s.tipoSolicitud === "impresion") {
+    return `${saludo} ¡Tus piezas en cera ya están listas! (${s.cantidad} pieza${s.cantidad === 1 ? "" : "s"} de ${s.archivoNombre}). Cuéntanos si pasas por ellas o te las enviamos.`;
   }
   if (tipo === "entrega") {
     const archivos = s.entregables.length

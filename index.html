@@ -8,7 +8,7 @@
 (function () {
   try {
     var t = localStorage.getItem("tema-sitio");
-    if (!t) t = matchMedia("(prefers-color-scheme: dark)").matches ? "oscuro" : "claro";
+    if (!t) t = "oscuro"; // el sitio arranca en modo oscuro; el toggle guarda la preferencia
     document.documentElement.dataset.tema = t;
   } catch (e) {}
 })();
@@ -33,7 +33,7 @@
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/estilos.css">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/favicon.png" type="image/png">
@@ -77,22 +77,18 @@
 })();
 </script>
 
+
 <header class="cabecera">
   <div class="contenedor">
     <a href="index.html" class="marca">
       <img src="img/logo-dinar3dwax.png" alt="Dinar 3D Wax" class="logo-img">
     </a>
     <nav class="nav-principal" id="nav-principal">
-      <div class="nav-categorias">
-        <button type="button" id="nav-categorias-toggle" class="nav-cat-toggle" aria-expanded="false" aria-haspopup="true" aria-current="page">
-          Categorías
-          <svg class="nav-cat-flecha" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
-        </button>
-        <div id="nav-categorias-panel" class="nav-cat-panel"></div>
-      </div>
-      <a href="personalizados.html">Personalizados</a>
-      <a href="calculadora.html">Calculadora de Pesos</a>
-      <a href="index.html#faq">Preguntas Frecuentes</a>
+      <a href="index.html#catalogo" aria-current="page">Catálogo</a>
+      <a href="index.html#servicios-3d">Servicios 3D</a>
+      <a href="index.html#impresion-stl">Impresión STL</a>
+      <a href="index.html#contacto">Contacto</a>
+      <a href="index.html#servicios-3d" class="nav-cotizar">Cotizar</a>
     </nav>
     <div class="acciones-cabecera">
       <button type="button" id="btn-menu-movil" class="btn-menu-movil" aria-label="Abrir menú" aria-expanded="false" aria-controls="nav-principal">
@@ -108,97 +104,371 @@
   </div>
 </header>
 
-<section class="hero-catalogo" id="hero-catalogo">
-  <div class="capa-banner"></div>
-  <div class="contenido-hero-catalogo">
-    <span class="pill-hero">✨ Edición 2026 · Modelos 3D</span>
-    <h1>Catálogo Exclusivo para Joyeros</h1>
-    <p>Modelos digitales listos para impresión 3D directa en cera casteable y fundición de alta fidelidad.</p>
-    <form id="form-busqueda-hero" class="buscador-hero">
-      <input type="text" id="campo-busqueda-hero" placeholder="Escribe la referencia exacta (ej. AN-025)...">
-      <button type="submit">Buscar</button>
-    </form>
-  </div>
-  <div class="puntos-banner"></div>
-</section>
-
-<section class="seccion-comparativa">
-  <div class="contenedor">
-    <div class="panel-comparativa">
-      <div class="comparativa-cabecera">
-        <h2>La porosidad cuesta oro.<br>Nosotros la eliminamos.</h2>
-        <p>Comparativa real medida en balanza 0.001g. Cera azul genérica vs Dinar Rosa 0.025mm. Mismo modelo ID 2862.</p>
+<!-- ===== Hero ===== -->
+<section class="dx-hero">
+  <div class="dx-hero-brillo" aria-hidden="true"></div>
+  <div class="contenedor dx-hero-grid">
+    <div class="dx-hero-texto">
+      <span class="dx-insignia"><span class="dx-punto" aria-hidden="true"></span> Cera rosa 100% pura · capa de 0.025mm</span>
+      <h1 class="dx-titulo-hero">Diseño 3D de<br><em>Joyería</em> de Alta<br>Precisión</h1>
+      <p class="dx-hero-intro">De tu idea a la cera lista para fundición en Medellín. Modelado orgánico, ingeniería para engaste y cera perfecta para microfusión.</p>
+      <div class="dx-hero-acciones">
+        <a href="#catalogo" class="dx-btn dx-btn-dorado">Ver catálogo
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg>
+        </a>
+        <a href="#servicios-3d" class="dx-btn dx-btn-borde">Cotizar diseño</a>
       </div>
-      <div class="grid-comparativa">
-        <div class="tarjeta-comparativa destacada">
-          <div class="comparativa-top">
-            <span class="comparativa-icono">⚖️</span>
-            <span class="comparativa-badge">-20% ORO</span>
-          </div>
-          <h3>0.28g vs 0.35g</h3>
-          <p>Sin poros = sin retención. En un lote de 100 anillos, son 7gr de oro que no pierdes.</p>
-          <span class="comparativa-check">✓ Validado en fundición</span>
+      <form id="form-busqueda-hero" class="dx-buscador" role="search">
+        <label for="campo-busqueda-hero" class="dx-sr">Buscar por referencia</label>
+        <input type="text" id="campo-busqueda-hero" placeholder="¿Ya tienes la referencia? Ej. AN-025">
+        <button type="submit">Buscar</button>
+      </form>
+      <dl class="dx-cifras">
+        <div><dt>0.025mm</dt><dd>Capa real</dd></div>
+        <div><dt>0.0%</dt><dd>Ceniza</dd></div>
+        <div><dt>24H</dt><dd>Entrega Medellín</dd></div>
+      </dl>
+    </div>
+
+    <!-- Banner administrable (admin → Configuración): sin imágenes queda
+         el anillo decorativo; con 1+ imágenes, js/catalogo.js las pinta en
+         .capa-banner encima de él. -->
+    <div class="dx-hero-visual" id="hero-catalogo">
+      <div class="dx-visual-deco" aria-hidden="true">
+        <div class="dx-anillo">
+          <span class="dx-anillo-oro"></span>
+          <span class="dx-anillo-hueco"></span>
+          <span class="dx-anillo-gema">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.7 10.3a2.41 2.41 0 0 0 0 3.41l7.59 7.59a2.41 2.41 0 0 0 3.41 0l7.59-7.59a2.41 2.41 0 0 0 0-3.41l-7.59-7.59a2.41 2.41 0 0 0-3.41 0Z"/></svg>
+          </span>
         </div>
-        <div class="tarjeta-comparativa">
-          <div class="comparativa-top">
-            <span class="comparativa-icono">💧</span>
-            <span class="comparativa-badge">0 POROS</span>
-          </div>
-          <h3>Sin Poros = Sin Pérdida</h3>
-          <p>Microscopía 100x: cera azul llena de burbujas. Rosa: superficie vítrea continua.</p>
-          <span class="comparativa-check">✓ Validado en fundición</span>
+        <p class="dx-visual-eyebrow">Cera rosa · Modelo real</p>
+        <p class="dx-visual-nombre">Listo para tu fundición</p>
+      </div>
+      <div class="capa-banner"></div>
+      <div class="puntos-banner"></div>
+      <div class="dx-visual-chips">
+        <div class="dx-chip">
+          <span class="dx-chip-icono claro">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z"/><path d="m14.5 12.5 2-2M11.5 9.5l2-2M8.5 6.5l2-2M17.5 15.5l2-2"/></svg>
+          </span>
+          <div><span>Precisión</span><strong>25 micras</strong></div>
         </div>
-        <div class="tarjeta-comparativa oscura">
-          <div class="comparativa-top">
-            <span class="comparativa-icono">☰</span>
-            <span class="comparativa-badge">8K DETALLE</span>
-          </div>
-          <h3>0.025mm Real - MicroPavé intacto</h3>
-          <p>Uñas de 0.3mm no se rompen en soporte. Garras micropavé salen completas.</p>
-          <span class="comparativa-check">✓ Validado en fundición</span>
+        <div class="dx-chip">
+          <span class="dx-chip-icono dorado">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+          </span>
+          <div><span>Lista para</span><strong>Fundición</strong></div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<div class="contenedor">
-  <div class="eyebrow-catalogo">CATÁLOGO 2026 · <span id="total-modelos-disponibles">…</span> MODELOS DISPONIBLES</div>
-  <div class="cabecera-catalogo-grid">
-    <h2>Modelos Más Pedidos <span>— Listos para fundir</span></h2>
+<!-- ===== Comparativa ===== -->
+<section class="dx-seccion">
+  <div class="contenedor">
+    <div class="dx-cabecera-seccion">
+      <div>
+        <p class="dx-eyebrow">Cera rosa vs cera azul</p>
+        <h2 class="dx-titulo">La porosidad <em>cuesta oro</em>.<br>Nosotros la eliminamos.</h2>
+      </div>
+      <p class="dx-cabecera-nota">Comparativa real medida en balanza 0.001g. Cera azul genérica vs Dinar Rosa 0.025mm. Mismo modelo ID 2862.</p>
+    </div>
+    <div class="dx-grid-comparativa">
+      <article class="dx-tarjeta-comp destacada">
+        <div class="dx-comp-top"><span class="dx-comp-icono" aria-hidden="true">⚖️</span><span class="dx-comp-badge">-20% oro</span></div>
+        <h3>0.28g vs 0.35g</h3>
+        <p>Sin poros = sin retención. En un lote de 100 anillos, son 7gr de oro que no pierdes.</p>
+        <span class="dx-comp-check">✓ Validado en fundición</span>
+      </article>
+      <article class="dx-tarjeta-comp">
+        <div class="dx-comp-top"><span class="dx-comp-icono" aria-hidden="true">💧</span><span class="dx-comp-badge">0 poros</span></div>
+        <h3>Sin poros = sin pérdida</h3>
+        <p>Microscopía 100x: cera azul llena de burbujas. Rosa: superficie vítrea continua.</p>
+        <span class="dx-comp-check">✓ Validado en fundición</span>
+      </article>
+      <article class="dx-tarjeta-comp">
+        <div class="dx-comp-top"><span class="dx-comp-icono" aria-hidden="true">☰</span><span class="dx-comp-badge">8K detalle</span></div>
+        <h3>0.025mm real · micropavé intacto</h3>
+        <p>Uñas de 0.3mm no se rompen en soporte. Garras micropavé salen completas.</p>
+        <span class="dx-comp-check">✓ Validado en fundición</span>
+      </article>
+    </div>
   </div>
-  <div class="zona-catalogo" style="margin-top: 20px;">
-    <aside class="panel-filtros">
-      <h3>Categorías</h3>
-      <label class="opcion-filtro">
-        <input type="radio" name="filtro-categoria" id="cat-todos" value="todos" checked>
-        Todos
-      </label>
-      <div id="arbol-categorias"></div>
+</section>
 
-      <h3>Peso cera</h3>
-      <div class="rango-filtro">
-        0 g – <output id="salida-peso">20 g</output>
-        <input type="range" id="filtro-peso" min="0" max="20" step="0.5" value="20">
+<!-- ===== Catálogo (filtro lateral + tarjetas de js/catalogo.js) ===== -->
+<section id="catalogo" class="dx-seccion dx-fondo-suave">
+  <div class="contenedor">
+    <div class="dx-cabecera-seccion">
+      <div>
+        <p class="dx-eyebrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9.94 15.5A2 2 0 0 0 8.5 14.06l-6.14-1.58a.5.5 0 0 1 0-.96L8.5 9.94A2 2 0 0 0 9.94 8.5l1.58-6.14a.5.5 0 0 1 .96 0l1.58 6.14a2 2 0 0 0 1.44 1.44l6.14 1.58a.5.5 0 0 1 0 .96l-6.14 1.58a2 2 0 0 0-1.44 1.44l-1.58 6.14a.5.5 0 0 1-.96 0z"/></svg>
+          Catálogo de ceras · <span id="total-modelos-disponibles">…</span> modelos
+        </p>
+        <h2 class="dx-titulo">Modelos listos para<br>fundición inmediata</h2>
+      </div>
+      <p class="dx-cabecera-nota">Todos los modelos se imprimen en cera rosa 100% pura a 0.025mm, con soportes solubles y empaque en cápsula anti-golpe.</p>
+    </div>
+
+    <div class="zona-catalogo">
+      <aside class="panel-filtros">
+        <h3>Categorías</h3>
+        <label class="opcion-filtro">
+          <input type="radio" name="filtro-categoria" id="cat-todos" value="todos" checked>
+          Todos
+        </label>
+        <div id="arbol-categorias"></div>
+
+        <h3>Peso cera</h3>
+        <div class="rango-filtro">
+          0 g – <output id="salida-peso">20 g</output>
+          <input type="range" id="filtro-peso" min="0" max="20" step="0.5" value="20">
+        </div>
+
+        <button type="button" id="btn-limpiar-filtros" class="btn-limpiar-filtros">Limpiar filtros</button>
+      </aside>
+
+      <div id="resultado-catalogo"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Servicios 3D (formulario de diseño: js/personalizados.js) ===== -->
+<section id="servicios-3d" class="dx-seccion seccion-personalizados">
+  <div class="contenedor personalizados-grid">
+
+    <div class="personalizados-info">
+      <p class="pers-eyebrow">Servicios de diseño 3D</p>
+      <h2 class="pers-titulo">Tu idea,<br>nuestra ingeniería<br>para joyería.</h2>
+      <p class="pers-intro">
+        Modelamos en Rhinoceros + MatrixGold con tolerancias reales para fundición.
+        No es render bonito: es cera que cierra, engasta y no poros.
+      </p>
+
+      <ul class="pers-caracteristicas">
+        <li class="pers-caracteristica">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/><path d="m3 17.5 9 5 9-5" opacity=".5"/></svg>
+          <div>
+            <strong>Modelado orgánico y técnico</strong>
+            <span>Pavé, calados, articulaciones, sellos.</span>
+          </div>
+        </li>
+        <li class="pers-caracteristica">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z"/><path d="m14.5 12.5 2-2M11.5 9.5l2-2M8.5 6.5l2-2M17.5 15.5l2-2"/></svg>
+          <div>
+            <strong>Preparado para engaste</strong>
+            <span>Asientos, garras y luz calculada para piedra real.</span>
+          </div>
+        </li>
+        <li class="pers-caracteristica">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z"/><path d="M14 3v5h5"/><path d="m9.5 14.5 2 2 3.5-4"/></svg>
+          <div>
+            <strong>Entregables</strong>
+            <span>STL, 3DM, renders y video 360° para cliente.</span>
+          </div>
+        </li>
+      </ul>
+
+      <div class="pers-tiempo">
+        <p class="pers-tiempo-etiqueta">Tiempo estándar</p>
+        <p class="pers-tiempo-titulo">Entrega de primer boceto en 24h</p>
+        <p class="pers-tiempo-nota">Revisión ilimitada hasta aprobación de medidas.</p>
+      </div>
+    </div>
+
+    <section class="pers-tarjeta-form" aria-labelledby="titulo-form-diseno">
+      <div id="pers-formulario-envoltura">
+        <div class="pers-form-cabecera">
+          <h2 id="titulo-form-diseno">Solicita tu diseño</h2>
+          <span class="pers-badge">Respuesta en &lt;2h</span>
+        </div>
+
+        <form id="form-solicitud-diseno" novalidate>
+          <div class="pers-fila">
+            <div class="pers-campo">
+              <label for="sol-nombre">Nombre</label>
+              <input type="text" id="sol-nombre" name="nombre" placeholder="Tu nombre" autocomplete="name" maxlength="120" required>
+            </div>
+            <div class="pers-campo">
+              <label for="sol-whatsapp">WhatsApp</label>
+              <input type="tel" id="sol-whatsapp" name="whatsapp" placeholder="+57 300 ..." autocomplete="tel" maxlength="40" required>
+            </div>
+          </div>
+
+          <div class="pers-fila">
+            <div class="pers-campo">
+              <label for="sol-tipo">Tipo de joya</label>
+              <select id="sol-tipo" name="tipoJoya">
+                <option>Anillo de compromiso</option>
+                <option>Argolla de matrimonio</option>
+                <option>Anillo</option>
+                <option>Dije</option>
+                <option>Aretes</option>
+                <option>Pulsera</option>
+                <option>Cadena</option>
+                <option>Otro</option>
+              </select>
+            </div>
+            <div class="pers-campo">
+              <label for="sol-presupuesto">Presupuesto estimado</label>
+              <select id="sol-presupuesto" name="presupuesto">
+                <option>Menos de $80.000</option>
+                <option selected>$80.000 - $150.000</option>
+                <option>$150.000 - $300.000</option>
+                <option>Más de $300.000</option>
+                <option>Aún no lo sé</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="pers-campo">
+            <label for="sol-descripcion">Descripción de idea</label>
+            <textarea id="sol-descripcion" name="descripcion" rows="5" maxlength="4000" placeholder="Cuéntanos medidas, estilo, piedras, referencias..." required></textarea>
+          </div>
+
+          <div class="pers-campo">
+            <span class="pers-etiqueta" id="etiqueta-adjunto">Adjuntar referencia (imagen, boceto)</span>
+            <label for="sol-archivo" class="pers-dropzone" id="pers-dropzone" aria-describedby="etiqueta-adjunto">
+              <span class="pers-dropzone-icono" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 16.5 12 12.5l-4 4"/><path d="M12 12.5V21"/><path d="M20.4 18.4A5 5 0 0 0 18 9h-1.3A8 8 0 1 0 3 16.3"/></svg>
+              </span>
+              <span class="pers-dropzone-texto" id="pers-dropzone-texto">
+                Arrastra o <u>selecciona archivo</u> — JPG, PNG, PDF
+              </span>
+              <input type="file" id="sol-archivo" accept="image/jpeg,image/png,application/pdf" class="pers-input-archivo">
+            </label>
+            <button type="button" id="btn-quitar-archivo" class="pers-quitar-archivo oculto">Quitar archivo</button>
+          </div>
+
+          <!-- Campo trampa para bots: oculto a personas y lectores de pantalla. -->
+          <div class="pers-trampa" aria-hidden="true">
+            <label for="sol-sitio-web">Sitio web</label>
+            <input type="text" id="sol-sitio-web" name="sitioWeb" tabindex="-1" autocomplete="off">
+          </div>
+
+          <p id="pers-mensaje" class="pers-mensaje" role="alert"></p>
+
+          <button type="submit" id="btn-enviar-solicitud" class="pers-btn-enviar">
+            <span>Enviar solicitud</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>
+          </button>
+        </form>
       </div>
 
-      <button type="button" id="btn-limpiar-filtros" class="btn-limpiar-filtros">Limpiar filtros</button>
-    </aside>
+      <div id="pers-exito" class="pers-exito oculto" role="status">
+        <h2>¡Recibimos tu solicitud!</h2>
+        <p>Muy pronto nos pondremos en contacto contigo por WhatsApp para revisar la idea y afinar los detalles de tu diseño.</p>
+        <button type="button" id="btn-nueva-solicitud" class="pers-btn-secundario">Enviar otra solicitud</button>
+      </div>
+    </section>
 
-    <div id="resultado-catalogo"></div>
   </div>
-</div>
+</section>
 
-<section id="faq" class="seccion-specs-faq">
-  <div class="contenedor">
-    <h2 class="titulo-specs-faq">Todo lo que necesita saber tu hornero.</h2>
-    <div class="grid-specs-faq">
-      <div class="panel-specs">
-        <div class="panel-specs-cabecera">
-          <h3>Especificaciones</h3>
-          <span class="pill-specs">Cera Rosa 0.025mm</span>
+<!-- ===== Impresión STL (formulario: js/impresion-stl.js) ===== -->
+<section id="impresion-stl" class="dx-seccion dx-fondo-suave dx-seccion-stl">
+  <div class="contenedor dx-grid-stl">
+    <div>
+      <p class="dx-eyebrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14.5 22H18a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M3 13.1a2 2 0 0 0-1 1.76v3.24a2 2 0 0 0 .97 1.78L6 21.7a2 2 0 0 0 2.03.01L11 19.9a2 2 0 0 0 1-1.76V14.9a2 2 0 0 0-.97-1.78L8 11.3a2 2 0 0 0-2.03-.01Z"/></svg>
+        Impresión 3D
+      </p>
+      <h2 class="dx-titulo">¿Ya tienes tu STL?<br><em>Lo imprimimos en cera</em></h2>
+      <p class="dx-texto">Sube tu archivo y te devolvemos la cera lista para fundición, con soportes solubles y sin burbuja.</p>
+
+      <div class="dx-specs-stl">
+        <div>
+          <span class="dx-spec-icono" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/></svg></span>
+          <span class="dx-spec-k">Material</span>
+          <span class="dx-spec-v">Cera rosa 100% pura</span>
         </div>
-        <dl class="tabla-specs-dl">
+        <div>
+          <span class="dx-spec-icono" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z"/></svg></span>
+          <span class="dx-spec-k">Capa</span>
+          <span class="dx-spec-v">0.025mm (25 micras)</span>
+        </div>
+        <div>
+          <span class="dx-spec-icono" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span>
+          <span class="dx-spec-k">Entrega</span>
+          <span class="dx-spec-v">24-48h Colombia</span>
+        </div>
+      </div>
+
+      <label for="stl-archivo" class="dx-dropzone-stl" id="stl-dropzone">
+        <span class="dx-dropzone-icono" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 13v8"/><path d="M4 14.9A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.24"/><path d="m8 17 4-4 4 4"/></svg>
+        </span>
+        <span class="dx-dropzone-titulo" id="stl-dropzone-titulo">Arrastra tu .STL, .3DM, .OBJ o .3MF aquí</span>
+        <span class="dx-dropzone-nota" id="stl-dropzone-nota">o haz clic para seleccionar · máx. 100 MB · varias piezas en un .ZIP</span>
+        <input type="file" id="stl-archivo" accept=".stl,.3dm,.obj,.3mf,.zip" class="pers-input-archivo">
+      </label>
+      <button type="button" id="btn-quitar-stl" class="pers-quitar-archivo oculto">Quitar archivo</button>
+    </div>
+
+    <div class="dx-tarjeta-form">
+      <div id="stl-formulario-envoltura">
+        <h3 class="dx-tarjeta-form-titulo">Cotizar impresión</h3>
+        <form id="form-impresion-stl" novalidate>
+          <div class="pers-fila">
+            <div class="pers-campo">
+              <label for="stl-nombre">Nombre</label>
+              <input type="text" id="stl-nombre" placeholder="Tu nombre" autocomplete="name" maxlength="120" required>
+            </div>
+            <div class="pers-campo">
+              <label for="stl-whatsapp">WhatsApp</label>
+              <input type="tel" id="stl-whatsapp" placeholder="+57 300 ..." autocomplete="tel" maxlength="40" required>
+            </div>
+          </div>
+          <div class="pers-campo">
+            <label for="stl-cantidad">Cantidad de piezas</label>
+            <input type="number" id="stl-cantidad" min="1" max="999" step="1" value="1" required>
+          </div>
+          <div class="pers-campo">
+            <label for="stl-notas">Notas para impresión</label>
+            <textarea id="stl-notas" rows="4" maxlength="4000" placeholder="Talla, tolerancias, huecos, piedras, si ya trae soportes..."></textarea>
+          </div>
+          <div class="dx-incluye">
+            <span class="dx-chip-icono dorado" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg></span>
+            <p>Incluye revisión del archivo antes de imprimir, soportes solubles sin marcas en la pieza y empaque en cápsula anti-golpe.</p>
+          </div>
+
+          <div class="pers-trampa" aria-hidden="true">
+            <label for="stl-sitio-web">Sitio web</label>
+            <input type="text" id="stl-sitio-web" tabindex="-1" autocomplete="off">
+          </div>
+
+          <p id="stl-mensaje" class="pers-mensaje" role="alert"></p>
+          <button type="submit" id="btn-enviar-stl" class="dx-btn dx-btn-dorado dx-btn-bloque">Cotizar impresión</button>
+        </form>
+      </div>
+
+      <div id="stl-exito" class="pers-exito oculto" role="status">
+        <h2>¡Recibimos tu archivo!</h2>
+        <p>Muy pronto nos pondremos en contacto contigo por WhatsApp con la cotización de tu impresión en cera.</p>
+        <button type="button" id="btn-nueva-stl" class="pers-btn-secundario">Cotizar otro archivo</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Especificaciones + FAQ técnico ===== -->
+<section id="faq" class="dx-seccion">
+  <div class="contenedor">
+    <div class="dx-cabecera-seccion">
+      <div>
+        <p class="dx-eyebrow">Ficha técnica</p>
+        <h2 class="dx-titulo">Todo lo que necesita<br>saber <em>tu hornero</em>.</h2>
+      </div>
+    </div>
+    <div class="dx-grid-faq">
+      <div class="dx-panel">
+        <div class="dx-panel-cabecera">
+          <h3>Especificaciones</h3>
+          <span class="dx-pill">Cera rosa 0.025mm</span>
+        </div>
+        <dl class="dx-specs">
           <div><dt>Material</dt><dd>Cera 100% pura microcristalina calcinable (no resina wax-like)</dd></div>
           <div><dt>Tecnología</dt><dd>MJP industrial alta definición</dd></div>
           <div><dt>Capa real</dt><dd>0.025mm (25 micras) – capa rosa uniforme</dd></div>
@@ -210,68 +480,70 @@
           <div><dt>Soportes</dt><dd>Solubles – sin marcas en la pieza</dd></div>
           <div><dt>Origen</dt><dd>Formulación Dinar Lab Medellín</dd></div>
         </dl>
-        <p class="aviso-garantia-specs">🛡️ Garantía de quema limpia · Lote trazable Dinar Lab</p>
+        <p class="dx-garantia">🛡️ Garantía de quema limpia · Lote trazable Dinar Lab</p>
       </div>
 
-      <div class="panel-faq-tecnico">
-        <div class="panel-faq-tecnico-cabecera">
+      <div class="dx-panel">
+        <div class="dx-panel-cabecera">
           <h3>Preguntas frecuentes</h3>
-          <span class="pill-specs oscura">Top 5 talleres</span>
+          <span class="dx-pill">Top 5 talleres</span>
         </div>
-        <ol class="lista-faq-tecnico">
+        <ol class="dx-faq">
           <li>
-            <span class="numero-faq">1</span>
+            <span class="dx-faq-num">1</span>
             <div>
               <strong>¿Cuánto oro ahorro realmente vs cera azul?</strong>
               <p>Entre 12% y 18% por pieza. La cera azul es porosa: absorbe revestimiento y retiene metal. Nuestra cera rosa 100% pura es sólida a 0.025mm, por eso el peso final de oro es el que calculas, no más.</p>
             </div>
           </li>
           <li>
-            <span class="numero-faq">2</span>
+            <span class="dx-faq-num">2</span>
             <div>
               <strong>¿Por qué esta cera no tiene poros?</strong>
               <p>No es resina. Es cera pura microcristalina industrial MJP. Se imprime fundida capa por capa, no curada con luz. Resultado: superficie cerrada, sin micro-burbujas que generan rugosidad y pérdida de oro en el acabado.</p>
             </div>
           </li>
           <li>
-            <span class="numero-faq">3</span>
+            <span class="dx-faq-num">3</span>
             <div>
               <strong>¿Necesito horno o ciclo especial?</strong>
               <p>No. Burnout estándar a 730°C, el mismo que usas para cera inyectada. 0.0% ceniza, sin expansión. No requiere horno de sinterizado ni lavado agresivo.</p>
             </div>
           </li>
           <li>
-            <span class="numero-faq">4</span>
+            <span class="dx-faq-num">4</span>
             <div>
               <strong>¿El micropavé y los calados finos se mantienen?</strong>
               <p>Sí. Resolución real de 2900 DPI y capa de 25 micras. Entregamos con soportes solubles ya removidos en zonas críticas. Bordes de &lt;0.3mm no se deforman.</p>
             </div>
           </li>
           <li>
-            <span class="numero-faq">5</span>
+            <span class="dx-faq-num">5</span>
             <div>
               <strong>¿Tiempos y envíos en Medellín y Colombia?</strong>
               <p>Medellín: entrega el mismo día o 24h. Resto de Colombia: 24-48h con mensajería asegurada. Modelos empacados en cápsula anti-golpe. Si necesitas, ajustamos talla en el archivo antes de imprimir.</p>
             </div>
           </li>
         </ol>
-        <div class="faq-tecnico-pie">
+        <div class="dx-faq-pie">
           <div>
             <strong>¿Otra duda técnica?</strong>
             <p>Responde nuestro joyero de planta, no un bot.</p>
           </div>
-          <a id="btn-whatsapp-faq-tecnico" class="btn-whatsapp-pill" href="#" target="_blank" rel="noopener">💬 WhatsApp</a>
+          <a id="btn-whatsapp-faq-tecnico" class="dx-btn dx-btn-claro" href="#" target="_blank" rel="noopener">WhatsApp</a>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<a id="btn-whatsapp-flotante" class="btn-whatsapp-flotante" href="#" target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp">
-  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-    <path d="M17.47 14.38c-.29-.15-1.71-.84-1.98-.94-.27-.1-.46-.15-.66.15-.2.29-.75.93-.92 1.13-.17.2-.34.22-.63.07-.29-.15-1.22-.45-2.33-1.44-.86-.77-1.44-1.71-1.61-2-.17-.29-.02-.45.13-.6.13-.13.29-.34.44-.51.15-.17.2-.29.29-.49.1-.2.05-.37-.02-.51-.07-.15-.66-1.6-.91-2.19-.24-.57-.48-.5-.66-.51h-.56c-.2 0-.51.07-.78.37-.27.29-1.02 1-1.02 2.44 0 1.44 1.05 2.83 1.19 3.03.15.2 2.06 3.15 5 4.42.7.3 1.24.48 1.67.61.7.22 1.34.19 1.84.12.56-.08 1.71-.7 1.96-1.38.24-.68.24-1.26.17-1.38-.07-.12-.27-.2-.56-.34z"/>
-    <path d="M12.04 2C6.51 2 2 6.5 2 12.02c0 1.85.5 3.66 1.44 5.24L2 22l4.86-1.28a10.03 10.03 0 0 0 5.18 1.42h.01c5.52 0 10.03-4.5 10.03-10.02A9.97 9.97 0 0 0 12.04 2zm0 18.29h-.01a8.3 8.3 0 0 1-4.23-1.16l-.3-.18-3.15.82.84-3.08-.2-.32a8.24 8.24 0 0 1-1.27-4.38C2.02 7.65 5.6 3.98 12 3.98A8.26 8.26 0 0 1 20.06 12c0 6.14-4.46 8.29-8.02 8.29z"/>
-  </svg>
+<!-- ===== Botón flotante de WhatsApp ===== -->
+<a id="btn-whatsapp-flotante" class="dx-whatsapp" href="#" target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp">
+  <span class="dx-whatsapp-onda" aria-hidden="true"></span>
+  <span class="dx-whatsapp-boton">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.05 4.94A9.82 9.82 0 0 0 12 2C6.48 2 2 6.48 2 12c0 1.76.46 3.47 1.33 4.98L2 22l5.17-1.32A9.82 9.82 0 0 0 12 22c5.52 0 10-4.48 10-10 0-2.67-1.04-5.19-2.95-7.06zM12 20a8 8 0 0 1-4.08-1.11l-.29-.17-3.07.79.82-2.99-.19-.31A8 8 0 0 1 12 4a8 8 0 0 1 8 8 8 8 0 0 1-8 8zm4.41-5.86c-.24-.12-1.42-.7-1.64-.78-.22-.08-.38-.12-.54.12-.16.24-.62.78-.76.94-.14.16-.28.18-.52.06-.24-.12-1.01-.37-1.92-1.18-.71-.63-1.19-1.41-1.33-1.65-.14-.24-.02-.37.1-.49.1-.1.24-.26.36-.39.12-.13.16-.22.24-.37.08-.15.04-.28-.02-.4-.06-.12-.54-1.3-.74-1.78-.19-.46-.39-.4-.54-.41h-.46c-.16 0-.4.06-.61.28-.21.22-.8.78-.8 1.9s.82 2.21.93 2.36c.12.15 1.61 2.46 3.9 3.45.54.23.97.37 1.3.48.55.17 1.04.15 1.44.09.44-.06 1.42-.58 1.62-1.14.2-.56.2-1.04.14-1.14-.06-.1-.22-.16-.46-.28z"/></svg>
+  </span>
+  <span class="dx-whatsapp-globo">¿Cotizamos tu cera?</span>
 </a>
 
 <div id="tarjeta-instalar-pwa" class="tarjeta-instalar-pwa oculto">
@@ -284,40 +556,75 @@
   <button type="button" id="btn-instalar-pwa" class="btn btn-dorado btn-instalar-pwa oculto">Instalar</button>
 </div>
 
-<footer class="pie-pagina">
+<!-- ===== Footer ===== -->
+<footer id="contacto" class="dx-footer">
   <div class="contenedor">
-    <div class="footer-columnas">
-      <div class="footer-col-marca">
-        <div class="footer-logo-marca">
-          <span class="footer-logo-icono">D</span>
-          <span>DINAR 3D WAX</span>
-        </div>
-        <p>Cera rosa 100% pura industrial MJP. Formulación Dinar Lab Medellín. Modelos de joyería listos impresión directa 0.025mm sin poros. Sin marca de máquina. Para joyeros que no quieren perder oro.</p>
-        <div class="footer-pills">
-          <span>Medellín · El Hueco</span>
-          <span>Envíos 24-48h Colombia</span>
-          <span class="borde">100% cera pura · no resina</span>
+    <div class="dx-footer-grid">
+      <div>
+        <a href="index.html" class="dx-footer-logo"><img src="img/logo-dinar3dwax.png" alt="Dinar 3D Wax"></a>
+        <p class="dx-footer-texto">Cera 3D para joyería en Medellín. Diseño, impresión en cera rosa 100% pura y entrega lista para microfusión. Taller aliado de joyeros y marcas.</p>
+        <div class="dx-footer-redes">
+          <!-- Links en REDES_SOCIALES (js/catalogo.js); sin link, el botón queda oculto. -->
+          <a class="dx-red oculto" data-red="instagram" href="#" target="_blank" rel="noopener" aria-label="Instagram">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect width="20" height="20" x="2" y="2" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><path d="M17.5 6.5h.01"/></svg>
+          </a>
+          <a class="dx-red oculto" data-red="tiktok" href="#" target="_blank" rel="noopener" aria-label="TikTok">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.6 5.82A4.28 4.28 0 0 1 15.54 3h-3.09v12.4a2.59 2.59 0 0 1-2.59 2.5 2.6 2.6 0 0 1-2.6-2.6 2.6 2.6 0 0 1 3.38-2.48V9.66a5.73 5.73 0 0 0-.78-.05 5.69 5.69 0 0 0-5.69 5.69A5.69 5.69 0 0 0 9.86 21a5.69 5.69 0 0 0 5.69-5.69V9.01a7.35 7.35 0 0 0 4.3 1.38V7.3a4.3 4.3 0 0 1-3.25-1.48z"/></svg>
+          </a>
+          <a class="dx-red oculto" data-red="facebook" href="#" target="_blank" rel="noopener" aria-label="Facebook">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.5 21v-7.5h2.53l.38-2.94H13.5V8.69c0-.85.24-1.43 1.46-1.43h1.56V4.63A20.9 20.9 0 0 0 14.25 4.5c-2.25 0-3.79 1.37-3.79 3.9v2.16H7.92v2.94h2.54V21h3.04z"/></svg>
+          </a>
+          <a id="footer-whatsapp" class="dx-red dx-red-texto" href="#" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            WhatsApp
+          </a>
         </div>
       </div>
-      <div class="footer-col-contacto">
-        <span class="footer-eyebrow">Contacto taller</span>
-        <a id="footer-whatsapp" href="#" target="_blank" rel="noopener">💬 WhatsApp: <span id="footer-whatsapp-numero">…</span></a>
-        <a href="mailto:dinar3dwax@gmail.com">✉️ dinar3dwax@gmail.com</a>
-        <span>📍 Calle 52 # 47-28, oficina 1207</span>
-        <span>🕐 8:00 a.m. – 4:00 p.m.</span>
+
+      <div>
+        <p class="dx-footer-eyebrow">Ubicación</p>
+        <ul class="dx-footer-lista">
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 10c0 5-5.54 10.19-7.4 11.8a1 1 0 0 1-1.2 0C9.54 20.19 4 15 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>
+            <span>Medellín · El Hueco<br>Calle 52 # 47-28, oficina 1207</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            <span>8:00 a.m. – 4:00 p.m.<br>Envíos 24-48h a toda Colombia</span>
+          </li>
+        </ul>
       </div>
-      <div class="footer-col-cotiza">
-        <span class="footer-eyebrow">Cotiza ahora</span>
-        <div class="tarjeta-footer-cotiza">
-          <strong>¿Listo para dejar de perder oro?</strong>
-          <p>Envíanos el peso de tu pieza y te decimos cuánto recuperas en 10 unidades.</p>
-          <a id="footer-btn-cotizar" class="btn-whatsapp-verde" href="#" target="_blank" rel="noopener">💬 Cotizar por WhatsApp</a>
-        </div>
+
+      <div>
+        <p class="dx-footer-eyebrow">Contacto</p>
+        <ul class="dx-footer-lista">
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            <span id="footer-whatsapp-numero">…</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+            <a href="mailto:dinar3dwax@gmail.com">dinar3dwax@gmail.com</a>
+          </li>
+          <li class="oculto" data-red-lista="instagram">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect width="20" height="20" x="2" y="2" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><path d="M17.5 6.5h.01"/></svg>
+            <a href="#" target="_blank" rel="noopener"></a>
+          </li>
+          <li class="oculto" data-red-lista="facebook">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.5 21v-7.5h2.53l.38-2.94H13.5V8.69c0-.85.24-1.43 1.46-1.43h1.56V4.63A20.9 20.9 0 0 0 14.25 4.5c-2.25 0-3.79 1.37-3.79 3.9v2.16H7.92v2.94h2.54V21h3.04z"/></svg>
+            <a href="#" target="_blank" rel="noopener"></a>
+          </li>
+          <li class="oculto" data-red-lista="tiktok">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.6 5.82A4.28 4.28 0 0 1 15.54 3h-3.09v12.4a2.59 2.59 0 0 1-2.59 2.5 2.6 2.6 0 0 1-2.6-2.6 2.6 2.6 0 0 1 3.38-2.48V9.66a5.73 5.73 0 0 0-.78-.05 5.69 5.69 0 0 0-5.69 5.69A5.69 5.69 0 0 0 9.86 21a5.69 5.69 0 0 0 5.69-5.69V9.01a7.35 7.35 0 0 0 4.3 1.38V7.3a4.3 4.3 0 0 1-3.25-1.48z"/></svg>
+            <a href="#" target="_blank" rel="noopener"></a>
+          </li>
+        </ul>
       </div>
     </div>
-    <div class="footer-barra-inferior">
-      <span>© 2026 Dinar 3D Wax · Catálogo para Joyeros · Todos los modelos con 0.025mm reales</span>
-      <span>730°C · 0.0% ceniza · 2900 DPI</span>
+
+    <div class="dx-footer-barra">
+      <span>© 2026 Dinar 3D Wax — Medellín</span>
+      <span>Hecho para joyeros · Cera rosa 100% pura · 0.025mm</span>
     </div>
     <div class="creditos-dev">
       Desarrollado por <a href="https://www.delasoftcompany.com/" target="_blank" rel="noopener">Delasoftcompany</a>
@@ -328,9 +635,10 @@
 
 <script src="js/tema.js"></script>
 <script src="js/productos.js"></script>
-<script src="js/nav-categorias.js"></script>
 <script src="js/carrito.js"></script>
 <script src="js/catalogo.js"></script>
+<script src="js/personalizados.js"></script>
+<script src="js/impresion-stl.js"></script>
 <script src="js/registro-sw.js"></script>
 <script src="js/pwa-instalar.js"></script>
 </body>

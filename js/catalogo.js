@@ -129,10 +129,9 @@ function renderArbolCategorias() {
 
 /**
  * Aplica el filtro de categoría/subcategoría que venga en la URL
- * (?categoria=anillos&subcategoria=Solitario), usado por los links del
- * menú desplegable "Categorías" de la barra de navegación (ver
- * js/nav-categorias.js). Si no hay params, o no coinciden con nada real,
- * no toca el estado por defecto ("Todos").
+ * (?categoria=anillos&subcategoria=Solitario), para links que entren al
+ * catálogo ya filtrado. Si no hay params, o no coinciden con nada real, no
+ * toca el estado por defecto ("Todos").
  */
 function aplicarFiltroDesdeUrl() {
   const params = new URLSearchParams(window.location.search);
@@ -246,7 +245,7 @@ function iniciarBannerCatalogo(imagenes) {
 function configurarBotonWhatsapp() {
   const boton = document.getElementById("btn-whatsapp-flotante");
   if (!boton) return;
-  const mensaje = encodeURIComponent("Hola Dinar 3D Wax, quisiera más información sobre su catálogo de modelos.");
+  const mensaje = encodeURIComponent("Hola Dinar 3D Wax, quiero cotizar una cera en 3D.");
   boton.href = `https://wa.me/${CONFIG.whatsappNumero}?text=${mensaje}`;
 }
 
@@ -267,6 +266,33 @@ function formatearNumeroWhatsapp(numero) {
   return `+${n.slice(0, 2)} ${n.slice(2, 5)} ${n.slice(5, 8)} ${n.slice(8, 12)}`;
 }
 
+/**
+ * Redes de la joyería para el footer: botón redondo en la columna de marca
+ * y una línea con su nombre en "Contacto". Una red con url vacía queda
+ * oculta (no se muestran cuentas de ejemplo).
+ */
+const REDES_SOCIALES = {
+  instagram: { url: "https://www.instagram.com/dinar3dwax", texto: "@dinar3dwax" },
+  tiktok: { url: "https://www.tiktok.com/@dinar3dwax", texto: "@dinar3dwax" },
+  facebook: { url: "https://www.facebook.com/share/1HUJrPRbuD/", texto: "Dinar 3D Wax" },
+};
+
+function configurarRedesFooter() {
+  Object.entries(REDES_SOCIALES).forEach(([red, { url, texto }]) => {
+    if (!url) return;
+    document.querySelectorAll(`[data-red="${red}"]`).forEach((a) => {
+      a.href = url;
+      a.classList.remove("oculto");
+    });
+    document.querySelectorAll(`[data-red-lista="${red}"]`).forEach((li) => {
+      const a = li.querySelector("a");
+      a.href = url;
+      a.textContent = texto;
+      li.classList.remove("oculto");
+    });
+  });
+}
+
 function configurarFooterContacto() {
   const spanNumero = document.getElementById("footer-whatsapp-numero");
   if (spanNumero) spanNumero.textContent = formatearNumeroWhatsapp(CONFIG.whatsappNumero);
@@ -277,13 +303,7 @@ function configurarFooterContacto() {
     linkWhatsapp.href = `https://wa.me/${CONFIG.whatsappNumero}?text=${mensaje}`;
   }
 
-  const btnCotizar = document.getElementById("footer-btn-cotizar");
-  if (btnCotizar) {
-    const mensaje = encodeURIComponent(
-      "Hola Dinar 3D Wax, quiero cotizar cuánto oro recupero con la cera rosa 0.025mm."
-    );
-    btnCotizar.href = `https://wa.me/${CONFIG.whatsappNumero}?text=${mensaje}`;
-  }
+  configurarRedesFooter();
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -293,7 +313,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   aplicarFiltroDesdeUrl();
   renderCatalogo();
 
-  // El "147 modelos disponibles" del mockup es el conteo real del
+  // El "N modelos" del encabezado del catálogo es el conteo real del
   // catálogo, no un número fijo: así no queda desactualizado cuando se
   // agreguen o quiten productos desde el admin.
   const totalModelos = document.getElementById("total-modelos-disponibles");

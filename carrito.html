@@ -8,7 +8,7 @@
 (function () {
   try {
     var t = localStorage.getItem("tema-sitio");
-    if (!t) t = matchMedia("(prefers-color-scheme: dark)").matches ? "oscuro" : "claro";
+    if (!t) t = "oscuro"; // el sitio arranca en modo oscuro; el toggle guarda la preferencia
     document.documentElement.dataset.tema = t;
   } catch (e) {}
 })();
@@ -34,16 +34,11 @@
       <img src="img/logo-dinar3dwax.png" alt="Dinar 3D Wax" class="logo-img">
     </a>
     <nav class="nav-principal" id="nav-principal">
-      <div class="nav-categorias">
-        <button type="button" id="nav-categorias-toggle" class="nav-cat-toggle" aria-expanded="false" aria-haspopup="true">
-          Categorías
-          <svg class="nav-cat-flecha" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
-        </button>
-        <div id="nav-categorias-panel" class="nav-cat-panel"></div>
-      </div>
-      <a href="personalizados.html">Personalizados</a>
-      <a href="calculadora.html">Calculadora de Pesos</a>
-      <a href="index.html#faq">Preguntas Frecuentes</a>
+      <a href="index.html#catalogo">Catálogo</a>
+      <a href="index.html#servicios-3d">Servicios 3D</a>
+      <a href="index.html#impresion-stl">Impresión STL</a>
+      <a href="index.html#contacto">Contacto</a>
+      <a href="index.html#servicios-3d" class="nav-cotizar">Cotizar</a>
     </nav>
     <div class="acciones-cabecera">
       <button type="button" id="btn-menu-movil" class="btn-menu-movil" aria-label="Abrir menú" aria-expanded="false" aria-controls="nav-principal">
@@ -91,7 +86,6 @@
 
 <script src="js/tema.js"></script>
 <script src="js/productos.js"></script>
-<script src="js/nav-categorias.js"></script>
 <script src="js/carrito.js"></script>
 <script src="js/catalogo.js"></script>
 <script src="js/registro-sw.js"></script>

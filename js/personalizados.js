@@ -1,5 +1,5 @@
 /**
- * Formulario "Solicita tu diseño" (personalizados.html). El archivo de
+ * Formulario "Solicita tu diseño" (sección Servicios 3D de index.html). El archivo de
  * referencia se sube directo del navegador a Vercel Blob (igual que el
  * comprobante del checkout, por el límite de 4.5 MB de body de Vercel) y
  * después se manda la solicitud a /api/solicitudes-diseno, que la guarda
