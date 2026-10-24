@@ -3,8 +3,19 @@
  * NUNCA cachea páginas HTML, respuestas de /api/* ni nada con datos de
  * usuario (carrito, pedidos, config del admin). Solo cachea archivos
  * estáticos propios (css/js/imágenes/íconos) y la página offline.
+ *
+ * Estrategias:
+ * - CSS y JS: network-first (con conexión siempre la versión del último
+ *   deploy; la caché solo se usa sin internet). Antes eran cache-first y,
+ *   como sus URLs no cambian entre deploys, el primer ingreso tras cada
+ *   deploy mezclaba HTML nuevo con CSS/JS viejos (página "desarmada").
+ * - Imágenes, íconos y fuentes: cache-first (no cambian de contenido).
+ *
+ * Las páginas además piden css/js con ?v=N: subir ese número en el HTML
+ * cuando cambien hace que hasta un service worker viejo (cache-first) los
+ * baje de la red, porque esa URL nueva no está en su caché.
  */
-const VERSION = "v4";
+const VERSION = "v5";
 const CACHE_ESTATICOS = `dinar3dwax-estaticos-${VERSION}`;
 const CACHE_PAGINAS = `dinar3dwax-offline-${VERSION}`;
 const MAX_ENTRADAS_ESTATICOS = 80;
@@ -33,7 +44,8 @@ const PRECARGA_ESTATICOS = [
   "/manifest.webmanifest",
 ];
 
-const EXTENSIONES_ESTATICAS = /\.(css|js|png|jpe?g|webp|svg|gif|ico|woff2?|ttf)$/i;
+const EXTENSIONES_CODIGO = /\.(css|js)$/i;
+const EXTENSIONES_ESTATICAS = /\.(png|jpe?g|webp|svg|gif|ico|woff2?|ttf|webmanifest)$/i;
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -81,6 +93,22 @@ async function responderEstatico(request) {
   return respuesta;
 }
 
+/** CSS/JS: red primero; si no hay conexión, la última copia guardada
+ * (ignorando el ?v=, que solo sirve para saltarse cachés viejas). */
+async function responderCodigo(request) {
+  const cache = await caches.open(CACHE_ESTATICOS);
+  try {
+    const respuesta = await fetch(request);
+    if (respuesta.ok) {
+      cache.put(request, respuesta.clone());
+      recortarCache(CACHE_ESTATICOS, MAX_ENTRADAS_ESTATICOS);
+    }
+    return respuesta;
+  } catch {
+    return (await cache.match(request, { ignoreSearch: true })) || Response.error();
+  }
+}
+
 async function responderNavegacion(request) {
   try {
     return await fetch(request);
@@ -108,6 +136,11 @@ self.addEventListener("fetch", (event) => {
 
   if (request.mode === "navigate") {
     event.respondWith(responderNavegacion(request));
+    return;
+  }
+
+  if (EXTENSIONES_CODIGO.test(url.pathname)) {
+    event.respondWith(responderCodigo(request));
     return;
   }
 
