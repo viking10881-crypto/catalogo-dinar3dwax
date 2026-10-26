@@ -944,11 +944,13 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
 /* ===== Visor 3D (STL) ===== */
 .seccion-visor-stl { padding: 0 0 48px; }
 .ayuda-visor { color: var(--gris); font-size: 0.85rem; margin: -6px 0 14px; }
+/* Fondo siempre oscuro (igual que el de la escena 3D en js/visor-stl.js),
+   también mientras carga, para que no parpadee de claro a oscuro. */
 .contenedor-visor-stl {
   position: relative;
   width: 100%;
   height: 420px;
-  background: var(--superficie);
+  background: #0e0e0f;
   border: 1px solid var(--borde);
   border-radius: var(--radio);
   overflow: hidden;
@@ -974,7 +976,7 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
   width: min(240px, 100%);
   height: 6px;
   border-radius: 999px;
-  background: var(--borde);
+  background: #2a2a2e;
   overflow: hidden;
 }
 .visor-stl-relleno {
@@ -984,7 +986,7 @@ html[data-tema="oscuro"] .toggle-tema .icono-luna { display: block; }
   transition: width 0.2s ease;
 }
 .visor-stl-texto {
-  color: var(--gris);
+  color: #a8a5a0;
   font-size: 0.85rem;
 }
 
@@ -1927,6 +1929,14 @@ html[data-tema="oscuro"] body.pagina-catalogo {
   --sombra-md: 0 10px 40px rgba(0, 0, 0, 0.4);
 }
 body.pagina-catalogo ::selection { background: var(--dorado); color: #14120f; }
+
+/* Contenedor más ancho que el del resto del sitio (1180px): en pantallas
+   grandes dejaba franjas vacías a los lados y el contenido se veía apretado.
+   Aplica también a la cabecera y el footer de esta página. */
+body.pagina-catalogo .contenedor { max-width: 1440px; padding: 0 32px; }
+@media (max-width: 600px) {
+  body.pagina-catalogo .contenedor { padding: 0 16px; }
+}
 body.pagina-catalogo button,
 body.pagina-catalogo input,
 body.pagina-catalogo select,
@@ -1940,7 +1950,9 @@ body.pagina-catalogo .cabecera {
   border-bottom: 1px solid var(--borde);
 }
 body.pagina-catalogo .cabecera .contenedor { min-height: 64px; padding-top: 10px; padding-bottom: 10px; }
-body.pagina-catalogo .marca .logo-img { height: 40px; }
+/* logo-dinar3dwax-navbar.png ya viene sin margen transparente (ver
+   scripts/recortar-logo.mjs): 44px de alto es el tamaño real del dibujo. */
+body.pagina-catalogo .marca .logo-img { height: 44px; }
 body.pagina-catalogo .nav-principal { gap: 30px; align-items: center; font-size: 12.5px; }
 body.pagina-catalogo .nav-principal a {
   letter-spacing: 0.14em;
@@ -2779,7 +2791,7 @@ body.pagina-catalogo .dx-footer-grid {
   grid-template-columns: 1.2fr 0.8fr 0.8fr;
   gap: 40px;
 }
-body.pagina-catalogo .dx-footer-logo img { height: 46px; width: auto; }
+body.pagina-catalogo .dx-footer-logo img { height: 52px; width: auto; }
 body.pagina-catalogo .dx-footer-texto { max-width: 360px; margin: 16px 0 0; font-size: 14px; line-height: 1.6; }
 body.pagina-catalogo .dx-footer-redes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
 body.pagina-catalogo .dx-red {

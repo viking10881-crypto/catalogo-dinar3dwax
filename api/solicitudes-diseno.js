@@ -29,12 +29,12 @@ export default async function handler(req, res) {
           if (!/^solicitudes-diseno\//.test(pathname)) {
             throw new Error("Ruta de destino inválida");
           }
-          // Archivos para "Impresión STL": STL/3DM/OBJ/3MF no tienen un
-          // content-type fijo entre navegadores, así que se valida por
-          // extensión (y se aceptan ZIP para mandar varias piezas juntas).
+          // Archivos para "Impresión STL": solo .stl (el formato que imprime
+          // el taller). No tiene un content-type fijo entre navegadores, así
+          // que se valida por extensión.
           if (/^solicitudes-diseno\/stl\//.test(pathname)) {
-            if (!/\.(stl|3dm|obj|3mf|zip)$/i.test(pathname)) {
-              throw new Error("El archivo debe ser STL, 3DM, OBJ, 3MF o ZIP");
+            if (!/\.stl$/i.test(pathname)) {
+              throw new Error("El archivo debe ser .STL");
             }
             return { maximumSizeInBytes: 100 * 1024 * 1024, addRandomSuffix: true };
           }

@@ -5,20 +5,21 @@
 import * as THREE from "three";
 import { STLLoader } from "three/addons/loaders/STLLoader.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 
 /**
- * Aproxima el color de la cera real a partir del texto del campo "material"
- * del producto (p. ej. "Cera casteable rosa" / "Cera casteable verde"),
- * para que el visor se vea parecido a la pieza física. Rosa es el color por
- * defecto porque es el material más común del catálogo.
+ * El modelo se muestra como la joya terminada en oro (pedido del cliente),
+ * no del color de la cera: dorado metálico sobre fondo oscuro, a juego con
+ * la paleta negro + dorado del sitio. Un metal sin nada que reflejar se ve
+ * casi negro, por eso la escena lleva un entorno de estudio (RoomEnvironment)
+ * como reflejo, además de las luces.
  */
-function colorCeraPorMaterial(material) {
-  const texto = String(material || "").toLowerCase();
-  if (texto.includes("verde")) return 0x6fae6f;
-  return 0xe87da0; // rosa
-}
+const COLOR_FONDO = 0x0e0e0f;
+const COLOR_ORO = 0xd4af37;
 
-window.iniciarVisorSTL = function iniciarVisorSTL(idContenedor, urlStl, material) {
+// El tercer parámetro (material) se conserva por compatibilidad con
+// js/producto.js, pero ya no cambia el color del modelo.
+window.iniciarVisorSTL = function iniciarVisorSTL(idContenedor, urlStl) {
   const contenedor = document.getElementById(idContenedor);
   if (!contenedor || !urlStl) return;
   contenedor.innerHTML = "";
@@ -40,20 +41,28 @@ window.iniciarVisorSTL = function iniciarVisorSTL(idContenedor, urlStl, material
   const alto = contenedor.clientHeight || 420;
 
   const escena = new THREE.Scene();
-  escena.background = new THREE.Color(0xf1ece1);
+  escena.background = new THREE.Color(COLOR_FONDO);
 
   const camara = new THREE.PerspectiveCamera(45, ancho / alto, 0.1, 5000);
 
   const renderizador = new THREE.WebGLRenderer({ antialias: true });
   renderizador.setSize(ancho, alto);
   renderizador.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderizador.toneMapping = THREE.ACESFilmicToneMapping;
+  renderizador.toneMappingExposure = 1.05;
   contenedor.appendChild(renderizador.domElement);
 
-  escena.add(new THREE.AmbientLight(0xffffff, 0.7));
-  const luz1 = new THREE.DirectionalLight(0xffffff, 0.9);
+  // Reflejos del metal: entorno de estudio pre-filtrado (no se ve de fondo,
+  // solo en el brillo de la pieza).
+  const pmrem = new THREE.PMREMGenerator(renderizador);
+  escena.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  pmrem.dispose();
+
+  escena.add(new THREE.AmbientLight(0xffffff, 0.25));
+  const luz1 = new THREE.DirectionalLight(0xfff4e0, 1.4);
   luz1.position.set(1, 1, 1);
   escena.add(luz1);
-  const luz2 = new THREE.DirectionalLight(0xffffff, 0.4);
+  const luz2 = new THREE.DirectionalLight(0xffffff, 0.5);
   luz2.position.set(-1, -0.5, -1);
   escena.add(luz2);
 
@@ -71,12 +80,12 @@ window.iniciarVisorSTL = function iniciarVisorSTL(idContenedor, urlStl, material
       geometria.computeVertexNormals();
       geometria.computeBoundingSphere();
 
-      const materialCera = new THREE.MeshStandardMaterial({
-        color: colorCeraPorMaterial(material),
-        metalness: 0.05,
-        roughness: 0.55,
+      const materialOro = new THREE.MeshStandardMaterial({
+        color: COLOR_ORO,
+        metalness: 1,
+        roughness: 0.28,
       });
-      escena.add(new THREE.Mesh(geometria, materialCera));
+      escena.add(new THREE.Mesh(geometria, materialOro));
 
       const radio = geometria.boundingSphere ? geometria.boundingSphere.radius : 10;
       camara.position.set(radio * 1.8, radio * 1.4, radio * 1.8);

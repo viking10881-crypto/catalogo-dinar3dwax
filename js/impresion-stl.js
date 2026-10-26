@@ -1,12 +1,13 @@
 /**
  * Formulario "Cotizar impresión" (sección Impresión STL de index.html): el
- * cliente ya trae su archivo 3D y solo pide imprimirlo en cera. Mismo flujo
+ * cliente ya trae su archivo STL y solo pide imprimirlo en cera. Mismo flujo
  * que js/personalizados.js — el archivo sube directo del navegador a Vercel
  * Blob (STL de hasta 100 MB, muy por encima del límite de 4.5 MB de body de
  * Vercel) y después se crea la solicitud con tipoSolicitud "impresion", que
  * llega al mismo panel de Solicitudes y avisa por correo.
  */
-const EXTENSIONES_STL = /\.(stl|3dm|obj|3mf|zip)$/i;
+// Solo STL: es el formato que imprime el taller.
+const EXTENSIONES_STL = /\.stl$/i;
 const MAX_MB_STL = 100;
 
 async function subirStlABlob(archivo, alProgreso) {
@@ -51,7 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function elegirArchivo(archivo) {
     if (!archivo) return;
     if (!EXTENSIONES_STL.test(archivo.name)) {
-      mostrarMensaje("El archivo debe ser STL, 3DM, OBJ, 3MF o ZIP.", "error");
+      mostrarMensaje("El archivo debe ser .STL.", "error");
       return;
     }
     if (archivo.size > MAX_MB_STL * 1024 * 1024) {
