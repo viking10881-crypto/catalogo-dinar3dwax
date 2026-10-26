@@ -3011,6 +3011,7 @@ body.pagina-catalogo .pers-caracteristica strong {
   margin-bottom: 2px;
 }
 body.pagina-catalogo .pers-caracteristica span {
+  display: block;
   color: var(--pers-gris);
   font-size: 0.85rem;
 }

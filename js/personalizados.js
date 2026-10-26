@@ -92,7 +92,6 @@ document.addEventListener("DOMContentLoaded", () => {
       nombre: document.getElementById("sol-nombre").value.trim(),
       whatsapp: document.getElementById("sol-whatsapp").value.trim(),
       tipoJoya: document.getElementById("sol-tipo").value,
-      presupuesto: document.getElementById("sol-presupuesto").value,
       descripcion: document.getElementById("sol-descripcion").value.trim(),
       sitioWeb: document.getElementById("sol-sitio-web").value,
       archivoUrl: "",

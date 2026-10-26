@@ -81,7 +81,7 @@ function filaSolicitudHTML(s) {
       <td>${
         s.tipoSolicitud === "impresion"
           ? `<strong>Impresión STL</strong><br><span style="color:var(--gris); font-size:0.82rem;">${s.cantidad} pieza${s.cantidad === 1 ? "" : "s"}</span>`
-          : `${escaparHtml(s.tipoJoya)}<br><span style="color:var(--gris); font-size:0.82rem;">${escaparHtml(s.presupuesto)}</span>`
+          : `${escaparHtml(s.tipoJoya)}${s.presupuesto ? `<br><span style="color:var(--gris); font-size:0.82rem;">${escaparHtml(s.presupuesto)}</span>` : ""}`
       }</td>
       <td><div class="descripcion-solicitud">${escaparHtml(s.descripcion)}</div></td>
       <td>${

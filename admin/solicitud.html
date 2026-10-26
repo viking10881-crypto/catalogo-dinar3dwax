@@ -202,8 +202,11 @@ function renderTodo() {
   document.getElementById("sol-servicio").textContent = esImpresion ? "Impresión de STL en cera" : "Diseño 3D";
   document.getElementById("sol-tipo-etiqueta").textContent = esImpresion ? "Cantidad" : "Tipo de joya";
   document.getElementById("sol-tipo").textContent = esImpresion ? `${s.cantidad} pieza${s.cantidad === 1 ? "" : "s"}` : s.tipoJoya;
-  document.getElementById("sol-presupuesto-etiqueta").classList.toggle("oculto", esImpresion);
-  document.getElementById("sol-presupuesto").classList.toggle("oculto", esImpresion);
+  // Las solicitudes nuevas ya no traen presupuesto (se quitó del formulario):
+  // solo se muestra en las viejas que sí lo tienen.
+  const sinPresupuesto = esImpresion || !s.presupuesto;
+  document.getElementById("sol-presupuesto-etiqueta").classList.toggle("oculto", sinPresupuesto);
+  document.getElementById("sol-presupuesto").classList.toggle("oculto", sinPresupuesto);
   document.getElementById("sol-presupuesto").textContent = s.presupuesto;
   document.getElementById("sol-titulo-idea").textContent = esImpresion ? "Archivo y notas del cliente" : "Idea del cliente";
   document.getElementById("sol-descripcion").textContent = s.descripcion || (esImpresion ? "Sin notas." : "");
