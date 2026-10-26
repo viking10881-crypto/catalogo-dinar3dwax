@@ -19,12 +19,15 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&display=swap" rel="stylesheet">
+<!-- Productos y configuración se piden desde el <head>, en paralelo con el
+     CSS; js/productos.js reusa estas respuestas (ver index.html). -->
+<link rel="preload" href="/api/productos" as="fetch" crossorigin="anonymous">
+<link rel="preload" href="/api/configuracion" as="fetch" crossorigin="anonymous">
 <link rel="stylesheet" href="css/estilos.css?v=5">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/favicon.png" type="image/png">
 <link rel="apple-touch-icon" href="/apple-icon.png">
-<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#221f19" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#070708">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Dinar 3D Wax">

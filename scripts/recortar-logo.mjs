@@ -16,9 +16,16 @@ const DESTINO = path.join(RAIZ, "img/logo-dinar3dwax-navbar.png");
 // trim() quita el borde transparente; se devuelven 4px de aire para que el
 // brillo dorado de los bordes no quede cortado al ras.
 const recortado = await sharp(ORIGEN).trim({ threshold: 10 }).toBuffer();
-await sharp(recortado)
+const conAire = await sharp(recortado)
   .extend({ top: 4, bottom: 4, left: 4, right: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } })
   .png()
+  .toBuffer();
+// En la barra se muestra a ~145px de ancho: 440px cubre pantallas 3x de
+// celular. Con paleta (PNG-8) pesa ~12 KB en vez de ~62 KB, sin bandas
+// visibles en el dorado (comparado a 2x de zoom).
+await sharp(conAire)
+  .resize({ width: 440 })
+  .png({ palette: true, quality: 90, compressionLevel: 9 })
   .toFile(DESTINO);
 
 const { width, height } = await sharp(DESTINO).metadata();

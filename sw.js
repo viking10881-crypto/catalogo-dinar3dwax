@@ -15,7 +15,7 @@
  * cuando cambien hace que hasta un service worker viejo (cache-first) los
  * baje de la red, porque esa URL nueva no está en su caché.
  */
-const VERSION = "v5";
+const VERSION = "v6";
 const CACHE_ESTATICOS = `dinar3dwax-estaticos-${VERSION}`;
 const CACHE_PAGINAS = `dinar3dwax-offline-${VERSION}`;
 const MAX_ENTRADAS_ESTATICOS = 80;
@@ -34,8 +34,9 @@ const PRECARGA_ESTATICOS = [
   "/js/confirmacion.js",
   "/js/personalizados.js",
   "/js/impresion-stl.js",
-  "/img/logo-dinar3dwax.png",
-  "/img/logo-splash.png",
+  // El splash (logo-splash.png) no se precarga: solo se ve en la primera
+  // visita y ahí ya se bajó.
+  "/img/logo-dinar3dwax-navbar.png",
   "/icons/icon-192.png",
   "/icons/icon-512.png",
   "/icons/icon-512-maskable.png",

@@ -36,13 +36,19 @@
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
+<!-- Productos y configuración se piden ya desde el <head>, en paralelo con
+     CSS y fuentes (en celular con 4G cada espera en cadena suma): el fetch()
+     de js/productos.js reusa estas respuestas en vez de pedirlas de nuevo. -->
+<link rel="preload" href="/api/productos" as="fetch" crossorigin="anonymous">
+<link rel="preload" href="/api/configuracion" as="fetch" crossorigin="anonymous">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400;1,500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/estilos.css?v=5">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/favicon.png" type="image/png">
 <link rel="apple-touch-icon" href="/apple-icon.png">
-<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#221f19" media="(prefers-color-scheme: dark)">
+<!-- El sitio abre siempre en oscuro: la barra del navegador del celular va
+     del mismo color que la cabecera. -->
+<meta name="theme-color" content="#070708">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Dinar 3D Wax">
@@ -50,7 +56,9 @@
 <body class="pagina-catalogo">
 
 <div id="splash-inicio" class="splash-inicio">
-  <img src="img/logo-splash.png" alt="Dinar 3D Wax" class="splash-inicio-logo" width="500" height="500">
+  <!-- Sin src: la imagen (63 KB) solo se descarga si el splash de verdad se
+       va a mostrar (primera visita), ver el script de abajo. -->
+  <img data-src="img/logo-splash.png" alt="Dinar 3D Wax" class="splash-inicio-logo" width="500" height="500">
 </div>
 <script>
 (function () {
@@ -71,6 +79,8 @@
     // en ese caso simplemente se ve el splash en cada visita.
   }
 
+  var logo = splash.querySelector("img[data-src]");
+  if (logo) logo.src = logo.getAttribute("data-src");
   document.body.classList.add("con-splash");
   splash.addEventListener("animationend", function (e) {
     if (e.target !== splash) return;

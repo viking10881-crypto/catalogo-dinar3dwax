@@ -2818,6 +2818,22 @@ body.pagina-catalogo .dx-footer .creditos-dev a:hover { color: #e8d5b0; }
   body.pagina-catalogo .dx-footer-grid > div:first-child { grid-column: 1 / -1; }
 }
 @media (max-width: 920px) {
+  /* Fluidez en celular: backdrop-filter (desenfoque) se recalcula en cada
+     cuadro del scroll y en teléfonos de gama media se nota. En pantallas
+     táctiles se cambia por fondos sólidos casi iguales a la vista. */
+  body.pagina-catalogo .cabecera {
+    background: var(--crema);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  body.pagina-catalogo .dx-chip,
+  body.pagina-catalogo .badge-ref-tarjeta {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  body.pagina-catalogo .dx-chip { background: var(--superficie); }
+  body.pagina-catalogo .dx-hero-visual.con-banner .dx-chip { background: rgba(10, 10, 11, 0.82); }
+  body.pagina-catalogo .badge-ref-tarjeta { background: rgba(0, 0, 0, 0.8); }
   body.pagina-catalogo .nav-principal { background: var(--fondo-suave); font-size: 13px; }
   body.pagina-catalogo .nav-principal a[aria-current="page"] { background: rgba(201, 168, 106, 0.1); }
   body.pagina-catalogo .nav-principal .nav-cotizar { justify-content: center; margin: 8px 0 4px; }
