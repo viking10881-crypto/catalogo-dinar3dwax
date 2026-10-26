@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Panel · Dinar 3D Wax</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="/css/estilos.css?v=5">
+<link rel="icon" href="/favicon.png" type="image/png">
 </head>
 <body>
 
@@ -163,7 +165,14 @@
   </main>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+<script>
+// ECharts (~1 MB) carga en paralelo (async) en vez de bloquear la página:
+// los datos se piden de una y las tarjetas se pintan sin esperarlo; las
+// gráficas se dibujan cuando la librería esté lista (echartsListo). Si el
+// CDN falla, se resuelve igual y renderGraficas() simplemente no dibuja.
+window.echartsListo = new Promise((resolver) => { window.__echartsCargado = resolver; });
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js" onload="__echartsCargado()" onerror="__echartsCargado()"></script>
 <script src="/admin/js/admin.js?v=5"></script>
 <script src="/admin/js/layout.js?v=5"></script>
 <script src="/admin/js/graficas.js?v=5"></script>
@@ -214,7 +223,7 @@ async function cargarStats() {
       )
       .join("");
 
-    renderGraficas(productos, pedidos);
+    echartsListo.then(() => renderGraficas(productos, pedidos));
   } catch (err) {
     grid.innerHTML = `<p class="mensaje-admin error">No se pudieron cargar las estadísticas.</p>`;
   }
@@ -274,7 +283,7 @@ async function cargarStatsTaller() {
       .join("");
 
     document.getElementById("contenedor-graficas-taller").style.display = "";
-    renderGraficaTaller(datos.meses || []);
+    echartsListo.then(() => renderGraficaTaller(datos.meses || []));
     renderTopTallerTablas(datos.topClientes || [], datos.topServicios || []);
   } catch (err) {
     mensaje.textContent = "No se pudo conectar con el taller (dinar-3dwax) para traer sus estadísticas.";

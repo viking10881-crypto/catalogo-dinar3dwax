@@ -61,9 +61,10 @@ async function marcarSolicitudesNuevas(nav) {
   const enlace = nav.querySelector('a[href="/admin/solicitudes.html"]');
   if (!enlace) return;
   try {
-    const r = await fetch("/api/admin/solicitudes");
+    // Solo el conteo (COUNT en la base), no la lista completa de solicitudes.
+    const r = await fetch("/api/admin/solicitudes?resumen=nuevas");
     if (!r.ok) return;
-    const nuevas = (await r.json()).filter((s) => s.estado === "nueva").length;
+    const { nuevas } = await r.json();
     if (nuevas > 0) {
       enlace.insertAdjacentHTML("beforeend", ` <span class="contador-sidebar" title="Solicitudes nuevas">${nuevas}</span>`);
     }

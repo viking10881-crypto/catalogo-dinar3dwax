@@ -49,6 +49,7 @@ import {
 } from "../../lib/pagos.js";
 import {
   listarSolicitudesDiseno,
+  contarSolicitudesNuevas,
   obtenerSolicitudDiseno,
   actualizarSolicitudDiseno,
   eliminarSolicitudDiseno,
@@ -769,6 +770,13 @@ async function manejarAccesoTaller(req, res) {
  * que ya usa lib/produccion.js para enviar pedidos→OT, aquí en sentido
  * contrario (lectura).
  */
+// Las estadísticas vienen de otro proyecto (dinar-3dwax) y tardan ~1s: se
+// guardan 60s en memoria de la instancia (Vercel reusa instancias entre
+// peticiones), así volver al Inicio del admin no espera al taller de nuevo.
+// Son cifras agregadas del mes, un minuto de atraso no cambia nada.
+const CACHE_ESTADISTICAS_MS = 60 * 1000;
+let cacheEstadisticasTaller = { datos: null, hasta: 0 };
+
 async function manejarEstadisticasTaller(req, res) {
   if (!requiereAdmin(req, res)) return;
   if (req.method !== "GET") {
@@ -777,6 +785,10 @@ async function manejarEstadisticasTaller(req, res) {
   }
   if (!process.env.DINAR3DWAX_API_URL || !process.env.CATALOGO_INTEGRACION_SECRET) {
     res.status(500).json({ error: "La integración con el taller no está configurada" });
+    return;
+  }
+  if (cacheEstadisticasTaller.datos && Date.now() < cacheEstadisticasTaller.hasta) {
+    res.status(200).json(cacheEstadisticasTaller.datos);
     return;
   }
   try {
@@ -788,6 +800,7 @@ async function manejarEstadisticasTaller(req, res) {
       res.status(502).json({ error: datos.error || "El taller respondió con un error" });
       return;
     }
+    cacheEstadisticasTaller = { datos, hasta: Date.now() + CACHE_ESTADISTICAS_MS };
     res.status(200).json(datos);
   } catch (err) {
     console.error("Error obteniendo estadísticas del taller:", err);
@@ -831,6 +844,15 @@ async function manejarSolicitudes(req, res) {
   const idQuery = req.query.id;
 
   if (!idQuery) {
+    if (req.method === "GET" && req.query.resumen === "nuevas") {
+      try {
+        res.status(200).json({ nuevas: await contarSolicitudesNuevas() });
+      } catch (err) {
+        console.error("Error contando solicitudes nuevas:", err);
+        res.status(500).json({ error: "No se pudo contar las solicitudes" });
+      }
+      return;
+    }
     if (req.method === "GET") {
       try {
         res.status(200).json(await listarSolicitudesDiseno());
