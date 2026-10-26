@@ -6,11 +6,14 @@
 <title>Dinar 3D Wax · Catálogo para joyeros</title>
 <script>
 (function () {
+  // Siempre arranca en oscuro. Si la persona cambia a claro, eso dura solo
+  // esta visita (sessionStorage): al volver a entrar, oscuro otra vez.
+  var t = "oscuro";
   try {
-    var t = localStorage.getItem("tema-sitio");
-    if (!t) t = "oscuro"; // el sitio arranca en modo oscuro; el toggle guarda la preferencia
-    document.documentElement.dataset.tema = t;
+    t = sessionStorage.getItem("tema-sitio") || "oscuro";
+    localStorage.removeItem("tema-sitio"); // preferencia vieja, ya no se usa
   } catch (e) {}
+  document.documentElement.dataset.tema = t;
 })();
 </script>
 <script>
@@ -161,39 +164,6 @@
           <div><span>Lista para</span><strong>Fundición</strong></div>
         </div>
       </div>
-    </div>
-  </div>
-</section>
-
-<!-- ===== Comparativa ===== -->
-<section class="dx-seccion">
-  <div class="contenedor">
-    <div class="dx-cabecera-seccion">
-      <div>
-        <p class="dx-eyebrow">Cera rosa</p>
-        <h2 class="dx-titulo">La porosidad <em>cuesta oro</em>.<br>Nosotros la eliminamos.</h2>
-      </div>
-      <p class="dx-cabecera-nota">Comparativa real medida en balanza 0.001g. Cera azul genérica vs Dinar Rosa 0.025mm. Mismo modelo ID 2862.</p>
-    </div>
-    <div class="dx-grid-comparativa">
-      <article class="dx-tarjeta-comp destacada">
-        <div class="dx-comp-top"><span class="dx-comp-icono" aria-hidden="true">⚖️</span><span class="dx-comp-badge">-20% oro</span></div>
-        <h3>0.28g vs 0.35g</h3>
-        <p>Sin poros = sin retención. En un lote de 100 anillos, son 7gr de oro que no pierdes.</p>
-        <span class="dx-comp-check">✓ Validado en fundición</span>
-      </article>
-      <article class="dx-tarjeta-comp">
-        <div class="dx-comp-top"><span class="dx-comp-icono" aria-hidden="true">💧</span><span class="dx-comp-badge">0 poros</span></div>
-        <h3>Sin poros = sin pérdida</h3>
-        <p>Microscopía 100x: cera azul llena de burbujas. Rosa: superficie vítrea continua.</p>
-        <span class="dx-comp-check">✓ Validado en fundición</span>
-      </article>
-      <article class="dx-tarjeta-comp">
-        <div class="dx-comp-top"><span class="dx-comp-icono" aria-hidden="true">☰</span><span class="dx-comp-badge">8K detalle</span></div>
-        <h3>0.025mm real · micropavé intacto</h3>
-        <p>Uñas de 0.3mm no se rompen en soporte. Garras micropavé salen completas.</p>
-        <span class="dx-comp-check">✓ Validado en fundición</span>
-      </article>
     </div>
   </div>
 </section>

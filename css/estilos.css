@@ -2338,50 +2338,6 @@ body.pagina-catalogo .dx-chip-icono svg { width: 14px; height: 14px; }
 body.pagina-catalogo .dx-chip-icono.claro { background: #f5f3ef; color: #14120f; }
 body.pagina-catalogo .dx-chip-icono.dorado { background: #c9a86a; color: #14120f; }
 
-/* ---- Comparativa ---- */
-body.pagina-catalogo .dx-grid-comparativa { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-body.pagina-catalogo .dx-tarjeta-comp {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 24px;
-  border: 1px solid var(--borde);
-  border-radius: var(--radio);
-  background: var(--blanco);
-}
-body.pagina-catalogo .dx-tarjeta-comp.destacada {
-  border-color: rgba(201, 168, 106, 0.55);
-  background: linear-gradient(135deg, rgba(201, 168, 106, 0.16), transparent 70%), var(--blanco);
-}
-body.pagina-catalogo .dx-comp-top { display: flex; align-items: center; justify-content: space-between; }
-body.pagina-catalogo .dx-comp-icono {
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: rgba(201, 168, 106, 0.15);
-}
-body.pagina-catalogo .dx-comp-badge {
-  padding: 4px 10px;
-  border: 1px solid var(--borde);
-  border-radius: 999px;
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--dorado-suave);
-}
-body.pagina-catalogo .dx-tarjeta-comp h3 {
-  margin: 8px 0 0;
-  font-family: var(--fuente-serif);
-  font-size: 24px;
-  font-weight: 500;
-  line-height: 1.15;
-  color: var(--negro);
-}
-body.pagina-catalogo .dx-tarjeta-comp p { margin: 0; font-size: 14px; line-height: 1.6; color: var(--gris); }
-body.pagina-catalogo .dx-comp-check { margin-top: auto; padding-top: 6px; font-size: 12px; color: var(--dorado); }
-
 /* ---- Catálogo: filtro lateral + tarjetas ---- */
 body.pagina-catalogo .zona-catalogo { padding: 0; gap: 32px; }
 body.pagina-catalogo .panel-filtros {
@@ -2869,7 +2825,6 @@ body.pagina-catalogo .dx-footer .creditos-dev a:hover { color: #e8d5b0; }
 @media (max-width: 760px) {
   body.pagina-catalogo .dx-seccion,
   body.pagina-catalogo .seccion-personalizados { padding: 64px 0; }
-  body.pagina-catalogo .dx-grid-comparativa { grid-template-columns: 1fr; }
 }
 @media (max-width: 600px) {
   body.pagina-catalogo .dx-cifras { gap: 12px; }

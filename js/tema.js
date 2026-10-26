@@ -2,14 +2,18 @@
  * Modo oscuro/claro, compartido por las 6 páginas públicas del sitio. El
  * atributo data-tema ya se aplica antes de este script (ver el <script>
  * inline en el <head> de cada página) para evitar parpadeo; acá solo se
- * conecta el botón y se guarda la preferencia.
+ * conecta el botón y se guarda la elección.
+ *
+ * La elección va en sessionStorage, no en localStorage: el sitio siempre
+ * abre en modo oscuro (pedido del cliente), y el modo claro solo dura
+ * mientras la persona navega en esa visita.
  */
 function aplicarTema(tema) {
   document.documentElement.dataset.tema = tema;
   try {
-    localStorage.setItem("tema-sitio", tema);
+    sessionStorage.setItem("tema-sitio", tema);
   } catch (err) {
-    // localStorage puede fallar (modo privado, storage bloqueado); no es crítico.
+    // El almacenamiento puede fallar (modo privado, bloqueado); no es crítico.
   }
 }
 

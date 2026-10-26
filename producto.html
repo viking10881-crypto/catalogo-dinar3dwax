@@ -6,11 +6,14 @@
 <title>Ficha de producto · Dinar 3D Wax</title>
 <script>
 (function () {
+  // Siempre arranca en oscuro. Si la persona cambia a claro, eso dura solo
+  // esta visita (sessionStorage): al volver a entrar, oscuro otra vez.
+  var t = "oscuro";
   try {
-    var t = localStorage.getItem("tema-sitio");
-    if (!t) t = "oscuro"; // el sitio arranca en modo oscuro; el toggle guarda la preferencia
-    document.documentElement.dataset.tema = t;
+    t = sessionStorage.getItem("tema-sitio") || "oscuro";
+    localStorage.removeItem("tema-sitio"); // preferencia vieja, ya no se usa
   } catch (e) {}
+  document.documentElement.dataset.tema = t;
 })();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
