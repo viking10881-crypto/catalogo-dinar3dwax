@@ -23,8 +23,11 @@ El script es `scripts/probar.mjs`; carga `.env.local` (necesita
 `ADMIN_PASSWORD` para la parte con sesión de admin). Tarda ~1–2 min por
 `vercel dev`. Si Playwright no tiene navegador: `npx playwright install chromium`.
 
-Si un preview tiene Deployment Protection y devuelve 401/403 en todo, usa el
-skill `vercel:access-protected-vercel-deployment`.
+Los previews tienen Deployment Protection: con `--url=` el script manda el
+`VERCEL_OIDC_TOKEN` de `.env.local` (cabecera de Trusted Sources, solo al
+dominio probado). Si dice "está detrás de Deployment Protection", el token
+expiró: `vercel env pull .env.local --yes` y repetir. No desactives la
+protección. Más detalle en el skill `vercel:access-protected-vercel-deployment`.
 
 ## 2. Leer el resultado
 

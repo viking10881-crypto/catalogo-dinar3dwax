@@ -33,6 +33,12 @@ const URL_EXTERNA = opcion("url")?.split("=")[1]?.replace(/\/$/, "");
 const SOLO_ESTATICAS = Boolean(opcion("solo-estaticas"));
 const SIN_NAVEGADOR = Boolean(opcion("sin-navegador"));
 
+// Los deploys de Vercel tienen Deployment Protection: con --url= se manda
+// el token OIDC local (de .env.local, `vercel env pull` lo renueva) en la
+// cabecera de Trusted Sources, y solo al origen probado, nunca a terceros.
+const CABECERAS_PROTECCION =
+  URL_EXTERNA && process.env.VERCEL_OIDC_TOKEN ? { "x-vercel-trusted-oidc-idp-token": process.env.VERCEL_OIDC_TOKEN } : {};
+
 const LIMITE_FUNCIONES = 12;
 const PAGINAS_PUBLICAS = ["/", "/carrito.html", "/checkout.html", "/personalizados.html", "/offline.html"];
 const SECCIONES_ADMIN_GET = ["configuracion", "productos", "pedidos", "trabajadores", "materiales", "pagos", "solicitudes"];
@@ -177,7 +183,11 @@ async function levantarVercelDev() {
 }
 
 async function pedir(base, ruta, opciones = {}) {
-  const r = await fetch(base + ruta, { redirect: "manual", ...opciones });
+  const r = await fetch(base + ruta, {
+    redirect: "manual",
+    ...opciones,
+    headers: { ...CABECERAS_PROTECCION, ...opciones.headers },
+  });
   let cuerpo = null;
   const texto = await r.text();
   try {
@@ -193,6 +203,14 @@ const json = (cuerpo) => ({ method: "POST", headers: { "Content-Type": "applicat
 async function pruebasApi(base) {
   console.log("\n2. Pruebas de API (solo lectura)");
   const contexto = { productos: [], cookie: null };
+
+  const sonda = await pedir(base, "/");
+  if (sonda.status === 401 || sonda.status === 403 || (sonda.status >= 300 && sonda.status < 400 && /vercel\.com\/(login|sso)/.test(sonda.headers.get("location") || ""))) {
+    throw new Error(
+      `${base} está detrás de Deployment Protection (status ${sonda.status}). ` +
+        "Corre `vercel env pull .env.local --yes` para renovar VERCEL_OIDC_TOKEN y vuelve a intentar."
+    );
+  }
 
   for (const pagina of PAGINAS_PUBLICAS) {
     const r = await pedir(base, pagina);
@@ -286,6 +304,13 @@ async function pruebasNavegador(base, contexto) {
   }
   const navegador = await chromium.launch();
   const origen = new URL(base).origin;
+  const nuevoContexto = async (opciones) => {
+    const ctx = await navegador.newContext(opciones);
+    if (Object.keys(CABECERAS_PROTECCION).length) {
+      await ctx.route(`${origen}/**`, (ruta) => ruta.continue({ headers: { ...ruta.request().headers(), ...CABECERAS_PROTECCION } }));
+    }
+    return ctx;
+  };
 
   async function revisarPagina(pagina, ruta, etiqueta, extra) {
     const errores = [];
@@ -319,7 +344,7 @@ async function pruebasNavegador(base, contexto) {
   ];
 
   for (const { nombre, opciones } of dispositivos) {
-    const ctx = await navegador.newContext(opciones);
+    const ctx = await nuevoContexto(opciones);
     const pagina = await ctx.newPage();
     const esCelular = Boolean(opciones.isMobile);
 
@@ -357,7 +382,7 @@ async function pruebasNavegador(base, contexto) {
 
   if (!process.env.ADMIN_PASSWORD) return;
 
-  const ctx = await navegador.newContext({ viewport: { width: 1280, height: 800 } });
+  const ctx = await nuevoContexto({ viewport: { width: 1280, height: 800 } });
   const pagina = await ctx.newPage();
   await revisarPagina(pagina, "/admin/login.html", "[admin]", async (p, errores) => {
     await p.fill("#password", process.env.ADMIN_PASSWORD);
