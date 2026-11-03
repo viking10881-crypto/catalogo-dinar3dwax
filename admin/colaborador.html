@@ -167,6 +167,7 @@ async function cargarPerfil() {
 async function cargarPagos() {
   const cuerpo = document.getElementById("cuerpo-tabla-pagos-perfil");
   const mensaje = document.getElementById("mensaje-tabla-pagos");
+  if (!idColaborador) return;
   try {
     const r = await fetch(`/api/admin/pagos?trabajadorId=${idColaborador}`);
     if (r.status === 401) {

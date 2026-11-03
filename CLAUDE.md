@@ -14,10 +14,11 @@ vercel dev                        # serves static pages + /api functions togethe
 vercel env pull .env.local --yes  # sync local env vars after changing them in Vercel
 npm run db:migrate                # applies scripts/schema.sql (idempotent: CREATE TABLE IF NOT EXISTS / ADD COLUMN IF NOT EXISTS)
 npm run icons:generate            # regenerates PWA icons (scripts/generate-icons.mjs, needs `sharp`) from img/logo-splash.png
-node --check path/to/file.js      # no test suite exists; this is the syntax-check used throughout this repo's history
+npm test                          # pre-deploy checks (scripts/probar.mjs): static + vercel dev + API + Playwright, read-only
+npm test -- --url=https://<preview>.vercel.app   # same checks against a deployed preview
 ```
 
-No bundler, no linter, no test runner. Verification in practice means: run `vercel dev`, hit the real endpoints/pages with `curl` or a Playwright script, and check the browser console — see any recent commit for the pattern (spin up `vercel dev` on a free port, drive it with Playwright, kill it when done).
+No bundler, no linter. `npm test` must pass (0 fallas) before any production deploy — see the `probar-antes-de-produccion` skill in `.claude/skills/`. It never writes to the DB (there is only the real one). Beyond it, verification means: run `vercel dev`, hit the real endpoints/pages with `curl` or a Playwright script, and check the browser console — see any recent commit for the pattern (spin up `vercel dev` on a free port, drive it with Playwright, kill it when done).
 
 Deploying: `vercel deploy` for a preview, `vercel --prod` for production. **Always confirm with the user before running a production deploy or a DB migration against the real database** — this project has exactly one Postgres instance and no staging environment.
 

@@ -678,6 +678,10 @@ async function manejarPagos(req, res) {
         // ?trabajadorId= filtra al historial de un solo colaborador (su
         // perfil); sin el param, es el listado completo de /admin/pagos.
         const trabajadorIdQuery = req.query.trabajadorId;
+        if (trabajadorIdQuery && !(Number.isInteger(Number(trabajadorIdQuery)) && Number(trabajadorIdQuery) > 0)) {
+          res.status(400).json({ error: "trabajadorId inválido" });
+          return;
+        }
         const pagos = trabajadorIdQuery
           ? await listarPagosDeTrabajador(Number(trabajadorIdQuery))
           : await listarPagos();
