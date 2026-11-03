@@ -567,3 +567,182 @@ function renderTopTallerTablas(topClientes, topServicios) {
     </div>
   `;
 }
+
+/* ===== Cera, ganancias y gastos (llamado desde cargarStatsTaller() en
+   admin/index.html). Las series por día/semana/mes de cera, costo de cera
+   y ganancia las calcula el taller (lib/estadisticas.ts de dinar-3dwax) en
+   hora de Colombia; aquí se les suman los gastos de este admin (Materiales
+   y Pagos a colaboradores) con la misma regla de períodos: semanas de lunes
+   a domingo con clave "YYYY-MM-DD" del lunes, meses con clave "YYYY-MM". ===== */
+const COLOR_ROJO_GRAFICA = "#d03b3b";
+const COLOR_GASTO_MATERIALES = "#8c7346";
+const COLOR_GASTO_COLABORADORES = "#d9bd76";
+const COLOR_GASTO_CERA = "#b8963e";
+let datosConsumo = null;
+let periodoConsumo = "semana";
+
+function lunesDeFecha(claveDia) {
+  const [y, m, d] = claveDia.split("-").map(Number);
+  const fecha = new Date(Date.UTC(y, m - 1, d));
+  fecha.setUTCDate(fecha.getUTCDate() - ((fecha.getUTCDay() + 6) % 7));
+  return fecha.toISOString().slice(0, 10);
+}
+
+/** Gastos del admin agrupados en el período ("semana" o "mes"). Las fechas
+ * de Materiales/Pagos son DATE: la API las manda como timestamp, se usa
+ * solo la parte de fecha. */
+function agruparGastosAdmin(gastos, periodo) {
+  const cubos = {};
+  const sumar = (fecha, campo, valor) => {
+    const dia = String(fecha).slice(0, 10);
+    const clave = periodo === "mes" ? dia.slice(0, 7) : lunesDeFecha(dia);
+    cubos[clave] = cubos[clave] || { materiales: 0, colaboradores: 0 };
+    cubos[clave][campo] += Number(valor) || 0;
+  };
+  for (const m of gastos.materiales || []) sumar(m.fecha, "materiales", m.costoTotal);
+  for (const p of gastos.pagos || []) sumar(p.fecha, "colaboradores", p.monto);
+  return cubos;
+}
+
+/** "−$48.000" en vez de "$-48.000" para una ganancia negativa. */
+function formatearDinero(valor) {
+  return valor < 0 ? `−${formatearPrecioAdmin(-valor)}` : formatearPrecioAdmin(valor);
+}
+
+function formatearGramos(g) {
+  return `${(Math.round(g * 10) / 10).toLocaleString("es-CO")} g`;
+}
+
+function renderConsumoYGastos(series, gastos) {
+  const mensaje = document.getElementById("consumo-mensaje");
+  if (!series || !series.semana) {
+    // El taller aún no expone las series (versión anterior desplegada).
+    mensaje.textContent = "El taller todavía no envía el consumo de cera por período.";
+    mensaje.className = "mensaje-admin error";
+    return;
+  }
+  datosConsumo = { series, gastos };
+  if (!gastos.ok) {
+    mensaje.textContent = "No se pudieron cargar Materiales/Pagos: los gastos muestran solo el costo de la cera.";
+    mensaje.className = "mensaje-admin error";
+  }
+  if (!renderConsumoYGastos.filtroConectado) {
+    const botones = document.querySelectorAll("#filtro-periodo-consumo button");
+    botones.forEach((btn) =>
+      btn.addEventListener("click", () => {
+        botones.forEach((b) => b.classList.remove("activo"));
+        btn.classList.add("activo");
+        periodoConsumo = btn.getAttribute("data-periodo");
+        dibujarConsumo();
+      })
+    );
+    renderConsumoYGastos.filtroConectado = true;
+  }
+  document.getElementById("contenedor-graficas-consumo").style.display = "";
+  dibujarConsumo();
+}
+
+function dibujarConsumo() {
+  if (!datosConsumo) return;
+  const periodo = periodoConsumo;
+  const puntos = datosConsumo.series[periodo] || [];
+  const nombres = { dia: "Últimos 30 días", semana: "Últimas 12 semanas (lunes a domingo)", mes: "Últimos 12 meses" };
+  const actual = { dia: "Hoy", semana: "Esta semana", mes: "Este mes" }[periodo];
+  const etiquetas = puntos.map((p) => p.etiqueta);
+
+  // Gastos solo por semana y por mes (lo pedido); por día no se muestran.
+  const conGastos = periodo !== "dia";
+  const cubosGastos = conGastos ? agruparGastosAdmin(datosConsumo.gastos, periodo) : {};
+  const materiales = puntos.map((p) => Math.round(cubosGastos[p.clave]?.materiales || 0));
+  const colaboradores = puntos.map((p) => Math.round(cubosGastos[p.clave]?.colaboradores || 0));
+  const costoCera = puntos.map((p) => Math.round(p.costoCera || 0));
+
+  const ultimo = puntos[puntos.length - 1] || { ceraGramos: 0, ganancia: 0 };
+  const i = puntos.length - 1;
+  const gastoActual = conGastos ? materiales[i] + colaboradores[i] + costoCera[i] : null;
+  const tarjetas = [
+    { valor: formatearGramos(ultimo.ceraGramos), etiqueta: `Cera usada · ${actual.toLowerCase()}`, icono: "🕯️" },
+    { valor: formatearDinero(ultimo.ganancia), etiqueta: `Ganancia · ${actual.toLowerCase()}`, icono: "📈", alerta: ultimo.ganancia < 0 },
+  ];
+  if (conGastos) tarjetas.push({ valor: formatearPrecioAdmin(gastoActual), etiqueta: `Gastos · ${actual.toLowerCase()}`, icono: "🧾" });
+  document.getElementById("grid-kpi-consumo").innerHTML = tarjetas
+    .map(
+      (t) => `
+      <div class="tarjeta-stat ${t.alerta ? "icono-alerta" : ""}">
+        <div class="tarjeta-stat-cabecera"><span class="icono-stat">${t.icono}</span></div>
+        <div class="valor">${t.valor}</div>
+        <div class="etiqueta">${escaparTextoGrafica(t.etiqueta)}</div>
+      </div>`
+    )
+    .join("");
+
+  document.getElementById("subtitulo-consumo-cera").textContent = `${nombres[periodo]} · por fecha de impresión`;
+  document.getElementById("subtitulo-consumo-ganancia").textContent = `${nombres[periodo]} · precio menos costo de la cera`;
+  document.getElementById("subtitulo-consumo-gastos").textContent = nombres[periodo];
+  document.getElementById("tarjeta-grafica-gastos").style.display = conGastos ? "" : "none";
+
+  const ejeX = { type: "category", data: etiquetas, axisLabel: { ...EJE_TEXTO, hideOverlap: true }, axisLine: LINEA_GRILLA };
+  const grilla = { left: 60, right: 16, top: 16, bottom: 28 };
+
+  const cera = obtenerInstancia("grafica-consumo-cera");
+  if (cera) {
+    cera.setOption(
+      {
+        tooltip: { ...tooltipBase(), trigger: "axis", valueFormatter: (v) => formatearGramos(v) },
+        grid: grilla,
+        xAxis: ejeX,
+        yAxis: { type: "value", axisLabel: { ...EJE_TEXTO, formatter: "{value} g" }, splitLine: LINEA_GRILLA },
+        series: [{ name: "Cera", type: "bar", data: puntos.map((p) => Math.round(p.ceraGramos * 10) / 10), itemStyle: { color: COLOR_ORO_GRAFICA, borderRadius: [4, 4, 0, 0] } }],
+      },
+      true
+    );
+  }
+
+  const ganancia = obtenerInstancia("grafica-consumo-ganancia");
+  if (ganancia) {
+    ganancia.setOption(
+      {
+        tooltip: { ...tooltipBase(), trigger: "axis", valueFormatter: (v) => formatearDinero(v) },
+        grid: grilla,
+        xAxis: ejeX,
+        yAxis: { type: "value", axisLabel: { ...EJE_TEXTO, formatter: (v) => v.toLocaleString("es-CO") }, splitLine: LINEA_GRILLA },
+        series: [
+          {
+            name: "Ganancia",
+            type: "bar",
+            data: puntos.map((p) => ({
+              value: Math.round(p.ganancia),
+              itemStyle: { color: p.ganancia < 0 ? COLOR_ROJO_GRAFICA : COLOR_VERDE_GRAFICA, borderRadius: [4, 4, 0, 0] },
+            })),
+          },
+        ],
+      },
+      true
+    );
+  }
+
+  if (conGastos) {
+    const gastosChart = obtenerInstancia("grafica-consumo-gastos");
+    if (gastosChart) {
+      const apilada = (name, data, color) => ({ name, type: "bar", stack: "gastos", data, itemStyle: { color } });
+      gastosChart.setOption(
+        {
+          tooltip: { ...tooltipBase(), trigger: "axis", valueFormatter: (v) => formatearDinero(v) },
+          legend: { data: ["Materiales", "Colaboradores", "Costo de cera"], top: 0, textStyle: EJE_TEXTO },
+          grid: { ...grilla, top: 36 },
+          xAxis: ejeX,
+          yAxis: { type: "value", axisLabel: { ...EJE_TEXTO, formatter: (v) => v.toLocaleString("es-CO") }, splitLine: LINEA_GRILLA },
+          series: [
+            apilada("Materiales", materiales, COLOR_GASTO_MATERIALES),
+            apilada("Colaboradores", colaboradores, COLOR_GASTO_COLABORADORES),
+            apilada("Costo de cera", costoCera, COLOR_GASTO_CERA),
+          ],
+        },
+        true
+      );
+      // Al volver de "Por día" la tarjeta estaba oculta (ancho 0): se
+      // recalcula el tamaño ya visible.
+      gastosChart.resize();
+    }
+  }
+}

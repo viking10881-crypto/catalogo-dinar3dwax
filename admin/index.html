@@ -144,6 +144,57 @@
       </div>
     </div>
 
+    <!-- Consumo de cera y ganancia salen del taller (series por día, semana
+         y mes de /api/admin/estadisticas-taller); los gastos suman además
+         Materiales y Pagos a colaboradores de este admin. Ver
+         renderConsumoYGastos() en /admin/js/graficas.js. -->
+    <div class="cabecera-consumo">
+      <div>
+        <h2 class="titulo-seccion" style="font-size:0.95rem; margin-bottom:4px;">Cera, ganancias y gastos</h2>
+        <p style="color:var(--gris); margin:0 0 12px;">Cera usada al imprimir y ganancia del taller; gastos = materiales + pagos a colaboradores + costo de la cera.</p>
+      </div>
+      <div class="filtro-rango" id="filtro-periodo-consumo" role="group" aria-label="Período">
+        <button type="button" data-periodo="dia">Por día</button>
+        <button type="button" data-periodo="semana" class="activo">Por semana</button>
+        <button type="button" data-periodo="mes">Por mes</button>
+      </div>
+    </div>
+    <p id="consumo-mensaje" class="mensaje-admin"></p>
+    <div id="grid-kpi-consumo" class="grid-stats"></div>
+
+    <div class="grid-graficas fila-ancha" id="contenedor-graficas-consumo" style="display:none; margin-top:20px;">
+      <div class="tarjeta-grafica">
+        <div class="tarjeta-grafica-cabecera">
+          <span class="icono-grafica">🕯️</span>
+          <div>
+            <p class="titulo-grafica">Consumo de cera</p>
+            <p class="subtitulo-grafica" id="subtitulo-consumo-cera"></p>
+          </div>
+        </div>
+        <div id="grafica-consumo-cera" class="lienzo-grafica"></div>
+      </div>
+      <div class="tarjeta-grafica">
+        <div class="tarjeta-grafica-cabecera">
+          <span class="icono-grafica">📈</span>
+          <div>
+            <p class="titulo-grafica">Ganancia del taller</p>
+            <p class="subtitulo-grafica" id="subtitulo-consumo-ganancia"></p>
+          </div>
+        </div>
+        <div id="grafica-consumo-ganancia" class="lienzo-grafica"></div>
+      </div>
+      <div class="tarjeta-grafica" id="tarjeta-grafica-gastos">
+        <div class="tarjeta-grafica-cabecera">
+          <span class="icono-grafica">🧾</span>
+          <div>
+            <p class="titulo-grafica">Gastos</p>
+            <p class="subtitulo-grafica" id="subtitulo-consumo-gastos"></p>
+          </div>
+        </div>
+        <div id="grafica-consumo-gastos" class="lienzo-grafica"></div>
+      </div>
+    </div>
+
     <h2 class="titulo-seccion" style="font-size:0.95rem;">Secciones</h2>
     <div class="grid-accesos">
       <a href="/admin/productos.html" class="tarjeta-acceso" style="text-decoration:none; color:inherit;">
@@ -284,12 +335,23 @@ async function cargarStatsTaller() {
 
     document.getElementById("contenedor-graficas-taller").style.display = "";
     echartsListo.then(() => renderGraficaTaller(datos.meses || []));
+    gastosListos.then((gastos) => echartsListo.then(() => renderConsumoYGastos(datos.series, gastos)));
     renderTopTallerTablas(datos.topClientes || [], datos.topServicios || []);
   } catch (err) {
     mensaje.textContent = "No se pudo conectar con el taller (dinar-3dwax) para traer sus estadísticas.";
     mensaje.className = "mensaje-admin error";
   }
 }
+
+// Gastos registrados en este admin (Materiales y Pagos a colaboradores),
+// para sumarlos por semana y mes con el costo de cera del taller. Se piden
+// en paralelo con todo lo demás; si fallan, la sección muestra sin gastos.
+const gastosListos = Promise.all([
+  fetch("/api/admin/materiales").then((r) => (r.ok ? r.json() : [])),
+  fetch("/api/admin/pagos").then((r) => (r.ok ? r.json() : [])),
+])
+  .then(([materiales, pagos]) => ({ materiales, pagos, ok: true }))
+  .catch(() => ({ materiales: [], pagos: [], ok: false }));
 
 renderAdminSidebar("inicio");
 cargarStats();

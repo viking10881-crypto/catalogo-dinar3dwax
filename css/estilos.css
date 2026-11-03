@@ -1376,6 +1376,17 @@ input[type="file"]::file-selector-button:hover {
 }
 .filtro-rango button:hover { color: var(--negro); }
 .filtro-rango button.activo { background: var(--dorado); color: var(--texto-sobre-dorado); }
+/* Cabecera de "Cera, ganancias y gastos" en el Inicio del admin: título a
+   la izquierda y selector Día / Semana / Mes a la derecha. */
+.cabecera-consumo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 28px;
+}
+.cabecera-consumo .filtro-rango { margin-bottom: 12px; }
 
 .grid-graficas {
   display: grid;
